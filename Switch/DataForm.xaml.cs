@@ -144,10 +144,14 @@ namespace ElectroTools
             AddDataGridTextColumn("№ вершины", "name", true, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 127, 0)), TextAlignment.Center, true);
 
             // Добавьте столбец с настройками для нагрузки
-            AddDataGridTextColumn("Нагрузка, кВ", "weight", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
+            AddDataGridTextColumn("Нагрузка фазы А (или ABC), кВт", "weightA", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
+            AddDataGridTextColumn("Нагрузка фазы В, кВт", "weightB", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
+            AddDataGridTextColumn("Нагрузка фазы С, кВт", "weightC", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
 
             // Добавьте столбец с настройками для тока
-            AddDataGridTextColumn("Ток, А", "I", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
+            AddDataGridTextColumn("Ток фазы А, А", "Ia", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
+            AddDataGridTextColumn("Ток фазы B, А", "Ib", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
+            AddDataGridTextColumn("Ток фазы С, А", "Ic", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
 
             // Добавьте столбец с настройками для Cosφ
             AddDataGridTextColumn("Cosφ", "cos", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
@@ -171,7 +175,7 @@ namespace ElectroTools
             AddDataGridTextColumn("№ вершины", "name", true, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 127, 0)), TextAlignment.Center, true);
 
             // Количество 
-            AddDataGridTextColumn("Количество потрибителей, шт", "weight", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
+            AddDataGridTextColumn("Количество потребителей, шт", "weight", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             //Важность
             AddDataGridCheckBoxColumn("Важность потребителя, Да\\Нет", "isFavorite");
         }

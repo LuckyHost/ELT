@@ -12,6 +12,8 @@ using System.Data.SQLite;
 using System.Xml.Serialization;
 using System.ComponentModel;
 using System.Windows.Forms.Integration;
+using System.Security.Cryptography;
+
 
 
 
@@ -377,7 +379,7 @@ namespace ElectroTools
                 foreach (PointLine itemPoint in listPoint)
                 {
 
-                    ed.WriteMessage(itemPoint.name.ToString() + " " + "weight: " + itemPoint.weight + " " + itemPoint.positionPoint + " I: " + itemPoint.I + " " + itemPoint.isFavorite);
+                    ed.WriteMessage(itemPoint.name.ToString() + " " + "weight: " + itemPoint.weightA + " " + itemPoint.positionPoint + " I: " + itemPoint.Ia + " " + itemPoint.isFavorite);
                 }
                 ed.WriteMessage("~~~~~~~~~~~~~~~~");
                 ed.WriteMessage("\n  ");
@@ -425,7 +427,7 @@ namespace ElectroTools
 
                 foreach (Edge itemEdge in listEdge)
                 {
-                    ed.WriteMessage(itemEdge.name.ToString() + " | Длина ребра: " + itemEdge.length + " | Марка провода ребра: " + itemEdge.cable + " | Допустимый ток: " + itemEdge.Icrict + " | Протекаемый ток: " + itemEdge.I + " | Data: " + itemEdge.r + " | StartPoint: " + itemEdge.startPoint.name + " |EndPoint: " + itemEdge.endPoint.name);
+                    ed.WriteMessage(itemEdge.name.ToString() + " | Длина ребра: " + itemEdge.length + " | Марка провода ребра: " + itemEdge.cable + " | Допустимый ток: " + itemEdge.Icrict + " | Протекаемый ток: " + itemEdge.Ia + " | Data: " + itemEdge.r + " | StartPoint: " + itemEdge.startPoint.name + " |EndPoint: " + itemEdge.endPoint.name);
 
                     // ed.WriteMessage(itemEdge.name.ToString() + " | Длина ребра: " + itemEdge.length + " | Марка провода: " + itemEdge.cable + " | Data: " + itemEdge.data + " | " + itemEdge.centerPoint.name.ToString() + ": " + itemEdge.centerPoint.positionPoint);
                 }
@@ -461,14 +463,14 @@ namespace ElectroTools
 
                         if (int.Parse((mtext.Contents).Substring(0, index - 1)) == itemPoint.name)
                         {
-                            ed.WriteMessage(int.Parse((mtext.Contents).Substring(0, index - 1)) + " | Вес вершины: " + itemPoint.weight + " | " + itemPoint.positionPoint);
+                            ed.WriteMessage(int.Parse((mtext.Contents).Substring(0, index - 1)) + " | Вес вершины: " + itemPoint.weightA + " | " + itemPoint.positionPoint);
                         }
                     }
                     else
                     {
                         if (int.Parse(mtext.Contents) == itemPoint.name)
                         {
-                            ed.WriteMessage(itemPoint.name.ToString() + " | Вес вершины: " + itemPoint.weight + " | " + itemPoint.positionPoint);
+                            ed.WriteMessage(itemPoint.name.ToString() + " | Вес вершины: " + itemPoint.weightA + " | " + itemPoint.positionPoint);
                         }
                     }
 
@@ -503,7 +505,7 @@ namespace ElectroTools
 
                     if (mtext.Contents == itemEdge.name.ToString())
                     {
-                        ed.WriteMessage(itemEdge.name.ToString() + " | Длина ребра: " + itemEdge.length + " | Марка провода ребра: " + itemEdge.cable + " | Допустимый ток: " + itemEdge.Icrict + " | Протекаемый ток: " + itemEdge.I + " | Data: " + itemEdge.r + " | StartPoint: " + itemEdge.startPoint.name + " |EndPoint: " + itemEdge.endPoint.name);
+                        ed.WriteMessage(itemEdge.name.ToString() + " | Длина ребра: " + itemEdge.length + " | Марка провода ребра: " + itemEdge.cable + " | Допустимый ток: " + itemEdge.Icrict + " | Протекаемый ток: " + itemEdge.Ia + " | Data: " + itemEdge.r + " | StartPoint: " + itemEdge.startPoint.name + " |EndPoint: " + itemEdge.endPoint.name);
                     }
 
 
@@ -954,7 +956,7 @@ namespace ElectroTools
             //Создает список вершин с весом
             foreach (PointLine itemPoint in listPoint)
             {
-                if (itemPoint.weight > 0)
+                if (itemPoint.weightA > 0)
                 {
 
                     listWhithWeight.Add(itemPoint);
@@ -970,7 +972,7 @@ namespace ElectroTools
                         if (itemPoint == itemPowerLine.points[i])
                         {
                             PointLine perentPointMagistral = goToParent(itemPowerLine, listPowerLine[0].name).parentPoint;
-                            perentPointMagistral.weight = perentPointMagistral.weight + itemPoint.weight;
+                            perentPointMagistral.weightA = perentPointMagistral.weightA + itemPoint.weightA;
                             if (itemPoint.isFavorite)
                             {
                                 perentPointMagistral.isFavorite = true;
@@ -995,7 +997,7 @@ namespace ElectroTools
                 StringBuilder tempLeftPathText = new StringBuilder();
                 foreach (PointLine itemPointLine in tempLeftPath)
                 {
-                    tempLeftDifference = tempLeftDifference + itemPointLine.weight;
+                    tempLeftDifference = tempLeftDifference + itemPointLine.weightA;
                 }
 
                 StringBuilder tempRightPathText = new StringBuilder();
@@ -1007,7 +1009,7 @@ namespace ElectroTools
                     {
                         continue;
                     }
-                    tempRighDifference = tempRighDifference + itemPointLine.weight;
+                    tempRighDifference = tempRighDifference + itemPointLine.weightA;
                 }
 
                 //Проверяет вес и важность поинтов; itemPoint.isFavorite - проверяет в вершине магистрали есть ли важнный потербитель
@@ -1025,14 +1027,14 @@ namespace ElectroTools
 
                     foreach (PointLine itemPointLine in REC.leftPath)
                     {
-                        tempLeftPathText.Append(itemPointLine.name + " (" + itemPointLine.weight + ")" + " ");
+                        tempLeftPathText.Append(itemPointLine.name + " (" + itemPointLine.weightA + ")" + " ");
                     }
 
 
                     foreach (PointLine itemPointLine in REC.rightPath)
                     {
 
-                        tempRightPathText.Append(itemPointLine.name + " (" + itemPointLine.weight + ")" + " ");
+                        tempRightPathText.Append(itemPointLine.name + " (" + itemPointLine.weightA + ")" + " ");
                     }
 
                     REC.leftPathText = tempLeftPathText.ToString();
@@ -1071,7 +1073,7 @@ namespace ElectroTools
             //Скинуть веса вершин у магистрали
             foreach (var item in masterPointLine)
             {
-                item.weight = 0;
+                item.weightA = 0;
                 item.isFavorite = false;
             }
 
@@ -1098,7 +1100,9 @@ namespace ElectroTools
 
             foreach (var item in listPoint)
             {
-                item.I = 0;
+                item.Ia = 0;
+                item.Ib = 0;
+                item.Ic = 0;
                 item.tempBoll = false;
             }
 
@@ -1112,6 +1116,7 @@ namespace ElectroTools
             listWithWeight = GetWeightedVertices(listPoint);
 
 
+            //Пути до вершин
             foreach (PointLine itemPoint in listWithWeight)
             {
                 List<PointLine> path = ListPathIntToPoint(findPath(matrixSmej, itemPoint.name - 1, listPowerLine[0].points[0].name - 1));
@@ -1143,30 +1148,29 @@ namespace ElectroTools
             {
                 for (int i = 0; i < itemListPoint.Count() - 1; i++)
                 {
-                    double tempAddI = 0;
+                    double tempAddIa = 0;
+                    double tempAddIb = 0;
+                    double tempAddIc = 0;
+
                     if (itemListPoint[i + 1].tempBoll != true)
                     {
                         itemListPoint[i + 1].tempBoll = true;
-                        itemListPoint[i + 1].I = Math.Round(itemListPoint[i + 1].I + itemListPoint[i].I, 3);
+                        itemListPoint[i + 1].Ia = Math.Round(itemListPoint[i + 1].Ia + itemListPoint[i].Ia, 3);
+                        itemListPoint[i + 1].Ib = Math.Round(itemListPoint[i + 1].Ib + itemListPoint[i].Ib, 3);
+                        itemListPoint[i + 1].Ic = Math.Round(itemListPoint[i + 1].Ic + itemListPoint[i].Ic, 3);
                     }
                     else
                     {
-                        tempAddI = itemListPoint[0].I;
-                        itemListPoint[i + 1].I += Math.Round(tempAddI, 2);
+                        tempAddIa = itemListPoint[0].Ia;
+                        itemListPoint[i + 1].Ia += Math.Round(tempAddIa, 2);
+
+                        tempAddIb = itemListPoint[0].Ib;
+                        itemListPoint[i + 1].Ib += Math.Round(tempAddIb, 2);
+
+                        tempAddIc = itemListPoint[0].Ic;
+                        itemListPoint[i + 1].Ic += Math.Round(tempAddIc, 2);
                     }
                 }
-
-
-                /*
-                StringBuilder text = new StringBuilder();
-                foreach (var item1 in itemListPoint)
-                {
-                    text.Append(item1.name.ToString() + " ");
-
-                }
-                ed.WriteMessage(text.ToString());
-                */
-
 
                 //Построить куда бежит ток
                 creatPL(itemListPoint, "Напряжение_Makarov.D", 52, 0.6);
@@ -1177,18 +1181,21 @@ namespace ElectroTools
             foreach (PointLine itemPoint in listPoint)
             {
 
-                if (itemPoint.I > 0)
+                if (itemPoint.Ia > 0 | itemPoint.Ib > 0 | itemPoint.Ic > 0)
                 {
                     foreach (Edge itemEdge in listEdge)
                     {
                         if (itemPoint == itemEdge.endPoint)
                         {
-                            itemEdge.I = itemPoint.I;
+                            itemEdge.Ia = itemPoint.Ia;
+                            itemEdge.Ib = itemPoint.Ib;
+                            itemEdge.Ic = itemPoint.Ic;
                         }
+
                         //Проверка на критический ток
-                        if (itemEdge.I > itemEdge.Icrict)
+                        if (itemEdge.Ia > itemEdge.Icrict | itemEdge.Ib > itemEdge.Icrict | itemEdge.Ic > itemEdge.Icrict)
                         {
-                            creatText("Напряжение_Makarov.D", itemEdge.centerPoint, "I>Iкрит;" + itemEdge.I + " A.", "1", 220, 4);
+                            creatText("Напряжение_Makarov.D", itemEdge.centerPoint, "I>Iкрит" + itemEdge.Ia +"(A);"+ itemEdge.Ib+"(B);"+itemEdge.Ic+"(C) "+" A.", "1", 220, 4);
                         }
                     }
                 }
@@ -1197,13 +1204,15 @@ namespace ElectroTools
             //Анализирует падения напряжения и отрисовывает
             foreach (Edge itemEdge in listEdge)
             {
-                if (itemEdge.startPoint.I > 0 && itemEdge.endPoint.I > 0)
+                if ((itemEdge.startPoint.Ia > 0 && itemEdge.endPoint.Ia > 0) | (itemEdge.startPoint.Ib > 0 && itemEdge.endPoint.Ib > 0)| (itemEdge.startPoint.Ic > 0 && itemEdge.endPoint.Ic > 0))
                 {
-                    creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔU= " + Math.Round((itemEdge.I * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2), "1", 154, -4);
+                    creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUa= " + Math.Round((itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -4);
+                    creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUb= " + Math.Round((itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -6);
+                    creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUc= " + Math.Round((itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -8);
 
-                    if (Math.Round(itemEdge.startPoint.tempData - (itemEdge.I * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) > 0)
+                    if (Math.Round(itemEdge.startPoint.tempData - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) > 0)
                     {
-                        itemEdge.endPoint.tempData = Math.Round(itemEdge.startPoint.tempData - (itemEdge.I * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2);
+                        itemEdge.endPoint.tempData = Math.Round(itemEdge.startPoint.tempData - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2);
                     }
                     else
                     {
@@ -1211,13 +1220,17 @@ namespace ElectroTools
 
                     }
 
-                    if (((Uf - Math.Round(itemEdge.startPoint.tempData - (itemEdge.I * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100) >= 10.0)
+                    if (((Uf - Math.Round(itemEdge.startPoint.tempData - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100) >= 10.0)
                     {
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "U= " + itemEdge.endPoint.tempData.ToString(), "1", 15, -4);
+                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.tempData.ToString() + " В.", "1", 41, -4);
+                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.tempData.ToString() + " В.", "1", 74, -6);
+                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.tempData.ToString() + " В.", "1", 22, -8);
                     }
                     else
                     {
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "U= " + itemEdge.endPoint.tempData.ToString(), "1", 112, -4);
+                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.tempData.ToString() + " В.", "1", 112, -4);
+                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.tempData.ToString() + " В.", "1", 112, -6);
+                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.tempData.ToString() + " В.", "1", 112, -8);
                     }
 
 
@@ -1315,17 +1328,17 @@ namespace ElectroTools
 
                 foreach (PointLine itemPoint in templistPoint)
                 {
-                    if (itemPoint.weight > 0)
+                    if (itemPoint.weightA > 0)
                     {
                         foreach (PointLine item1 in listPoint)
                         {
 
                             if (itemPoint.name == item1.name)
                             {
-                                item1.weight = itemPoint.weight;
+                                item1.weightA = itemPoint.weightA;
                                 item1.cos = itemPoint.cos;
                                 item1.typeClient = itemPoint.typeClient;
-                                TextFun.updateTextById(item1.IDText, item1.name + "\\P" + item1.weight, 66);
+                                TextFun.updateTextById(item1.IDText, item1.name + "\\P" + item1.weightA, 66);
                             }
 
                         }
@@ -1412,16 +1425,20 @@ namespace ElectroTools
             List<PointLine> tempList = new List<PointLine>();
             foreach (PointLine itemPoint in stateList)
             {
-                if (itemPoint.weight > 0)
+                if (itemPoint.weightA > 0 | itemPoint.weightB > 0 | itemPoint.weightC > 0)
                 {
 
                     if (itemPoint.typeClient == 1)
                     {
-                        itemPoint.I = Math.Round(itemPoint.weight / (0.22 * itemPoint.cos), 2);
+                        itemPoint.Ia = Math.Round(itemPoint.weightA / (0.22 * itemPoint.cos), 2);
+                        itemPoint.Ib = Math.Round(itemPoint.weightB / (0.22 * itemPoint.cos), 2);
+                        itemPoint.Ic = Math.Round(itemPoint.weightC / (0.22 * itemPoint.cos), 2);
                     }
                     if (itemPoint.typeClient == 3)
                     {
-                        itemPoint.I = Math.Round(itemPoint.weight / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
+                        itemPoint.Ia = Math.Round(itemPoint.weightA / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
+                        itemPoint.Ib = Math.Round(itemPoint.weightA / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
+                        itemPoint.Ic = Math.Round(itemPoint.weightA / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
                     }
                     tempList.Add(itemPoint);
 
@@ -2293,7 +2310,7 @@ namespace ElectroTools
                                 if (numberVertex == masterVertex.name)
                                 {
                                     int indexColor = acEnt.ColorIndex;
-                                    masterVertex.weight = weightVertex;
+                                    masterVertex.weightA = weightVertex;
                                     // ed.WriteMessage("indexColor == 201: " + (indexColor == 201).ToString());
 
                                     // Получение индекса цвета Mtext
@@ -3236,7 +3253,7 @@ namespace ElectroTools
         public void UpdateData()
         {
             // Пример обновления данных
-            listPoint = new List<PointLine> { new PointLine { name = 1, weight = 2.5 } };
+            listPoint = new List<PointLine> { new PointLine { name = 1, weightA = 2.5 } };
             pathDLLFile = "New Path";
         }
 
