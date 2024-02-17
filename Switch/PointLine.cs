@@ -154,8 +154,13 @@ namespace ElectroTools
         }
 
 
-        [XmlElement("tempData")]
-        public double tempData { get; set; }
+
+        [XmlElement("Ua")]
+        public double Ua { get; set; }
+        [XmlElement("Ub")]
+        public double Ub { get; set; }
+        [XmlElement("Uc")]
+        public double Uc { get; set; }
 
         [XmlElement("isFavorite")]
         public bool isFavorite
@@ -197,7 +202,9 @@ namespace ElectroTools
             Ia = 0;
             Ib = 0;
             Ic = 0;
-            tempData = 0;
+            Ua = 0;
+            Ub = 0;
+            Uc = 0;
             tempBoll = false;
             isLastPoint = false;
             isFavorite = false;

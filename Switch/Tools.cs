@@ -165,7 +165,7 @@ namespace ElectroTools
 
 
 
-        public  void addInfo()
+        public void addInfo()
         {
             //подписывается на обновление чертежа
             Application.DocumentManager.DocumentActivated += DocumentActivatedEventHandler;
@@ -714,7 +714,7 @@ namespace ElectroTools
             tempListPoint.Insert(0, "Выбрать самостоятельно узел");
 
             string pointKZ = creatPromptKeywordOptions("Введите номер узла КЗ:", tempListPoint, 1);
-            if (string.IsNullOrEmpty(pointKZ) ) { return; };
+            if (string.IsNullOrEmpty(pointKZ)) { return; };
 
 
             if (pointKZ == "Выбрать_самостоятельно_узел" | pointKZ == "самостоятельно узел" | pointKZ == "Выбрать самостоятельно узел")
@@ -1090,7 +1090,9 @@ namespace ElectroTools
             string tempUf = creatPromptKeywordOptions("Выберите напряжение точки генерации сети.: ", searchAllDataInBD(dbFilePath, "voltage", "kV"), 1);
             if (string.IsNullOrEmpty(tempUf)) { return; };
             double Uf = double.Parse(tempUf);
-            listPoint[0].tempData = Uf;
+            listPoint[0].Ua = Uf;
+            listPoint[0].Ub = Uf;
+            listPoint[0].Uc = Uf;
 
             using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
             {
@@ -1195,7 +1197,7 @@ namespace ElectroTools
                         //Проверка на критический ток
                         if (itemEdge.Ia > itemEdge.Icrict | itemEdge.Ib > itemEdge.Icrict | itemEdge.Ic > itemEdge.Icrict)
                         {
-                            creatText("Напряжение_Makarov.D", itemEdge.centerPoint, "I>Iкрит" + itemEdge.Ia +"(A);"+ itemEdge.Ib+"(B);"+itemEdge.Ic+"(C) "+" A.", "1", 220, 4);
+                            creatText("Напряжение_Makarov.D", itemEdge.centerPoint, "I>Iкрит " + itemEdge.Ia + "(A); " + itemEdge.Ib + "(B); " + itemEdge.Ic + "(C) " + " A.", "1", 220, 4);
                         }
                     }
                 }
@@ -1204,33 +1206,77 @@ namespace ElectroTools
             //Анализирует падения напряжения и отрисовывает
             foreach (Edge itemEdge in listEdge)
             {
-                if ((itemEdge.startPoint.Ia > 0 && itemEdge.endPoint.Ia > 0) | (itemEdge.startPoint.Ib > 0 && itemEdge.endPoint.Ib > 0)| (itemEdge.startPoint.Ic > 0 && itemEdge.endPoint.Ic > 0))
+                if ((itemEdge.startPoint.Ia > 0 && itemEdge.endPoint.Ia > 0) | (itemEdge.startPoint.Ib > 0 && itemEdge.endPoint.Ib > 0) | (itemEdge.startPoint.Ic > 0 && itemEdge.endPoint.Ic > 0))
                 {
                     creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUa= " + Math.Round((itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -4);
                     creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUb= " + Math.Round((itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -6);
                     creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUc= " + Math.Round((itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -8);
 
-                    if (Math.Round(itemEdge.startPoint.tempData - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) > 0)
+                    //Фаза А
+                    if (Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) > 0)
                     {
-                        itemEdge.endPoint.tempData = Math.Round(itemEdge.startPoint.tempData - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2);
+                        itemEdge.endPoint.Ua = Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2);
                     }
                     else
                     {
-                        itemEdge.endPoint.tempData = 0;
-
+                        itemEdge.endPoint.Ua = 0;
                     }
 
-                    if (((Uf - Math.Round(itemEdge.startPoint.tempData - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100) >= 10.0)
+                    //Фаза В
+                    if (Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) > 0)
                     {
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.tempData.ToString() + " В.", "1", 41, -4);
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.tempData.ToString() + " В.", "1", 74, -6);
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.tempData.ToString() + " В.", "1", 22, -8);
+                        itemEdge.endPoint.Ub = Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2);
                     }
                     else
                     {
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.tempData.ToString() + " В.", "1", 112, -4);
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.tempData.ToString() + " В.", "1", 112, -6);
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.tempData.ToString() + " В.", "1", 112, -8);
+                        itemEdge.endPoint.Ub = 0;
+                    }
+
+                    //Фаза С
+                    if (Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) > 0)
+                    {
+                        itemEdge.endPoint.Uc = Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2);
+                    }
+                    else
+                    {
+                        itemEdge.endPoint.Uc = 0;
+                    }
+
+                    //Отрисовка
+                    //Фаза А
+                    if (((Uf - Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100) >= 10.0)
+                    {
+                        double percentA = Math.Round( ((Uf - Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100),2);
+                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 26, -4);
+                    }
+                    else
+                    {
+                        double percentA = Math.Round( ((Uf - Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100),2);
+                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 41, -4);
+                    }
+
+                    //Фаза В
+                    if (((Uf - Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100) >= 10.0)
+                    {
+                        double percentB = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100),2);
+                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 26, -6);
+                    }
+                    else
+                    {
+                        double percentB = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100),2);
+                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 74, -6);
+                    }
+
+                    //Фаза С
+                    if (((Uf - Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100) >= 10.0)
+                    {
+                        double percentC = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100),2);
+                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 26, -8);
+                    }
+                    else
+                    {
+                        double percentC = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100),2);
+                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 22, -8);
                     }
 
 
@@ -1368,10 +1414,10 @@ namespace ElectroTools
 
         [CommandMethod("Elt", CommandFlags.UsePickSet |
               CommandFlags.Redraw | CommandFlags.Modal)]
-        public async void  creatFormAsync()
+        public async void creatFormAsync()
         {
 
-           bool isStart = await _netWork.showUpdateWindows();
+            bool isStart = await _netWork.showUpdateWindows();
 
             if (isStart)
             {
@@ -1381,11 +1427,11 @@ namespace ElectroTools
             {
                 nextFormAsync();
             }
-            
+
         }
 
-      
-         public void nextFormAsync()
+
+        public void nextFormAsync()
         {
 
 
@@ -1512,7 +1558,7 @@ namespace ElectroTools
                     Point3d searchPoint = new Point3d(polyline.GetPoint2dAt(i).X, polyline.GetPoint2dAt(i).Y, 0);
                     SelectionFilter acSF = new SelectionFilter(new TypedValue[] { new TypedValue((int)DxfCode.Start, "LWPOLYLINE") });
                     //вектор это допусе поиска
-                    PromptSelectionResult acPSR = ed.SelectCrossingWindow(searchPoint, searchPoint + new Vector3d(UserData.searchDistancePL,UserData.searchDistancePL, 0), acSF);
+                    PromptSelectionResult acPSR = ed.SelectCrossingWindow(searchPoint, searchPoint + new Vector3d(UserData.searchDistancePL, UserData.searchDistancePL, 0), acSF);
                     //PromptSelectionResult acPSR = ed.SelectCrossingWindow(searchPoint, searchPoint, acSF);
 
                     //Создаем поинты
@@ -1546,14 +1592,14 @@ namespace ElectroTools
 
 
                                 //Расстояние между точками для проверки соединить их в одну точку  и 5 процентов запаса
-                                if (Math.Round( lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint),0)<=UserData.searchDistancePL | Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 2) > 0)  
+                                if (Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 0) <= UserData.searchDistancePL | Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 2) > 0)
                                 {
-                                   
+
                                     //Тогда переносим вершину в нужную нам
                                     using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                                     {
                                         lengthPolyline.SetPointAt(0, new Point2d(searchPoint.X, searchPoint.Y));
-                                       tr.Commit();
+                                        tr.Commit();
                                     }
 
                                     ed.WriteMessage("Вершина была не очень близко, я ее пододвинул");
@@ -1904,12 +1950,12 @@ namespace ElectroTools
 
                     double size;
 
-                    sizeText.Replace(",",".");
+                    sizeText.Replace(",", ".");
                     size = double.Parse(sizeText);
-                    sizeText.Replace(".",",");
+                    sizeText.Replace(".", ",");
                     size = double.Parse(sizeText);
 
-                                   
+
 
 
                     // Ищу на какой слой закинуть
@@ -2245,6 +2291,7 @@ namespace ElectroTools
                         x = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "x"),
                         r0 = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "r0"),
                         x0 = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "x0"),
+                        rN = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "rN"),
                         Ke = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "Ke"),
                         Ce = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "Ce"),
 
