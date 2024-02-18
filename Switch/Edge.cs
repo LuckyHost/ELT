@@ -65,6 +65,9 @@ namespace ElectroTools
         [XmlElement("rN")]
         public double rN { get; set; }
 
+        [XmlElement("xN")]
+        public double xN { get; set; }
+
 
         [XmlElement("Ce")]
         public double Ce { get; set; }
@@ -113,6 +116,7 @@ namespace ElectroTools
             r0 = 0;
             x0 = 0;
             rN = 0;
+            xN = 0;
             Ke = 1;
             Ce = 1;
             length = 0;

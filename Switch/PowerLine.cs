@@ -51,7 +51,7 @@ namespace ElectroTools
                     if (value != null & IDText != null)
                     {
                         _name = value;
-                       TextFun.updateTextById(IDText, _name, 256);
+                       Text.updateTextById(IDText, _name, 256);
                     }
                 }
             }

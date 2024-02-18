@@ -36,16 +36,16 @@ using Exception = Autodesk.AutoCAD.Runtime.Exception;
 
 
 
-namespace ElectroTools 
+namespace ElectroTools
 {
 
 
     [Serializable]
-    public class PointLine :INotifyPropertyChanged
+    public class PointLine : INotifyPropertyChanged
     {
-        
+
         public event PropertyChangedEventHandler PropertyChanged;
-        
+
         private int _typeClient;
         private double _weightA;
         private double _weightB;
@@ -65,9 +65,18 @@ namespace ElectroTools
             {
                 if (value >= 0)
                     _weightA = value;
+
+               
                 if (value != null & IDText != null)
                 {
-                    TextFun.updateTextById(IDText, name + "\\P" + value.ToString(), 256);
+                    if (_typeClient == 3)
+                    {
+                       Text.updateTextById(IDText, name + "\\P" + value.ToString(), 256);
+                    }
+                    else
+                    {
+                        Text.updateTextById(IDText, name + "\\P" + value.ToString() + "; " + _weightB + "; " + _weightC, 201);
+                    }
                 }
             }
 
@@ -81,9 +90,20 @@ namespace ElectroTools
             {
                 if (value >= 0 & typeClient != 3)
                     _weightB = value;
+
+
                 if (value != null & IDText != null)
                 {
-                    TextFun.updateTextById(IDText, name + "\\P" + value.ToString(), 256);
+                    if (_typeClient == 3)
+                    {
+                        //Text.updateTextById(IDText, name + "\\P" +  value.ToString(), 256);
+                    }
+                    else
+                    {
+
+                        Text.updateTextById(IDText, name + "\\P" + _weightA + "; " + value.ToString() + "; " + _weightC, 201);
+                    }
+
                 }
             }
 
@@ -96,11 +116,21 @@ namespace ElectroTools
             get { return _weightC; }
             set
             {
-                if (value >= 0 & typeClient !=3)
+                if (value >= 0 & typeClient != 3)
                     _weightC = value;
+
                 if (value != null & IDText != null)
                 {
-                    TextFun.updateTextById(IDText, name + "\\P" + value.ToString(), 256);
+
+                    if (_typeClient == 3)
+                    {
+                        //Text.updateTextById(IDText, name + "\\P"  + value.ToString(), 256);
+                    }
+                    else
+                    {
+                        Text.updateTextById(IDText, name + "\\P" + _weightA + "; " + _weightB + "; " + value.ToString(), 201);
+                    }
+
                 }
             }
 
@@ -141,13 +171,14 @@ namespace ElectroTools
                     _typeClient = value;
 
                     if (value == 1)
-                    { TextFun.updateColorMtext(this, 201); }
+                    {
+                        Text.updateColorMtext(this, 201);
+                    }
                     if (value == 3)
-                    { TextFun.updateColorMtext(this, 256);
+                    {
+                        Text.updateColorMtext(this, 256);
                         weightB = 0;
                         weightC = 0;
-                        OnPropertyChanged(nameof(weightB));
-                        OnPropertyChanged(nameof(weightC));
                     }
                 }
             }

@@ -153,6 +153,10 @@ namespace ElectroTools
             AddDataGridTextColumn("Ток фазы B, А", "Ib", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             AddDataGridTextColumn("Ток фазы С, А", "Ic", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
 
+            AddDataGridTextColumn("Напряжение фазы А, А", "Ua", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
+            AddDataGridTextColumn("Напряжениефазы B, А", "Ub", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
+            AddDataGridTextColumn("Напряжение фазы С, А", "Uc", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
+
             // Добавьте столбец с настройками для Cosφ
             AddDataGridTextColumn("Cosφ", "cos", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
 

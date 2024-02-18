@@ -138,8 +138,10 @@
     <Compile Include="DataForm.xaml.cs">
       <DependentUpon>DataForm.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Draw.cs" />
     <Compile Include="Edge.cs" />
     <Compile Include="Convertors\ResistanceConverter.cs" />
+    <Compile Include="Layer.cs" />
     <Compile Include="MyData.cs" />
     <Compile Include="NetWork.cs" />
     <Compile Include="MyOpenDocument.cs" />
@@ -149,7 +151,7 @@
     <Compile Include="StartPalet.xaml.cs">
       <DependentUpon>StartPalet.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TextFun.cs" />
+    <Compile Include="Text.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="UserData.cs" />
   </ItemGroup>

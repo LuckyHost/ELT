@@ -12,7 +12,7 @@ using System.Data.SQLite;
 using System.Xml.Serialization;
 using System.ComponentModel;
 using System.Windows.Forms.Integration;
-using System.Security.Cryptography;
+
 
 
 
@@ -31,13 +31,11 @@ using HostMgd.Windows;
 
 #else
 using Application = Autodesk.AutoCAD.ApplicationServices.Application;
-using Color = Autodesk.AutoCAD.Colors.Color;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.Runtime;
-using Autodesk.AutoCAD.Colors;
 using Exception = Autodesk.AutoCAD.Runtime.Exception;
 using Autodesk.AutoCAD.Windows;
 
@@ -210,21 +208,21 @@ namespace ElectroTools
 
 
             //Создание слоев
-            creatLayer("Узлы_Saidi_Saifi_Makarov.D", 0, 127, 0, ed, dbCurrent);
-            creatLayer("Граф_Saidi_Saifi_Makarov.D", 76, 153, 133, ed, dbCurrent);
-            creatLayer("НазванияЛиний_Saidi_Saifi_Makarov.D", 0, 191, 255, ed, dbCurrent);
-            creatLayer("Ребра_Saidi_Saifi_Makarov.D", 255, 191, 0, ed, dbCurrent);
-            creatLayer("TKZ_Makarov.D", 255, 0, 0, ed, dbCurrent);
-            creatLayer("Напряжение_Makarov.D", 0, 255, 63, ed, dbCurrent);
+            Layer.creatLayer("Узлы_Saidi_Saifi_Makarov.D", 0, 127, 0);
+            Layer.creatLayer("Граф_Saidi_Saifi_Makarov.D", 76, 153, 133);
+            Layer.creatLayer("НазванияЛиний_Saidi_Saifi_Makarov.D", 0, 191, 255);
+            Layer.creatLayer("Ребра_Saidi_Saifi_Makarov.D", 255, 191, 0);
+            Layer.creatLayer("TKZ_Makarov.D", 255, 0, 0);
+            Layer.creatLayer("Напряжение_Makarov.D", 0, 255, 63);
 
 
             //Удалить все объекты со слоев
-            deleteObjectsOnLayer("Узлы_Saidi_Saifi_Makarov.D", dbCurrent);
-            deleteObjectsOnLayer("Граф_Saidi_Saifi_Makarov.D", dbCurrent);
-            deleteObjectsOnLayer("НазванияЛиний_Saidi_Saifi_Makarov.D", dbCurrent);
-            deleteObjectsOnLayer("Ребра_Saidi_Saifi_Makarov.D", dbCurrent);
-            deleteObjectsOnLayer("TKZ_Makarov.D", dbCurrent);
-            deleteObjectsOnLayer("Напряжение_Makarov.D", dbCurrent);
+            Layer.deleteObjectsOnLayer("Узлы_Saidi_Saifi_Makarov.D");
+            Layer.deleteObjectsOnLayer("Граф_Saidi_Saifi_Makarov.D");
+            Layer.deleteObjectsOnLayer("НазванияЛиний_Saidi_Saifi_Makarov.D");
+            Layer.deleteObjectsOnLayer("Ребра_Saidi_Saifi_Makarov.D");
+            Layer.deleteObjectsOnLayer("TKZ_Makarov.D");
+            Layer.deleteObjectsOnLayer("Напряжение_Makarov.D");
 
 
             using (DocumentLock docloc = doc.LockDocument())
@@ -263,13 +261,13 @@ namespace ElectroTools
                     matrixSmej = сreatMatrixSmej(listPoint, listEdge);
 
                     //Создает наименования у каждого узла
-                    creatTextFromKnot("Узлы_Saidi_Saifi_Makarov.D", listPoint, sizeTextPoint);
+                    Text.creatTextFromKnot("Узлы_Saidi_Saifi_Makarov.D", listPoint, sizeTextPoint);
 
                     //Создает наименования у каждого ребра
-                    creatTextFromEdge("Ребра_Saidi_Saifi_Makarov.D", listEdge, sizeTextPoint);
+                    Text.creatTextFromEdge("Ребра_Saidi_Saifi_Makarov.D", listEdge, sizeTextPoint);
 
                     //Создает наименования у линии
-                    creatTextFromLine("НазванияЛиний_Saidi_Saifi_Makarov.D", listPowerLine, sizeTextLine);
+                    Text.creatTextFromLine("НазванияЛиний_Saidi_Saifi_Makarov.D", listPowerLine, sizeTextLine);
 
                     // Иначе рабоать не будет				
                     trAdding.Commit();
@@ -663,7 +661,7 @@ namespace ElectroTools
             }
 
             //Создает PL
-            creatPL(tkz.pathPointTKZ, "TKZ_Makarov.D", 256, 2);
+            Draw.drawPolyline(tkz.pathPointTKZ, "TKZ_Makarov.D", 256, 2);
             ed.WriteMessage("Линия протекания ТКЗ построена!");
 
             ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
@@ -806,7 +804,7 @@ namespace ElectroTools
             }
 
             //Создает PL
-            creatPL(tkz.pathPointTKZ, "TKZ_Makarov.D", 256, 2);
+            Draw.drawPolyline(tkz.pathPointTKZ, "TKZ_Makarov.D", 256, 2);
             ed.WriteMessage("Линия протекания ТКЗ построена!");
 
             ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
@@ -919,7 +917,7 @@ namespace ElectroTools
 
 
                 //Создает PL
-                creatPL(resultTkzDist.pathPointTKZ, "TKZ_Makarov.D", 256, 2);
+                Draw.drawPolyline(resultTkzDist.pathPointTKZ, "TKZ_Makarov.D", 256, 2);
                 ed.WriteMessage("Линия протекания ТКЗ построена!");
 
                 ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
@@ -1056,7 +1054,7 @@ namespace ElectroTools
                 }
             }
             //Построить окр
-            ZoomToEntity(DrawCircle(edgeREC.centerPoint, "Граф_Saidi_Saifi_Makarov.D"), 4);
+            ZoomToEntity(Draw.drawCircle(edgeREC.centerPoint, "Граф_Saidi_Saifi_Makarov.D"), 4);
 
             ed.WriteMessage("----------");
             ed.WriteMessage("Рекомендуемое место установки REC в ребро №: " + edgeREC.name);
@@ -1096,7 +1094,7 @@ namespace ElectroTools
 
             using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
             {
-                deleteObjectsOnLayer("Напряжение_Makarov.D", dbCurrent);
+                Layer.deleteObjectsOnLayer("Напряжение_Makarov.D");
                 trAdding.Commit();
             }
 
@@ -1175,14 +1173,13 @@ namespace ElectroTools
                 }
 
                 //Построить куда бежит ток
-                creatPL(itemListPoint, "Напряжение_Makarov.D", 52, 0.6);
+                Draw.drawPolyline(itemListPoint, "Напряжение_Makarov.D", 52, 0.6);
             }
 
 
             //Ток добавляем в ребра
             foreach (PointLine itemPoint in listPoint)
             {
-
                 if (itemPoint.Ia > 0 | itemPoint.Ib > 0 | itemPoint.Ic > 0)
                 {
                     foreach (Edge itemEdge in listEdge)
@@ -1197,20 +1194,116 @@ namespace ElectroTools
                         //Проверка на критический ток
                         if (itemEdge.Ia > itemEdge.Icrict | itemEdge.Ib > itemEdge.Icrict | itemEdge.Ic > itemEdge.Icrict)
                         {
-                            creatText("Напряжение_Makarov.D", itemEdge.centerPoint, "I>Iкрит " + itemEdge.Ia + "(A); " + itemEdge.Ib + "(B); " + itemEdge.Ic + "(C) " + " A.", "1", 220, 4);
+                            Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, "I>Iкрит " + "A: " + itemEdge.Ia + "; " + "B: " + itemEdge.Ib + "; " + "C: " + itemEdge.Ic + " A.", "1", 220, 4);
                         }
                     }
                 }
             }
 
-            //Анализирует падения напряжения и отрисовывает
+
+            //Анализирует падения напряжения и отрисовывает Новый алгоритм 
             foreach (Edge itemEdge in listEdge)
+            {
+
+                //Отрисовка падения напряжения
+                if ((itemEdge.startPoint.Ia > 0 & itemEdge.endPoint.Ia > 0) | (itemEdge.startPoint.Ib > 0 & itemEdge.endPoint.Ib > 0) | (itemEdge.startPoint.Ic > 0 & itemEdge.endPoint.Ic > 0))
+                {
+                    //Фаза А
+                    itemEdge.endPoint.Ua = dropVoltage(itemEdge, "А");
+                    Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUa= " + Math.Round((itemEdge.startPoint.Ua - itemEdge.endPoint.Ua), 2) + " В.", "1", 154, -4);
+
+                    //Фаза В
+                    itemEdge.endPoint.Ub = dropVoltage(itemEdge, "В");
+                    Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUb= " + Math.Round((itemEdge.startPoint.Ub - itemEdge.endPoint.Ub), 2) + " В.", "1", 154, -6);
+
+                    //Фаза С
+                    itemEdge.endPoint.Uc = dropVoltage(itemEdge, "С");
+                    Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUc= " + Math.Round((itemEdge.startPoint.Uc - itemEdge.endPoint.Uc), 2) + " В.", "1", 154, -8);
+                }
+
+                //Отрисовка линейного напряжения
+                if (itemEdge.endPoint.Ua > 0 | itemEdge.endPoint.Ub > 0 | itemEdge.endPoint.Uc > 0)
+                {
+                    //Фаза А
+                    if (((Uf - itemEdge.endPoint.Ua) / Uf * 100) >= 10.0)
+                    {
+                        double percentA = Math.Round(((Uf - itemEdge.endPoint.Ua) / Uf * 100), 2);
+                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 26, -4);
+                    }
+                    else
+                    {
+                        double percentA = Math.Round(((Uf - itemEdge.endPoint.Ua) / Uf * 100), 2);
+                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 41, -4);
+                    }
+
+                    //Фаза В
+                    if ((Uf - itemEdge.endPoint.Ub) / Uf * 100 >= 10.0)
+                    {
+                        double percentB = Math.Round(((Uf - itemEdge.endPoint.Ub) / Uf * 100), 2);
+                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 26, -6);
+                    }
+                    else
+                    {
+                        double percentB = Math.Round(((Uf - itemEdge.endPoint.Ub) / Uf * 100), 2);
+                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 74, -6);
+                    }
+
+                    //Фаза С
+                    if (((Uf - itemEdge.endPoint.Uc) / Uf * 100) >= 10.0)
+                    {
+                        double percentC = Math.Round(((Uf - itemEdge.endPoint.Uc) / Uf * 100), 2);
+                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 26, -8);
+                    }
+                    else
+                    {
+                        double percentC = Math.Round(((Uf - itemEdge.endPoint.Uc) / Uf * 100), 2);
+                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 22, -8);
+                    }
+
+                }
+            }
+
+            double dropVoltage(Edge itemEdge, string phase)
+            {
+                double result = 0;
+                double dU = 0;
+                double qU = 0;
+                switch (phase)
+                {
+                    case "А":
+                        dU = itemEdge.Ia * itemEdge.length * itemEdge.r + itemEdge.length * itemEdge.rN * (itemEdge.Ia - (itemEdge.Ib + itemEdge.Ic) / 2);
+                        //Нигде не использую пока что 
+                        qU = itemEdge.Ia * itemEdge.length * itemEdge.x + itemEdge.length * itemEdge.xN * (itemEdge.Ia - (itemEdge.Ib + itemEdge.Ic) / 2);
+                        result = Math.Round(itemEdge.startPoint.Ua - (dU + 0), 2);
+                        return result;
+                    case "В":
+                        dU = itemEdge.Ib * itemEdge.length * itemEdge.r + itemEdge.length * itemEdge.rN * (itemEdge.Ib - (itemEdge.Ia + itemEdge.Ic) / 2);
+                        //Нигде не использую пока что 
+                        qU = itemEdge.Ib * itemEdge.length * itemEdge.x + itemEdge.length * itemEdge.xN * (itemEdge.Ib - (itemEdge.Ia + itemEdge.Ic) / 2);
+                        result = Math.Round(itemEdge.startPoint.Ub - (dU + 0), 2);
+                        return result;
+                    case "С":
+                        dU = itemEdge.Ic * itemEdge.length * itemEdge.r + itemEdge.length * itemEdge.rN * (itemEdge.Ic - (itemEdge.Ia + itemEdge.Ib) / 2);
+                        //Нигде не использую пока что 
+                        qU = itemEdge.Ic * itemEdge.length * itemEdge.x + itemEdge.length * itemEdge.xN * (itemEdge.Ic - (itemEdge.Ia + itemEdge.Ib) / 2);
+                        result = Math.Round(itemEdge.startPoint.Uc - (dU + 0), 2);
+                        return result;
+                }
+                return result;
+
+
+
+
+
+            }
+            //Анализирует падения напряжения и отрисовывает
+            /*foreach (Edge itemEdge in listEdge)
             {
                 if ((itemEdge.startPoint.Ia > 0 && itemEdge.endPoint.Ia > 0) | (itemEdge.startPoint.Ib > 0 && itemEdge.endPoint.Ib > 0) | (itemEdge.startPoint.Ic > 0 && itemEdge.endPoint.Ic > 0))
                 {
-                    creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUa= " + Math.Round((itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -4);
-                    creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUb= " + Math.Round((itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -6);
-                    creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUc= " + Math.Round((itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -8);
+                    Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUa= " + Math.Round((itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -4);
+                    Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUb= " + Math.Round((itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -6);
+                    Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUc= " + Math.Round((itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -8);
 
                     //Фаза А
                     if (Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) > 0)
@@ -1246,44 +1339,44 @@ namespace ElectroTools
                     //Фаза А
                     if (((Uf - Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100) >= 10.0)
                     {
-                        double percentA = Math.Round( ((Uf - Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100),2);
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 26, -4);
+                        double percentA = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100), 2);
+                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 26, -4);
                     }
                     else
                     {
-                        double percentA = Math.Round( ((Uf - Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100),2);
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 41, -4);
+                        double percentA = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100), 2);
+                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 41, -4);
                     }
 
                     //Фаза В
                     if (((Uf - Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100) >= 10.0)
                     {
-                        double percentB = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100),2);
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 26, -6);
+                        double percentB = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100), 2);
+                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 26, -6);
                     }
                     else
                     {
-                        double percentB = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100),2);
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 74, -6);
+                        double percentB = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100), 2);
+                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 74, -6);
                     }
 
                     //Фаза С
                     if (((Uf - Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100) >= 10.0)
                     {
-                        double percentC = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100),2);
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 26, -8);
+                        double percentC = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100), 2);
+                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 26, -8);
                     }
                     else
                     {
-                        double percentC = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100),2);
-                        creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 22, -8);
+                        double percentC = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100), 2);
+                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 22, -8);
                     }
 
 
 
                 }
 
-            }
+            }*/
 
             listPoint = new List<PointLine>(stateList);
             OnPropertyChanged(nameof(listPoint));
@@ -1384,7 +1477,7 @@ namespace ElectroTools
                                 item1.weightA = itemPoint.weightA;
                                 item1.cos = itemPoint.cos;
                                 item1.typeClient = itemPoint.typeClient;
-                                TextFun.updateTextById(item1.IDText, item1.name + "\\P" + item1.weightA, 66);
+                                Text.updateTextById(item1.IDText, item1.name + "\\P" + item1.weightA, 66);
                             }
 
                         }
@@ -1885,38 +1978,7 @@ namespace ElectroTools
         //Дополнительные функции 
 
 
-        //Создание слоев
-        public void creatLayer(string Name, byte ColorR, byte ColorG, byte ColorB, Editor ed, Database dbCurrent)
-        {
 
-            using (DocumentLock docloc = doc.LockDocument())
-            {
-                using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
-                {
-
-                    LayerTable layerTable = trAdding.GetObject(dbCurrent.LayerTableId, OpenMode.ForWrite) as LayerTable;
-
-                    if (!layerTable.Has(Name))
-                    {
-                        // Создание слоя
-                        LayerTableRecord acLyrTblRec = new LayerTableRecord();
-                        acLyrTblRec.Name = Name;
-                        acLyrTblRec.Color = Color.FromRgb(ColorR, ColorG, ColorB);
-                        layerTable.UpgradeOpen();
-                        ObjectId acObjId = layerTable.Add(acLyrTblRec);
-                        trAdding.AddNewlyCreatedDBObject(acLyrTblRec, true);
-                        ed.WriteMessage("\nСлой создан: " + Name + " !!!Не удаляйте данный слой!!");
-                    }
-                    else
-                    {
-                        // ed.WriteMessage("\nСлой уже существует: " + Name);
-                    }
-                    trAdding.Commit();
-                }
-            }
-
-
-        }
 
 
 
@@ -1939,212 +2001,7 @@ namespace ElectroTools
         }
 
 
-        //Функция создания текста узлов
-        void creatTextFromKnot(string nameSearchLayer, List<PointLine> masterPoint, string sizeText)
-        {
-            using (DocumentLock docloc = doc.LockDocument())
-            {
 
-                using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
-                {
-
-                    double size;
-
-                    sizeText.Replace(",", ".");
-                    size = double.Parse(sizeText);
-                    sizeText.Replace(".", ",");
-                    size = double.Parse(sizeText);
-
-
-
-
-                    // Ищу на какой слой закинуть
-                    LayerTable acLyrTbl = trAdding.GetObject(dbCurrent.LayerTableId, OpenMode.ForRead) as LayerTable;
-
-                    ObjectId acLyrId = ObjectId.Null;
-                    if (acLyrTbl.Has(nameSearchLayer))
-                    {
-                        acLyrId = acLyrTbl[nameSearchLayer];
-                    }
-
-
-                    // Для того что бы закинуть текст
-                    BlockTable acBlkTbl = trAdding.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
-
-                    BlockTableRecord acBlkTblRec = trAdding.GetObject(acBlkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
-
-                    foreach (PointLine itemPoint in masterPoint)
-                    {
-                        // Характеристики текста
-                        MText acMText = new MText();
-                        acMText.Color = Color.FromColorIndex(ColorMethod.ByAci, 256); ; //Цвето по слою
-                        acMText.Contents = itemPoint.name.ToString();
-                        acMText.Location = new Point3d(itemPoint.positionPoint.X, itemPoint.positionPoint.Y, 0);
-                        acMText.TextHeight = size; //Размер шрифта было size
-                                                   //acMText.Height = 5; //Высота чего ?
-                        acMText.LayerId = acLyrId;
-                        //acMText.Attachment = AttachmentPoint.MiddleCenter; //Центровка текста
-                        acBlkTblRec.AppendEntity(acMText);
-                        trAdding.AddNewlyCreatedDBObject(acMText, true);
-
-                        //ID Mtext
-                        itemPoint.IDText = acMText.ObjectId;
-                    }
-                    trAdding.Commit();
-                }
-            }
-
-
-        }
-
-        //Функция создания текста ребер
-        void creatTextFromEdge(string nameSearchLayer, List<Edge> masterEdge, string sizeText)
-        {
-            double size;
-            size = double.Parse(sizeText);
-
-            // Ищу на какой слой закинуть
-            using (DocumentLock docloc = doc.LockDocument())
-            {
-
-                using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
-                {
-
-                    LayerTable acLyrTbl = trAdding.GetObject(dbCurrent.LayerTableId, OpenMode.ForRead) as LayerTable;
-
-                    ObjectId acLyrId = ObjectId.Null;
-                    if (acLyrTbl.Has(nameSearchLayer))
-                    {
-                        acLyrId = acLyrTbl[nameSearchLayer];
-                    }
-
-                    // Для того что бы закинуть текст
-                    BlockTable acBlkTbl = trAdding.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
-
-                    BlockTableRecord acBlkTblRec = trAdding.GetObject(acBlkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
-
-                    foreach (Edge itemEdge in masterEdge)
-                    {
-                        // Характеристики текста
-                        MText acMText = new MText();
-                        acMText.Color = Color.FromColorIndex(ColorMethod.ByAci, 256); //Цвето по слою
-                        acMText.Contents = itemEdge.name.ToString();
-                        acMText.Location = new Point3d(itemEdge.centerPoint.positionPoint.X, itemEdge.centerPoint.positionPoint.Y, 0);
-                        acMText.TextHeight = size; //Размер шрифта было size
-                                                   //acMText.Height = 5; //Высота чего ?
-                        acMText.LayerId = acLyrId;
-                        acMText.Attachment = AttachmentPoint.MiddleCenter; //Центровка текста
-                        acBlkTblRec.AppendEntity(acMText);
-                        trAdding.AddNewlyCreatedDBObject(acMText, true);
-                        //ID Mtext
-                        itemEdge.IDText = acMText.ObjectId;
-                    }
-                    trAdding.Commit();
-                }
-            }
-
-        }
-
-        //Функция создания текста линий
-        void creatTextFromLine(string nameSearchLayer, List<PowerLine> masterLine, string sizeText)
-        {
-            using (DocumentLock docloc = doc.LockDocument())
-            {
-
-                using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
-                {
-
-                    double size;
-                    Double.TryParse(sizeText, out size);
-
-                    // Ищу на какой слой закинуть
-                    LayerTable acLyrTbl = trAdding.GetObject(dbCurrent.LayerTableId, OpenMode.ForRead) as LayerTable;
-
-                    ObjectId acLyrId = ObjectId.Null;
-                    if (acLyrTbl.Has(nameSearchLayer))
-                    {
-                        acLyrId = acLyrTbl[nameSearchLayer];
-                    }
-
-                    // что б стащить цвет
-                    // LayerTableRecord acLyrTblRec = trAdding.GetObject(acLyrId, OpenMode.ForRead) as LayerTableRecord;
-
-                    // Для того что бы закинуть текст
-                    BlockTable acBlkTbl = trAdding.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
-
-                    BlockTableRecord acBlkTblRec = trAdding.GetObject(acBlkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
-
-                    foreach (PowerLine itemLine in masterLine)
-                    {
-                        // Характеристики текста
-                        MText acMText = new MText();
-                        //acMText.Color = acLyrTblRec.Color; //Цвето по слою принудительно
-                        acMText.Color = Color.FromColorIndex(ColorMethod.ByAci, 256);
-                        acMText.Contents = itemLine.name.ToString();
-                        acMText.Location = new Point3d(itemLine.points[0].positionPoint.X, itemLine.points[0].positionPoint.Y, 0);
-                        acMText.TextHeight = size; //Размер шрифта было size
-                                                   //acMText.Height = 5; //Высота чего ?
-                        acMText.LayerId = acLyrId;
-                        acMText.Attachment = AttachmentPoint.MiddleCenter; //Центровка текста
-                        acBlkTblRec.AppendEntity(acMText);
-                        itemLine.IDText = acMText.ObjectId;
-                        trAdding.AddNewlyCreatedDBObject(acMText, true);
-                    }
-                    trAdding.Commit();
-                }
-            }
-
-
-        }
-
-        //Функция создания Мтекста
-        void creatText(string nameSearchLayer, PointLine point, string text, string sizeText, short color, int difPosishion)
-        {
-            using (DocumentLock docloc = doc.LockDocument())
-            {
-
-                using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
-                {
-
-                    double size;
-                    Double.TryParse(sizeText, out size);
-
-                    // Ищу на какой слой закинуть
-                    LayerTable acLyrTbl = trAdding.GetObject(dbCurrent.LayerTableId, OpenMode.ForRead) as LayerTable;
-
-                    ObjectId acLyrId = ObjectId.Null;
-                    if (acLyrTbl.Has(nameSearchLayer))
-                    {
-                        acLyrId = acLyrTbl[nameSearchLayer];
-                    }
-
-                    // что б стащить цвет
-                    // LayerTableRecord acLyrTblRec = trAdding.GetObject(acLyrId, OpenMode.ForRead) as LayerTableRecord;
-
-                    // Для того что бы закинуть текст
-                    BlockTable acBlkTbl = trAdding.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
-
-                    BlockTableRecord acBlkTblRec = trAdding.GetObject(acBlkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
-
-                    // Характеристики текста
-                    MText acMText = new MText();
-                    //acMText.Color = acLyrTblRec.Color; //Цвето по слою принудительно
-                    acMText.Color = Color.FromColorIndex(ColorMethod.ByAci, color);
-                    acMText.Contents = text;
-                    acMText.Location = new Point3d(point.positionPoint.X, point.positionPoint.Y + difPosishion, 0);
-                    acMText.TextHeight = size; //Размер шрифта было size
-                                               //acMText.Height = 5; //Высота чего ?
-                    acMText.LayerId = acLyrId;
-                    acMText.Attachment = AttachmentPoint.MiddleCenter; //Центровка текста
-                    acBlkTblRec.AppendEntity(acMText);
-                    trAdding.AddNewlyCreatedDBObject(acMText, true);
-
-                    trAdding.Commit();
-                }
-            }
-
-
-        }
 
 
 
@@ -2226,49 +2083,7 @@ namespace ElectroTools
             return null;
         }
 
-        public void deleteObjectsOnLayer(string layerNameDelete, Database dbCurrent)
-        {
 
-            TypedValue[] filterlist = new TypedValue[1];
-            // Фильтр по имени слоя
-            filterlist[0] = new TypedValue(8, layerNameDelete);
-
-            SelectionFilter filter = new SelectionFilter(filterlist);
-            PromptSelectionResult selRes = ed.SelectAll(filter);
-
-            if (selRes.Status != PromptStatus.OK)
-            {
-                // ed.WriteMessage("\nОшибка метода selectAll");
-                return;
-            }
-
-            ObjectId[] ids = selRes.Value.GetObjectIds();
-
-            using (DocumentLock docloc = doc.LockDocument())
-            {
-
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
-                {
-                    foreach (ObjectId objectId in ids)
-                    {
-                        Entity entity = tr.GetObject(objectId, OpenMode.ForWrite) as Entity;
-
-                        if (entity != null && !entity.IsErased)
-                        {
-                            // Объект не стерт, можно его удалить
-                            entity.Erase();
-                        }
-                        // Если объект уже стерт, пропускаем его
-                    }
-
-                    tr.Commit();
-                }
-            }
-
-            ed.Regen(); // Обновляем отображение
-            ed.WriteMessage("Все объекты со слоя " + layerNameDelete + " удалены.");
-
-        }
 
 
         //Создание листа Ребер
@@ -2292,6 +2107,7 @@ namespace ElectroTools
                         r0 = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "r0"),
                         x0 = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "x0"),
                         rN = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "rN"),
+                        xN = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "xN"),
                         Ke = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "Ke"),
                         Ce = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "Ce"),
 
@@ -2725,37 +2541,7 @@ namespace ElectroTools
             return info;
         }
 
-        void creatPL(List<PointLine> masterListPont, string nameLayer, short color, double ConstantWidth)
-        {
-            using (DocumentLock doclock = doc.LockDocument())
-            {
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
-                {
-                    BlockTable bt = tr.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
 
-                    BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
-
-                    Polyline polyline = new Polyline();
-
-                    foreach (PointLine itemPoint in masterListPont)
-                    {
-                        polyline.AddVertexAt(polyline.NumberOfVertices, itemPoint.positionPoint, 0, 0, 0);
-                    }
-
-
-                    polyline.Color = Color.FromColorIndex(ColorMethod.ByAci, color); // Color 256 is ByLayer
-                    polyline.Layer = nameLayer;
-                    polyline.ConstantWidth = ConstantWidth;
-
-                    btr.AppendEntity(polyline);
-                    tr.AddNewlyCreatedDBObject(polyline, true);
-
-                    // Commit the transaction
-                    tr.Commit();
-
-                }
-            }
-        }
 
 
         List<string> searchAllDataInBD(string dbFilePath, string nameTable, string searchColum, string filterColumn = null, string filterValue = null)
@@ -2847,37 +2633,7 @@ namespace ElectroTools
             }
         }
 
-        ObjectId DrawCircle(PointLine itemPoint, string nameLayer)
-        {
 
-            using (DocumentLock doclock = doc.LockDocument())
-            {
-                // Начало транзакции
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
-                {
-                    // Открытие таблицы блоков для записи
-                    BlockTable bt = tr.GetObject(dbCurrent.BlockTableId, OpenMode.ForWrite) as BlockTable;
-
-                    // Открытие записи таблицы блоков для записи
-                    BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
-
-                    // Создание точки центра окружности
-                    Point3d center = new Point3d(itemPoint.positionPoint.X, itemPoint.positionPoint.Y, 0);
-
-                    // Создание окружности
-                    Circle circle = new Circle(center, Vector3d.ZAxis, 10.0);
-                    circle.Layer = nameLayer;
-
-                    // Добавление окружности в блок таблицы записи
-                    ObjectId circleId = btr.AppendEntity(circle);
-                    tr.AddNewlyCreatedDBObject(circle, true);
-
-                    // Завершение транзакции
-                    tr.Commit();
-                    return circleId;
-                }
-            }
-        }
         public void ZoomToEntity(ObjectId entityId, double zoomPercent)
         {
             using (DocumentLock doclock = doc.LockDocument())
