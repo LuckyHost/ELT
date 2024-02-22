@@ -47,6 +47,8 @@ namespace ElectroTools
         public event PropertyChangedEventHandler PropertyChanged;
 
         private int _typeClient;
+        private int _count;
+        private double _Ko;
         private double _weightA;
         private double _weightB;
         private double _weightC;
@@ -66,12 +68,12 @@ namespace ElectroTools
                 if (value >= 0)
                     _weightA = value;
 
-               
+
                 if (value != null & IDText != null)
                 {
                     if (_typeClient == 3)
                     {
-                       Text.updateTextById(IDText, name + "\\P" + value.ToString(), 256);
+                        Text.updateTextById(IDText, name + "\\P" + value.ToString(), 256);
                     }
                     else
                     {
@@ -106,8 +108,33 @@ namespace ElectroTools
 
                 }
             }
+        }
+
+
+        [XmlElement("count")]
+        public int count
+        {
+            get { return _count; }
+            set
+            {
+                if (value >= 0)
+                    _weightB = value;
+            }
 
         }
+
+        [XmlElement("Ko")]
+        public double Ko
+        {
+            get { return _Ko; }
+            set
+            {
+                if (value >= 0)
+                    _weightB = value;
+            }
+
+        }
+
 
 
         [XmlElement("weightC")]
@@ -227,6 +254,8 @@ namespace ElectroTools
         {
             name = 0;
             positionPoint = new Point2d();
+            count = 1;
+            Ko = 1;
             weightA = 0;
             weightB = 0;
             weightC = 0;

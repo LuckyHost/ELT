@@ -77,6 +77,8 @@ namespace ElectroTools
                 "MaterialDesignColors.dll",
                 "MaterialDesignThemes.MahApps.dll",
                 "MaterialDesignThemes.Wpf.dll",
+                "Newtonsoft.Json.dll",
+                
             };
 
             foreach (var assembly in assemblies)

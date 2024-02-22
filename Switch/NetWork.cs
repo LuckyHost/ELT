@@ -1,21 +1,15 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using MessageBox = System.Windows.Forms.MessageBox;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace ElectroTools
 {
@@ -113,8 +107,7 @@ namespace ElectroTools
                 if (IsInternetAvailable())
                 {
                     string accessToken = "y0_AgAAAAAC82upAADLWwAAAADlltdLOtUDPw_5RoqBUKqEbmjZZScvdtg";
-                    //string accessToken = "y0_AgAAAAAC82upAADLWwAAAADlltdLOtUDPw_5RoqBUKqEbmjZZScvdtg";
-                    //string accessToken = "y0_AgAAAAAC82upAAseHQAAAAD4C6xl09fY9F5vRVC-s_kJHKtD-1qetOE";
+              
 
                     using (var httpClient = new HttpClient())
                     {
@@ -139,7 +132,8 @@ namespace ElectroTools
                             }
 
                             string content = await response.Content.ReadAsStringAsync();
-                            FileInfo YandexData = JsonSerializer.Deserialize<FileInfo>(content);
+                            FileInfo YandexData = JsonConvert.DeserializeObject<FileInfo>(content);
+                            
                             return YandexData;
                         }
                         else
@@ -230,37 +224,37 @@ namespace ElectroTools
         public class CustomProperties
         {
             private string _serializePersonStop;
-            [JsonPropertyName("isPersonStop")]
+            [JsonProperty("isPersonStop")]
             public string IsPersonStop { get; set; }
 
-            [JsonPropertyName("nameNewFile")]
+            [JsonProperty("nameNewFile")]
             public string NameNewFile { get; set; }
 
-            [JsonPropertyName("textAddText")]
+            [JsonProperty("textAddText")]
             public string TextAddText { get; set; }
 
-            [JsonPropertyName("textStopProject")]
+            [JsonProperty("textStopProject")]
             public string TextStopProject { get; set; }
 
-            [JsonPropertyName("manual")]
+            [JsonProperty("manual")]
             public string Manual { get; set; }
 
-            [JsonPropertyName("version")]
+            [JsonProperty("version")]
             public string Version { get; set; }
 
-            [JsonPropertyName("isAutoCloseDoc")]
+            [JsonProperty("isAutoCloseDoc")]
             public string IsAutoCloseDoc { get; set; }
 
-            [JsonPropertyName("infoVideo")]
+            [JsonProperty("infoVideo")]
             public string InfoVideo { get; set; }
 
-            [JsonPropertyName("isStopProject")]
+            [JsonProperty("isStopProject")]
             public string IsStopProject { get; set; }
 
-            [JsonPropertyName("isAddtext")]
+            [JsonProperty("isAddtext")]
             public string IsAddtext { get; set; }
 
-            [JsonPropertyName("isActOldVersion")]
+            [JsonProperty("isActOldVersion")]
             public string IsActOldVersion { get; set; }
 
             [JsonIgnore]
@@ -269,7 +263,7 @@ namespace ElectroTools
             public string urlWebsite { get; set; }
             public string urlNewFile { get; set; }
 
-            [JsonPropertyName("person_stop")]
+            [JsonProperty("person_stop")]
             public string serializePersonStop
             {
                 get { return _serializePersonStop; }
@@ -291,7 +285,7 @@ namespace ElectroTools
             public string Name { get; set; }
             public Dictionary<string, object> Exif { get; set; }
             public DateTime Created { get; set; }
-            [JsonPropertyName("custom_properties")]
+            [JsonProperty("custom_properties")]
             public CustomProperties CustomProperties { get; set; }
             public string ResourceId { get; set; }
             public DateTime Modified { get; set; }

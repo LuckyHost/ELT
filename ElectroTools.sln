@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectroTools", "Switch\ElectroTools.csproj", "{3870F059-451A-48BD-AFFF-A7671645A2FA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectroTools", "Switch\ElectroTools.csproj", "{4EE1A7AD-41AE-44C7-B70B-62FB751B68DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3870F059-451A-48BD-AFFF-A7671645A2FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3870F059-451A-48BD-AFFF-A7671645A2FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3870F059-451A-48BD-AFFF-A7671645A2FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3870F059-451A-48BD-AFFF-A7671645A2FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EE1A7AD-41AE-44C7-B70B-62FB751B68DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EE1A7AD-41AE-44C7-B70B-62FB751B68DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EE1A7AD-41AE-44C7-B70B-62FB751B68DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EE1A7AD-41AE-44C7-B70B-62FB751B68DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {51C504F0-2D95-46AC-A5D1-7C48033CEBEE}
+		SolutionGuid = {27099B68-6096-4EAE-BFD5-8D1BEA14C028}
 	EndGlobalSection
 EndGlobal
