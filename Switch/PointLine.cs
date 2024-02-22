@@ -45,6 +45,7 @@ namespace ElectroTools
 
 
     [Serializable]
+    
     public class PointLine : INotifyPropertyChanged
     {
 
@@ -59,11 +60,11 @@ namespace ElectroTools
         private bool _isFavorite;
 
 
-        [XmlAttribute("name")]
+        
         public int name { get; set; }
         [XmlIgnore]
         public Point2d positionPoint { get; set; }
-        [XmlElement("weightA")]
+        
         public double weightA
         {
             get { return _weightA; }
@@ -90,7 +91,7 @@ namespace ElectroTools
 
         }
 
-        [XmlElement("weightB")]
+        
         public double weightB
         {
             get { return _weightB; }
@@ -116,42 +117,7 @@ namespace ElectroTools
             }
         }
 
-
-        [XmlElement("count")]
-        public int count
-        {
-            get { return _count; }
-            set
-            {
-                if (value >= 0)
-                {
-                    _count = value;
-                    //Коээфицент интерполяции
-                    double[] x = { 1, 2, 3, 5, 7, 10, 15, 20, 50, 100, 200, 500 };
-                    double[] y = { 1, 0.75, 0.64, 0.53, 0.47, 0.42, 0.37, 0.34, 0.27, 0.24, 0.20, 0.18 };
-                    IInterpolation interpolation = LinearSpline.InterpolateSorted(x, y);
-                    Ko = Math.Round( interpolation.Interpolate(value),3);
-                    OnPropertyChanged(nameof(count));
-                }
-            }
-
-        }
-
-        [XmlElement("Ko")]
-        public double Ko
-        {
-            get { return _Ko; }
-            set
-            {
-                if (value >= 0)
-                    _Ko = value;
-            }
-
-        }
-
-
-
-        [XmlElement("weightC")]
+        
         public double weightC
         {
             get { return _weightC; }
@@ -178,31 +144,61 @@ namespace ElectroTools
         }
 
 
+        
+        public int count
+        {
+            get { return _count; }
+            set
+            {
+                if (value >= 0)
+                {
+                    _count = value;
+                    //Коээфицент интерполяции
+                    double[] x = { 1, 2, 3, 5, 7, 10, 15, 20, 50, 100, 200, 500 };
+                    double[] y = { 1, 0.75, 0.64, 0.53, 0.47, 0.42, 0.37, 0.34, 0.27, 0.24, 0.20, 0.18 };
+                    IInterpolation interpolation = LinearSpline.InterpolateSorted(x, y);
+                    Ko = Math.Round( interpolation.Interpolate(value),3);
+                    OnPropertyChanged(nameof(count));
+                }
+            }
+
+        }
+
+        
+        public double Ko
+        {
+            get { return _Ko; }
+            set
+            {
+                if (value >= 0)
+                    _Ko = value;
+            }
+
+        }
 
 
 
-        [XmlElement("isLastPoint")]
+        [XmlIgnore]
         public bool isLastPoint { get; set; }
 
-        [XmlElement("tempBoll")]
+        [XmlIgnore]
         public bool tempBoll { get; set; }
 
-        [XmlElement("Ia")]
+        [XmlIgnore]
         public double Ia { get; set; }
 
-        [XmlElement("Ib")]
+        [XmlIgnore]
         public double Ib { get; set; }
 
-        [XmlElement("Ic")]
+        [XmlIgnore]
         public double Ic { get; set; }
 
-        [XmlElement("cos")]
+        
         public double cos { get; set; }
 
-        [XmlElement("typleClient")]
 
-        //public double typeClient { get; set; }
-        public int typeClient
+        
+       public int typeClient
         {
             get { return _typeClient; }
             set
@@ -228,14 +224,14 @@ namespace ElectroTools
 
 
 
-        [XmlElement("Ua")]
+        [XmlIgnore]
         public double Ua { get; set; }
-        [XmlElement("Ub")]
+        [XmlIgnore]
         public double Ub { get; set; }
-        [XmlElement("Uc")]
+        [XmlIgnore]
         public double Uc { get; set; }
 
-        [XmlElement("isFavorite")]
+        
         public bool isFavorite
         {
             get
@@ -246,21 +242,7 @@ namespace ElectroTools
         }
 
         [XmlIgnore]
-        // [XmlElement("IDText")]
-        public ObjectId IDText { get; set; }
-
-
-        // Свойство для сериализации/десериализации ObjectId
-        [XmlElement("IDText")]
-        public string SerializedObjectId
-        {
-            get { return IDText.ToString(); }
-            set
-            {
-                IntPtr myValve = (IntPtr)long.Parse(value);
-                IDText = new ObjectId(myValve);
-            }
-        }
+         public ObjectId IDText { get; set; }
 
 
 
@@ -285,7 +267,7 @@ namespace ElectroTools
             isFavorite = false;
             IDText = ObjectId.Null;
             cos = 0.96;
-            typeClient = 3;
+            typeClient = 1;
 
         }
         protected virtual void OnPropertyChanged(string propertyName)

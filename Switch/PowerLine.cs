@@ -37,105 +37,107 @@ using Exception = Autodesk.AutoCAD.Runtime.Exception;
 namespace ElectroTools
 {
 
-    
-        [Serializable]
-        public class PowerLine
+
+    [Serializable]
+   
+    public class PowerLine
+    {
+        private string _name = "";
+
+        
+        public string name
         {
-            private string _name = "";
-            [XmlAttribute("name")]
-            public string name
+            get { return _name; }
+            set
             {
-                get { return _name; }
-                set
+                if (value != null & IDText != null)
                 {
-                    if (value != null & IDText != null)
-                    {
-                        _name = value;
-                       Text.updateTextById(IDText, _name, 256);
-                    }
+                    _name = value;
+                    Text.updateTextById(IDText, _name, 256);
                 }
             }
+        }
 
 
 
-            [XmlIgnore]
-            public List<PointLine> points { get; set; }
+        [XmlIgnore]
+        public List<PointLine> points { get; set; }
 
-            [XmlIgnore]
-            public ObjectId IDLine { get; set; }
+        [XmlIgnore]
+        public ObjectId IDLine { get; set; }
 
-            // Свойство для сериализации/десериализации ObjectId
-            [XmlElement("IDLine")]
-            public string SerializedObjectId
+        // Свойство для сериализации/десериализации ObjectId
+        [XmlIgnore]
+        public string SerializedObjectId
+        {
+            get { return IDLine.ToString(); }
+            set
             {
-                get { return IDLine.ToString(); }
-                set
-                {
-                    IntPtr myValve = (IntPtr)long.Parse(value);
-                    IDLine = new ObjectId(myValve);
-                }
+                IntPtr myValve = (IntPtr)long.Parse(value);
+                IDLine = new ObjectId(myValve);
             }
+        }
 
-            [XmlIgnore]
-            public PowerLine parent { get; set; }
+        [XmlIgnore]
+        public PowerLine parent { get; set; }
 
-            [XmlIgnore]
-            public PointLine parentPoint { get; set; }
+        [XmlIgnore]
+        public PointLine parentPoint { get; set; }
 
-            [XmlIgnore]
-            public PointLine endPoint { get; set; }
+        [XmlIgnore]
+        public PointLine endPoint { get; set; }
 
-            [XmlIgnore]
-            public List<PowerLine> children { get; set; }
-            [XmlIgnore]
-            public double lengthLine { get; set; }
-            [XmlIgnore]
-            public string cable { get; set; }
-            [XmlIgnore]
-            public List<Edge> Edges { get; set; }
-            [XmlIgnore]
-            public double Icrict { get; set; }
+        [XmlIgnore]
+        public List<PowerLine> children { get; set; }
+        [XmlIgnore]
+        public double lengthLine { get; set; }
+        [XmlIgnore]
+        public string cable { get; set; }
+        [XmlIgnore]
+        public List<Edge> Edges { get; set; }
+        [XmlIgnore]
+        public double Icrict { get; set; }
 
-            [XmlIgnore]
-            //[XmlElement("IDText")]
-            public ObjectId IDText { get; set; }
+        [XmlIgnore]
+        //[XmlElement("IDText")]
+        public ObjectId IDText { get; set; }
 
 
-            // Свойство для сериализации/десериализации ObjectId
-            [XmlElement("IDText")]
-            public string SerializedObjectIdText
+        // Свойство для сериализации/десериализации ObjectId
+        [XmlIgnore]
+        public string SerializedObjectIdText
+        {
+            get { return IDText.ToString(); }
+            set
             {
-                get { return IDText.ToString(); }
-                set
-                {
-                    IntPtr myValve = (IntPtr)long.Parse(value);
-                    IDText = new ObjectId(myValve);
-                }
+                IntPtr myValve = (IntPtr)long.Parse(value);
+                IDText = new ObjectId(myValve);
             }
+        }
 
 
 
 
 
-            public PowerLine()
-            {
-                name = "";
-                IDLine = ObjectId.Null;
-                lengthLine = 0.0;
-                points = new List<PointLine>();
-                parentPoint = new PointLine();
-                endPoint = new PointLine();
-                Edges = new List<Edge>();
-                cable = "-";
-                Icrict = 0;
-                IDText = ObjectId.Null;
+        public PowerLine()
+        {
+            name = "";
+            IDLine = ObjectId.Null;
+            lengthLine = 0.0;
+            points = new List<PointLine>();
+            parentPoint = new PointLine();
+            endPoint = new PointLine();
+            Edges = new List<Edge>();
+            cable = "-";
+            Icrict = 0;
+            IDText = ObjectId.Null;
 
-
-            }
 
         }
 
     }
+
+}
 
 
 

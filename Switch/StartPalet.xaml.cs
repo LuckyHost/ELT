@@ -34,7 +34,7 @@ namespace ElectroTools
         private void bt_weight(object sender, RoutedEventArgs e)
         {
             //this.Hide();
-            _data._tools.setWeightPoint();
+           
             //this.Show();
         }
         //ТКЗ

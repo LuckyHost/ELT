@@ -35,14 +35,14 @@ namespace ElectroTools
 {
     public static class Text
     {
+        static Editor ed = MyOpenDocument.ed;
+        static Database dbCurrent = MyOpenDocument.dbCurrent;
+        static Document doc = MyOpenDocument.doc;
 
         //Функция создания текста узлов
         static public void creatTextFromKnot(string nameSearchLayer, List<PointLine> masterPoint, string sizeText)
         {
-            Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
-            Document doc = MyOpenDocument.doc;
-
+            
             using (DocumentLock docloc = doc.LockDocument())
             {
 
@@ -101,9 +101,7 @@ namespace ElectroTools
         //Функция создания текста ребер
         static public void creatTextFromEdge(string nameSearchLayer, List<Edge> masterEdge, string sizeText)
         {
-            Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
-            Document doc = MyOpenDocument.doc;
+            
 
             double size;
             size = double.Parse(sizeText);
@@ -153,9 +151,7 @@ namespace ElectroTools
         //Функция создания текста линий
         static public void creatTextFromLine(string nameSearchLayer, List<PowerLine> masterLine, string sizeText)
         {
-            Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
-            Document doc = MyOpenDocument.doc;
+            
 
             using (DocumentLock docloc = doc.LockDocument())
             {
@@ -209,9 +205,7 @@ namespace ElectroTools
         //Функция создания Мтекста
         static public void creatText(string nameSearchLayer, PointLine point, string text, string sizeText, short color, int difPosishion)
         {
-            Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
-            Document doc = MyOpenDocument.doc;
+           
 
             using (DocumentLock docloc = doc.LockDocument())
             {
@@ -261,10 +255,7 @@ namespace ElectroTools
 
         public static void updateColorMtext(ElectroTools.PointLine itemPoint, int ColorIndex)
         {
-            Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
-            Document doc = MyOpenDocument.doc;
-
+         
             using (DocumentLock doclock = doc.LockDocument())
             {
                 using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
@@ -296,9 +287,7 @@ namespace ElectroTools
 
         public static void updateTextById(ObjectId textId, string newText, int colorIndex)
         {
-            Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
-            Document doc = MyOpenDocument.doc;
+            
             if (textId == null | newText == null)
             { return; }
             using (DocumentLock doclock = doc.LockDocument())
@@ -337,6 +326,31 @@ namespace ElectroTools
                     }
                 }
             }
+        }
+
+        public static int getColorMtext(PointLine itemPoint)
+        {
+            int colorIndex = 0;
+            using (DocumentLock doclock = doc.LockDocument())
+            {
+                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+                {
+                    MText mtext = tr.GetObject(itemPoint.IDText, OpenMode.ForRead) as MText;
+
+                    if (mtext != null)
+                    {
+                        // Получение индекса цвета Mtext
+                        colorIndex = mtext.ColorIndex;
+
+
+                    }
+                    tr.Commit();
+                }
+            }
+            return colorIndex;
+
+
+
         }
 
 

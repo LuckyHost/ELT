@@ -29,13 +29,14 @@ namespace ElectroTools
     public static class Draw
     {
 
-        
+        static Editor ed = MyOpenDocument.ed;
+        static Database dbCurrent = MyOpenDocument.dbCurrent;
+        static Document doc = MyOpenDocument.doc;
+
         public static void drawPolyline(List<PointLine> masterListPont, string nameLayer, short color, double ConstantWidth)
         {
 
-            Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
-            Document doc = MyOpenDocument.doc;
+           
 
             using (DocumentLock doclock = doc.LockDocument())
             {
@@ -69,9 +70,7 @@ namespace ElectroTools
 
         public static ObjectId  drawCircle(PointLine itemPoint, string nameLayer)
         {
-            Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
-            Document doc = MyOpenDocument.doc;
+           
 
             using (DocumentLock doclock = doc.LockDocument())
             {
@@ -98,6 +97,41 @@ namespace ElectroTools
                     // Завершение транзакции
                     tr.Commit();
                     return circleId;
+                }
+            }
+        }
+
+        public static void ZoomToEntity(ObjectId entityId, double zoomPercent)
+        {
+            using (DocumentLock doclock = doc.LockDocument())
+            {
+
+                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+                {
+                    Entity entity = tr.GetObject(entityId, OpenMode.ForRead) as Entity;
+
+                    if (entity != null)
+                    {
+                        Extents3d extents = entity.GeometricExtents;
+
+                        // Определение точек пределов объекта
+                        Point3d minPoint = extents.MinPoint;
+                        Point3d maxPoint = extents.MaxPoint;
+
+                        // Создание новой записи представления
+                        using (ViewTableRecord view = new ViewTableRecord())
+                        {
+                            // Задание пределов представления
+                            view.CenterPoint = new Point2d((minPoint.X + maxPoint.X) / 2, (minPoint.Y + maxPoint.Y) / 2);
+                            view.Height = (maxPoint.Y - minPoint.Y) * zoomPercent;
+                            view.Width = (maxPoint.X - minPoint.X) * zoomPercent;
+
+                            // Установка представления текущим
+                            ed.SetCurrentView(view);
+                        }
+                    }
+
+                    tr.Commit();
                 }
             }
         }

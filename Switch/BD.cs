@@ -33,44 +33,23 @@ using Exception = Autodesk.AutoCAD.Runtime.Exception;
 namespace ElectroTools
 {
 
+
+    [Serializable]
     
-        [Serializable]
-        public class BD
-        {
+    public class BD
+    {
 
-            
+        
+        public List<PowerLine> listPowerLine { get; set; }
 
-            [XmlElement("PowerLine")]
-            public List<PowerLine> listPowerLine { get; set; }
+        public List<PointLine> listPointLine { get; set; }
 
-            [XmlElement("PointLine")]
-            public List<PointLine> listPointLine { get; set; }
-
-            [XmlElement("Edge")]
-            public List<Edge> listEdge { get; set; }
-
-
-
-            [XmlIgnore]
-            public int[,] matrixSmej { get; set; }
-
-          
-            //[XmlElement("matrixInc")]
-            // public int[,] matrixInc { get; set; }
-
-            public BD()
-            {
-                //listPowerLine  = new List<PowerLine>();
-                // listPointLine  = new List<PointLine>();
-                //listEdge  = new List<Edge>();
-                //matrixInc=null;
-                // matrixSmej=new int[,] { };
-
-
-            }
-        }
+        [XmlIgnore]
+        public List<Edge> listEdge { get; set; }
 
     }
+
+}
 
 
 

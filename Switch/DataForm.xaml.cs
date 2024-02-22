@@ -71,21 +71,21 @@ namespace ElectroTools
             {
                 if (cell.DataContext is PointLine pointLine)
                 {
-                _data._tools.ZoomToEntity(pointLine.IDText,10) ;
+                Draw.ZoomToEntity(pointLine.IDText,10) ;
                 //string cellValue = textBlock.Text;
                 //MessageBox.Show($"Вы нажали на ячейку с значением: {cellValue}");
                 }
 
                 if (cell.DataContext is Edge edge)
                 {
-                    _data._tools.ZoomToEntity(edge.IDText, 10);
+                    Draw.ZoomToEntity(edge.IDText, 10);
                     //string cellValue = textBlock.Text;
                     //MessageBox.Show($"Вы нажали на ячейку с значением: {cellValue}");
                 }
 
                 if (cell.DataContext is PowerLine powerLine)
                 {
-                    _data._tools.ZoomToEntity(powerLine.IDText, 10);
+                    Draw.ZoomToEntity(powerLine.IDText, 10);
                     //string cellValue = textBlock.Text;
                     //MessageBox.Show($"Вы нажали на ячейку с значением: {cellValue}");
                 }

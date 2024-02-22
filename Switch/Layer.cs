@@ -38,7 +38,7 @@ namespace ElectroTools
         public static void creatLayer(string Name, byte ColorR, byte ColorG, byte ColorB)
         {
             Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
+            Teigha.DatabaseServices.Database dbCurrent = MyOpenDocument.dbCurrent;
             Document doc = MyOpenDocument.doc;
             using (DocumentLock docloc = doc.LockDocument())
             {
@@ -74,7 +74,7 @@ namespace ElectroTools
         {
 
             Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
+            Teigha.DatabaseServices.Database dbCurrent = MyOpenDocument.dbCurrent;
             Document doc = MyOpenDocument.doc;
 
             TypedValue[] filterlist = new TypedValue[1];

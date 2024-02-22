@@ -17,6 +17,8 @@ using MathNet.Numerics.Interpolation;
 using HostMgd.Windows.ToolPalette;
 using Autodesk.AutoCAD.Internal;
 using System.Windows;
+using System.Diagnostics.Eventing.Reader;
+
 
 
 
@@ -60,7 +62,7 @@ namespace ElectroTools
         public event PropertyChangedEventHandler PropertyChanged;
 
         public Document doc;
-        public Database dbCurrent;
+        public Teigha.DatabaseServices.Database dbCurrent;
         public Editor ed;
         //Для передачи Lock состояни
         private MyData _myData;
@@ -210,10 +212,10 @@ namespace ElectroTools
 
             int j = 0;
 
-            int defult = searchAllDataInBD(dbFilePath, "text", "default").IndexOf("true") + 1;
-            string sizeTextPoint = creatPromptKeywordOptions("Выберите высотку текста для вершины и ребра", searchAllDataInBD(dbFilePath, "text", "size"), defult);
+            int defult = BDSQL.searchAllDataInBD(dbFilePath, "text", "default").IndexOf("true") + 1;
+            string sizeTextPoint = creatPromptKeywordOptions("Выберите высотку текста для вершины и ребра", BDSQL.searchAllDataInBD(dbFilePath, "text", "size"), defult);
             if (string.IsNullOrEmpty(sizeTextPoint)) { return; }
-            string sizeTextLine = creatPromptKeywordOptions("Выберите высотку текста названия линии", searchAllDataInBD(dbFilePath, "text", "size"), defult);
+            string sizeTextLine = creatPromptKeywordOptions("Выберите высотку текста названия линии", BDSQL.searchAllDataInBD(dbFilePath, "text", "size"), defult);
             if (string.IsNullOrEmpty(sizeTextLine)) { return; }
 
 
@@ -531,29 +533,6 @@ namespace ElectroTools
 
         }
 
-        /*
-        // Fun Для добавления весов в Point 
-        [CommandMethod("фв9", CommandFlags.UsePickSet |
-                       CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad
-        */
-        public void setWeightPoint()
-        {
-            ed.WriteMessage("\n--------------------------------\n");
-            ed.WriteMessage("Запись веса вершин. \n");
-            ed.WriteMessage("--------------------------------\n");
-            using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
-            {
-
-                setDataPoint("Узлы_Saidi_Saifi_Makarov.D", listPoint, dbCurrent, ed, trAdding);
-
-
-            }
-            ed.WriteMessage("Веса вершин успешно внесены. \n");
-            OnPropertyChanged(nameof(listPoint));
-            OnPropertyChanged(nameof(listEdge));
-            OnPropertyChanged(nameof(listPowerLine));
-        }
-
 
         // Fun Для Создания Пути обхода 
         [CommandMethod("фв10", CommandFlags.UsePickSet |
@@ -605,14 +584,14 @@ namespace ElectroTools
 
             //Добавляю свой ввод
 
-            string strResistancetTransformers = creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", searchAllDataInBD(dbFilePath, "transformer", "name"), 2);
+            string strResistancetTransformers = creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 2);
             if (string.IsNullOrEmpty(strResistancetTransformers)) { return; }
 
             //берем сопротивление в BD по тексту
-            tkz.transformersR = searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
-            tkz.transformersX = searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
-            tkz.transformersR0 = searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r0");
-            tkz.transformersX0 = searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x0");
+            tkz.transformersR = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
+            tkz.transformersX = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
+            tkz.transformersR0 = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r0");
+            tkz.transformersX0 = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x0");
 
             //Фазное напряжение сети
             double Uline;
@@ -622,7 +601,7 @@ namespace ElectroTools
 
             if (!isI1Tkz)
             {
-                List<string> tempList = searchAllDataInBD(dbFilePath, "voltage", "kV");
+                List<string> tempList = BDSQL.searchAllDataInBD(dbFilePath, "voltage", "kV");
                 tempList.Insert(0, "Свое");
 
                 string resultPromt = creatPromptKeywordOptions("Выберите ЛИНЕЙНОЕ  напряжение сети.: ", tempList, 2);
@@ -750,12 +729,12 @@ namespace ElectroTools
 
             //Получает данные TKZ
             TKZ tkz = сreatMyTKZ(int.Parse(pointKZ));
-            string strResistancetTransformers = creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", searchAllDataInBD(dbFilePath, "transformer", "name"), 1);
+            string strResistancetTransformers = creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 1);
             //берем сопротивление в BD по тексту
-            tkz.transformersR = searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
-            tkz.transformersX = searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
-            tkz.transformersR0 = searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r0");
-            tkz.transformersX0 = searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x0");
+            tkz.transformersR = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
+            tkz.transformersX = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
+            tkz.transformersR0 = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r0");
+            tkz.transformersX0 = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x0");
 
             //Фазное напряжение сети
             double Uline;
@@ -765,7 +744,7 @@ namespace ElectroTools
 
             if (!isI1Tkz)
             {
-                List<string> tempList = searchAllDataInBD(dbFilePath, "voltage", "kV");
+                List<string> tempList = BDSQL.searchAllDataInBD(dbFilePath, "voltage", "kV");
                 tempList.Insert(0, "Свое");
 
                 string resultPromt = creatPromptKeywordOptions("Выберите ЛИНЕЙНОЕ  напряжение сети.: ", tempList, 2);
@@ -872,13 +851,13 @@ namespace ElectroTools
 
             //Получает данные TKZ
             TKZ tkz = сreatTKZ(true);
-            string strResistancetTransformers = creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", searchAllDataInBD(dbFilePath, "transformer", "name"), 1);
+            string strResistancetTransformers = creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 1);
 
             //берем сопротивление в BD по тексту
-            tkz.transformersR = searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
-            tkz.transformersX = searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
-            tkz.transformersR0 = searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r0");
-            tkz.transformersX0 = searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x0");
+            tkz.transformersR = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
+            tkz.transformersX = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
+            tkz.transformersR0 = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r0");
+            tkz.transformersX0 = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x0");
 
             //Фазное напряжение сети
             // double Uf = double.Parse(creatPromptKeywordOptions("Выберите Фазное напряжение сети.: ", searchAllDataInBD(dbFilePath, "voltage", "kV"), 1));
@@ -1069,7 +1048,7 @@ namespace ElectroTools
                 }
             }
             //Построить окружность
-            ZoomToEntity(Draw.drawCircle(edgeREC.centerPoint, "Граф_Saidi_Saifi_Makarov.D"), 4);
+            Draw.ZoomToEntity(Draw.drawCircle(edgeREC.centerPoint, "Граф_Saidi_Saifi_Makarov.D"), 4);
 
             ed.WriteMessage("----------");
             ed.WriteMessage("Рекомендуемое место установки REC в ребро №: " + edgeREC.name);
@@ -1100,7 +1079,7 @@ namespace ElectroTools
         public void getVoltage()
         {
             //Фазное напряжение сети
-            string tempUf = creatPromptKeywordOptions("Выберите напряжение точки генерации сети.: ", searchAllDataInBD(dbFilePath, "voltage", "kV"), 1);
+            string tempUf = creatPromptKeywordOptions("Выберите напряжение точки генерации сети.: ", BDSQL.searchAllDataInBD(dbFilePath, "voltage", "kV"), 1);
             if (string.IsNullOrEmpty(tempUf)) { return; };
             double Uf = double.Parse(tempUf);
             listPoint[0].Ua = Uf;
@@ -1329,15 +1308,13 @@ namespace ElectroTools
             PromptEntityOptions item = new PromptEntityOptions("\nВыберите объект: ");
             PromptEntityResult perItem = ed.GetEntity(item);
             //ShowExtensionDictionaryContents(perItem.ObjectId, "ESMT_LEP_v1.0");
-            ShowExtensionDictionaryContents(perItem.ObjectId, "Makarov.D");
-            ShowExtensionDictionaryContents(perItem.ObjectId, "ESMT_LEP_v1.0");
+            //ShowExtensionDictionaryContents(perItem.ObjectId, "Makarov.D");
+            //ShowExtensionDictionaryContents(perItem.ObjectId, "ESMT_LEP_v1.0");
 
 
 
         }
-        /*
-        [CommandMethod("фв17", CommandFlags.UsePickSet |
-                 CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad */
+
         public void setBD()
         {
             try
@@ -1349,18 +1326,14 @@ namespace ElectroTools
                 ed.WriteMessage("--------------------------------\n");
 
                 BD bd = new BD();
-                //bd.listEdge = listEdge;
-                //bd.serializableMatrix = new SerializableMatrix(matrixSmej);
-                //bd.matrixInc=matrixInc;
-                bd.listPowerLine = listPowerLine;
+                //Для восстановления имени линии
+                //bd.listPowerLine = listPowerLine;
                 //Для восстановления веса Вершин
                 bd.listPointLine = listPoint;
 
                 PromptEntityOptions item = new PromptEntityOptions("\nВыберите объект куда сохранить веса вершин: ");
                 PromptEntityResult perItem = ed.GetEntity(item);
                 if (perItem.Status != PromptStatus.OK) { return; }
-
-
 
                 string xmlData = SerializeToXml(bd);
                 SaveXmlToXrecord(xmlData, perItem.ObjectId, "Makarov.D");
@@ -1374,17 +1347,13 @@ namespace ElectroTools
         }
 
 
-        /*
-        //Загружает и обновляет вес вершины
-        [CommandMethod("фв18", CommandFlags.UsePickSet |
-               CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad  */
+
         public void getBD()
 
         {
 
             try
             {
-
 
                 ed.WriteMessage("\n--------------------------------\n");
                 ed.WriteMessage("Восстановление веса вершин \n");
@@ -1396,23 +1365,26 @@ namespace ElectroTools
 
                 string isLoadNameLine = creatPromptKeywordOptions("Восстановить название линий ?", new List<string> { "Да", "Нет" }, 1);
 
-                //listPowerLine= BDShowExtensionDictionaryContents(perItem.ObjectId, "Makarov.D").listPowerLine;
                 List<PointLine> templistPoint = BDShowExtensionDictionaryContents<BD>(perItem.ObjectId, "Makarov.D").listPointLine;
                 List<PowerLine> templistPowerLine = BDShowExtensionDictionaryContents<BD>(perItem.ObjectId, "Makarov.D").listPowerLine;
 
                 foreach (PointLine itemPoint in templistPoint)
                 {
-                    if (itemPoint.weightA > 0)
+                    if (itemPoint.weightA > 0 | itemPoint.weightB > 0 | itemPoint.weightC > 0)
                     {
                         foreach (PointLine item1 in listPoint)
                         {
 
                             if (itemPoint.name == item1.name)
                             {
-                                item1.weightA = itemPoint.weightA;
-                                item1.cos = itemPoint.cos;
                                 item1.typeClient = itemPoint.typeClient;
-                                Text.updateTextById(item1.IDText, item1.name + "\\P" + item1.weightA, 66);
+                                item1.cos = itemPoint.cos;
+                                item1.weightB = itemPoint.weightB;
+                                item1.weightC = itemPoint.weightC;
+                                item1.weightA = itemPoint.weightA;
+                                item1.count = itemPoint.count;
+                                item1.Ko = itemPoint.Ko;
+                                //Text.updateTextById(item1.IDText, item1.name + "\\P" + item1.weightA, 66);
                             }
 
                         }
@@ -1504,8 +1476,8 @@ namespace ElectroTools
 
                     if (itemPoint.typeClient == 1)
                     {
-                        itemPoint.Ia = Math.Round(itemPoint.weightA * itemPoint.Ko*itemPoint.count / (0.22 * itemPoint.cos), 2);
-                        itemPoint.Ib = Math.Round(itemPoint.weightB * itemPoint.Ko*itemPoint.count / (0.22 * itemPoint.cos), 2);
+                        itemPoint.Ia = Math.Round(itemPoint.weightA * itemPoint.Ko * itemPoint.count / (0.22 * itemPoint.cos), 2);
+                        itemPoint.Ib = Math.Round(itemPoint.weightB * itemPoint.Ko * itemPoint.count / (0.22 * itemPoint.cos), 2);
                         itemPoint.Ic = Math.Round(itemPoint.weightC * itemPoint.Ko * itemPoint.count / (0.22 * itemPoint.cos), 2);
                     }
                     if (itemPoint.typeClient == 3)
@@ -1540,24 +1512,17 @@ namespace ElectroTools
             PromptEntityResult perMagistral = ed.GetEntity(magistral);
             Polyline Plyline = trAdding.GetObject(perMagistral.ObjectId, OpenMode.ForRead) as Polyline;
 
-            ZoomToEntity(perMagistral.ObjectId, 4);
+            Draw.ZoomToEntity(perMagistral.ObjectId, 4);
 
             ed.WriteMessage("\n\nВыберите марку провода магистрали: \n\n");
 
             PowerLine considerPowerLine = new PowerLine();
-            int defult = searchAllDataInBD(dbFilePath, "cable", "default").IndexOf("true") + 1;
+            int defult = BDSQL.searchAllDataInBD(dbFilePath, "cable", "default").IndexOf("true") + 1;
 
 
-            if (ShowExtensionDictionaryContents(perMagistral.ObjectId, "ESMT_LEP_v1.0")["isItem"] == "true")
-            {
-                considerPowerLine.cable = ShowExtensionDictionaryContents(perMagistral.ObjectId, "ESMT_LEP_v1.0")["nameCable"];
-                ed.WriteMessage("\n\nНАЙДЕНЫ ЗНАЧЕНИЯ ИЗ SMARTLINE");
-            }
-            else
-            {
-                considerPowerLine.cable = creatPromptKeywordOptions("\n\nВыберите мару провода: ", searchAllDataInBD(dbFilePath, "cable", "name"), defult);
-            }
-            considerPowerLine.Icrict = searchDataInBD(dbFilePath, "cable", considerPowerLine.cable, "name", "Icrit");
+            considerPowerLine.cable = BDShowExtensionDictionaryContents<Conductor>(perMagistral.ObjectId, "ESMT_LEP_v1.0")?.Name
+                ?? creatPromptKeywordOptions("\n\nВыберите марку провода: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
+            considerPowerLine.Icrict = BDSQL.searchDataInBD(dbFilePath, "cable", considerPowerLine.cable, "name", "Icrit");
             considerPowerLine.name = "Магистраль";
             considerPowerLine.IDLine = Plyline.ObjectId;
             considerPowerLine.parent = considerPowerLine;
@@ -1649,31 +1614,25 @@ namespace ElectroTools
                                 }
 
                                 //Приближаем
-                                ZoomToEntity(acSObj.ObjectId, 4);
+                                Draw.ZoomToEntity(acSObj.ObjectId, 4);
 
                                 //Подсветка что выделилось
                                 ed.SetImpliedSelection(new ObjectId[] { acSObj.ObjectId });
                                 ed.CurrentUserCoordinateSystem = Matrix3d.Identity; // Сброс координатной системы, если необходимо
 
 
-                                int defult = searchAllDataInBD(dbFilePath, "cable", "default").IndexOf("true") + 1;
+                                int defult = BDSQL.searchAllDataInBD(dbFilePath, "cable", "default").IndexOf("true") + 1;
                                 PowerLine ChilderLine = new PowerLine();
 
-                                if (ShowExtensionDictionaryContents(acSObj.ObjectId, "ESMT_LEP_v1.0")["isItem"] == "true")
-                                {
-                                    ChilderLine.cable = ShowExtensionDictionaryContents(acSObj.ObjectId, "ESMT_LEP_v1.0")["nameCable"];
-                                    ed.WriteMessage("\n\nНАЙДЕНЫ ЗНАЧЕНИЯ ИЗ SMARTLINE\n\n");
-                                }
-                                else
-                                {
-                                    ChilderLine.cable = creatPromptKeywordOptions("Выберите мару провода: ", searchAllDataInBD(dbFilePath, "cable", "name"), defult);
-                                }
+                                ChilderLine.cable = BDShowExtensionDictionaryContents<Conductor>(acSObj.ObjectId, "ESMT_LEP_v1.0")?.Name
+                                 ?? creatPromptKeywordOptions("\n\nВыберите мару провода: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
+
 
 
                                 ChilderLine.IDLine = acSObj.ObjectId;
                                 ChilderLine.parent = masterLine;
                                 ChilderLine.lengthLine = Math.Round(lengthPolyline.Length, 3);
-                                ChilderLine.Icrict = searchDataInBD(dbFilePath, "cable", ChilderLine.cable, "name", "Icrit");
+                                ChilderLine.Icrict = BDSQL.searchDataInBD(dbFilePath, "cable", ChilderLine.cable, "name", "Icrit");
 
                                 if (masterLine.name != "Магистраль")
                                 {
@@ -1725,12 +1684,7 @@ namespace ElectroTools
             return masterLine;
         }
 
-        private void DocumentInactiveEventHandler(object sender, DocumentCollectionEventArgs e)
-        {
-            // Этот метод будет вызван, когда документ станет неактивным,
-            // что может произойти при закрытии файла
-            Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage("\n\n Закрываю Модуль ElectroTools");
-        }
+
 
         public class TKZ
         {
@@ -2037,16 +1991,16 @@ namespace ElectroTools
                         endPoint = itemLine.points[i + 1],
                         length = Math.Round(itemLine.points[i].positionPoint.GetDistanceTo(itemLine.points[i + 1].positionPoint), 4),
                         cable = itemLine.cable,
-                        r = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "r"),
-                        x = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "x"),
-                        r0 = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "r0"),
-                        x0 = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "x0"),
-                        rN = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "rN"),
-                        xN = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "xN"),
-                        Ke = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "Ke"),
-                        Ce = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "Ce"),
+                        r = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "r"),
+                        x = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "x"),
+                        r0 = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "r0"),
+                        x0 = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "x0"),
+                        rN = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "rN"),
+                        xN = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "xN"),
+                        Ke = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "Ke"),
+                        Ce = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "Ce"),
 
-                        Icrict = searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "Icrit"),
+                        Icrict = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "Icrit"),
                         centerPoint = new PointLine
                         {
                             name = int.Parse((itemLine.points[i].name.ToString() + "0" + itemLine.points[i + 1].name.ToString())),
@@ -2063,75 +2017,6 @@ namespace ElectroTools
             }
 
             return tempListEdge;
-
-        }
-        //Получить веса вершин из  DWG
-        public void setDataPoint(string layerName, List<PointLine> masterListPoint, Database dbCurrent, Editor ed, Transaction trAdding)
-        {
-            PromptSelectionResult res = ed.SelectAll(new SelectionFilter(new TypedValue[]
-                      {
-                            new TypedValue((int)DxfCode.LayerName, layerName),
-                            new TypedValue((int)DxfCode.Start, "MTEXT"),
-                  }
-              ));
-            if (res.Status == PromptStatus.OK)
-            {
-                ed.SetImpliedSelection(res.Value.GetObjectIds());
-            }
-
-            PromptSelectionResult acSSPrompt = ed.GetSelection();
-
-            if (acSSPrompt.Status == PromptStatus.OK)
-            {
-                SelectionSet acSSet = acSSPrompt.Value;
-                BlockTable acBlkTbl = trAdding.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
-
-                foreach (SelectedObject acSSObj in acSSet)
-                {
-                    if (acSSObj != null)
-                    {
-                        MText acEnt = trAdding.GetObject(acSSObj.ObjectId, OpenMode.ForRead) as MText;
-
-
-                        int index = (acEnt.Contents).IndexOf('P');
-
-                        if (index > 0)
-                        {
-
-                            //Номер вершины
-                            int numberVertex = int.Parse((acEnt.Contents).Substring(0, index - 1));
-                            //Вес вершины
-                            double weightVertex = double.Parse((acEnt.Contents.Replace(".", ",")).Substring(index + 1));
-
-                            foreach (PointLine masterVertex in masterListPoint)
-                            {
-                                if (numberVertex == masterVertex.name)
-                                {
-                                    int indexColor = acEnt.ColorIndex;
-                                    masterVertex.weightA = weightVertex;
-                                    // ed.WriteMessage("indexColor == 201: " + (indexColor == 201).ToString());
-
-                                    // Получение индекса цвета Mtext
-                                    if (indexColor == 201)
-
-                                    {
-                                        masterVertex.typeClient = 1;
-                                    }
-
-                                    else
-                                    { masterVertex.typeClient = 3; }
-
-                                }
-
-                            }
-
-
-                        }
-
-                    }
-                }
-
-            }
 
         }
 
@@ -2479,158 +2364,16 @@ namespace ElectroTools
 
 
 
-        List<string> searchAllDataInBD(string dbFilePath, string nameTable, string searchColum, string filterColumn = null, string filterValue = null)
+
+        public T BDShowExtensionDictionaryContents<T>(ObjectId entityId, string nameDictionary)
         {
+            // Проверка входных данных
+            if (entityId.IsNull)
+                throw new ArgumentNullException("entityId");
 
-            List<string> tempList = new List<string>();
-            // Строка подключения к базе данных SQLite
-            string connectionString = "Data Source=" + dbFilePath;
-            //string connectionString = $"Data Source={dbFilePath};Version=3;";
+            if (string.IsNullOrEmpty(nameDictionary))
+                throw new ArgumentNullException("nameDictionary");
 
-            // SQL-запрос для выполнения (замените на свой запрос)
-            string query;
-            if (string.IsNullOrEmpty(filterValue) | string.IsNullOrEmpty(filterColumn))
-            {
-                query = "SELECT * FROM " + nameTable;
-            }
-            else
-            {
-                query = "SELECT * FROM " + nameTable + " WHERE " + filterColumn + " = " + filterValue;
-            }
-
-
-            using (DocumentLock doclock = doc.LockDocument())
-            {
-
-                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-                {
-                    connection.Open();
-                    using (SQLiteCommand command = new SQLiteCommand(query, connection))
-                    {
-
-
-
-                        using (SQLiteDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-
-                                tempList.Add(reader[searchColum].ToString());
-                                // Обрабатывайте результаты запроса
-                                //ed.WriteMessage(reader[$"{searchColum}"].ToString());
-                            }
-                        }
-
-                    }
-                    connection.Close();
-                }
-            }
-
-            return tempList;
-        }
-
-        double searchDataInBD(string dbFilePath, string nameTable, string searchItem, string searchColum, string gethColum)
-        {
-            double resultValue = 0;
-            // Строка подключения к базе данных SQLite
-            string connectionString = "Data Source=" + dbFilePath;
-            //string connectionString = $"Data Source={dbFilePath};Version=3;";
-
-            // SQL-запрос для выполнения (замените на свой запрос)
-            string query = "SELECT * FROM " + nameTable + " WHERE " + searchColum + "= @searchItem";
-
-            using (DocumentLock doclock = doc.LockDocument())
-            {
-                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-                {
-                    connection.Open();
-                    using (SQLiteCommand command = new SQLiteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@searchItem", searchItem);
-
-                        using (SQLiteDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                if (double.TryParse(reader[gethColum].ToString(), out resultValue))
-                                {
-                                    // Вернуть найденное значение из столбца "result"
-                                    //ed.WriteMessage(resultValue.ToString());
-                                }
-                            }
-
-                        }
-                        connection.Close();
-                    }
-
-                    return resultValue;
-                }
-            }
-        }
-
-
-        public void ZoomToEntity(ObjectId entityId, double zoomPercent)
-        {
-            using (DocumentLock doclock = doc.LockDocument())
-            {
-
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
-                {
-                    Entity entity = tr.GetObject(entityId, OpenMode.ForRead) as Entity;
-
-                    if (entity != null)
-                    {
-                        Extents3d extents = entity.GeometricExtents;
-
-                        // Определение точек пределов объекта
-                        Point3d minPoint = extents.MinPoint;
-                        Point3d maxPoint = extents.MaxPoint;
-
-                        // Создание новой записи представления
-                        using (ViewTableRecord view = new ViewTableRecord())
-                        {
-                            // Задание пределов представления
-                            view.CenterPoint = new Point2d((minPoint.X + maxPoint.X) / 2, (minPoint.Y + maxPoint.Y) / 2);
-                            view.Height = (maxPoint.Y - minPoint.Y) * zoomPercent;
-                            view.Width = (maxPoint.X - minPoint.X) * zoomPercent;
-
-                            // Установка представления текущим
-                            ed.SetCurrentView(view);
-                        }
-                    }
-
-                    tr.Commit();
-                }
-            }
-        }
-
-        public int getColorMtext(PointLine itemPoint)
-        {
-            int colorIndex = 0;
-            using (DocumentLock doclock = doc.LockDocument())
-            {
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
-                {
-                    MText mtext = tr.GetObject(itemPoint.IDText, OpenMode.ForRead) as MText;
-
-                    if (mtext != null)
-                    {
-                        // Получение индекса цвета Mtext
-                        colorIndex = mtext.ColorIndex;
-
-
-                    }
-                    tr.Commit();
-                }
-            }
-            return colorIndex;
-
-
-
-        }
-
-        private void updateColorMtext(PointLine itemPoint, int ColorIndex)
-        {
 
             using (DocumentLock doclock = doc.LockDocument())
             {
@@ -2638,216 +2381,54 @@ namespace ElectroTools
                 {
                     try
                     {
-                        MText mtext = tr.GetObject(itemPoint.IDText, OpenMode.ForWrite) as MText;
-
-                        if (mtext != null)
-                        {
-                            // Получение индекса цвета Mtext
-                            mtext.ColorIndex = ColorIndex;
-                        }
-                        tr.Commit();
-                    }
-                    catch (System.Exception ex)
-                    {
-                        // Обработка ошибок
-                        // ed.WriteMessage("Error updating MText: {0}\n", ex.Message);
-                        tr.Abort();
-                    }
-                }
-            }
-
-
-
-
-        }
-
-
-
-
-
-        Dictionary<string, string> ShowExtensionDictionaryContents(ObjectId entityId, string nameDictionary)
-        {
-            Dictionary<string, string> result = new Dictionary<string, string>();
-            using (DocumentLock doclock = doc.LockDocument())
-            {
-
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
-                {
-                    try
-                    {
-                        // Открываем объект для чтения.
+                        // Получение объекта
                         Entity entity = tr.GetObject(entityId, OpenMode.ForRead) as Entity;
 
-                        if (entity != null && entity.ExtensionDictionary != ObjectId.Null)
+                        // Проверка объекта
+                        if (entity == null)
+                            throw new ArgumentException("Entity not found.", "entityId");
+
+                        // Получение словаря расширений
+                        DBDictionary extDict = entity.ExtensionDictionary != ObjectId.Null ? tr.GetObject(entity.ExtensionDictionary, OpenMode.ForRead) as DBDictionary : null;
+
+                        // Проверка словаря расширений
+                        if (extDict == null)
+                            
+                            return default(T);
+                            //throw new ArgumentException("ExtensionDictionary not found.", "entityId");
+
+                        // Проверка наличия записи
+                        if (!extDict.Contains(nameDictionary))
+                            return default(T);
+
+                        // Получение записи
+                        ObjectId entryId = extDict.GetAt(nameDictionary);
+                        DBObject entryObj = tr.GetObject(entryId, OpenMode.ForRead);
+
+                        // Проверка типа записи
+                        if (entryObj is Xrecord xRecord)
                         {
-                            DBDictionary extDict = tr.GetObject(entity.ExtensionDictionary, OpenMode.ForRead) as DBDictionary;
-
-                            if (extDict != null && extDict.Contains(nameDictionary))
-                            {
-                                ObjectId entryId = extDict.GetAt(nameDictionary);
-
-                                if (!entryId.IsNull)
-                                {
-                                    DBObject entryObj = tr.GetObject(entryId, OpenMode.ForRead);
-
-                                    Xrecord xRecord = entryObj as Xrecord;
-
-                                    if (xRecord != null)
-                                    {
-                                        //ed.WriteMessage("ExtensionDictionary contents for entity with ObjectId {0}:\n", entityId.Handle);
-
-
-                                        /*
-                                        // Получаем данные из Xrecord
-                                        ResultBuffer data = xRecord.Data;
-                                        foreach (TypedValue value in data)
-                                        {
-                                            ed.WriteMessage("TypedValue: {0}\n", value.Value);
-                                        }   */
-
-
-                                        result["isItem"] = "true";
-                                        result["nameCable"] = DeserializeFromXrecord<Conductor>(xRecord).Name;
-
-                                        //ed.WriteMessage("МОЕ: "+DeserializeFromXrecord(xRecord).Name);
-                                        return result;
-                                    }
-                                    else
-                                    {
-                                        ed.WriteMessage("The entry with key" + nameDictionary + " is not an Xrecord.\n");
-
-                                    }
-                                }
-                                else
-                                {
-                                    ed.WriteMessage("Не нашел: " + nameDictionary + " :(.\n");
-
-
-                                }
-                            }
-                            else
-                            {
-                                ed.WriteMessage("\n Отсутствует:  " + nameDictionary + ".\n");
-
-
-                            }
+                            // Десериализация
+                            return DeserializeFromXrecord<T>(xRecord);
                         }
                         else
                         {
-                            ed.WriteMessage("\n\nНе нашел значения из " + nameDictionary + " :(\n\n");
-                            //ed.WriteMessage("Entity is null or does not have an ExtensionDictionary.\n");
-
+                            // Ошибка: Неверный тип записи
+                            throw new InvalidOperationException("Entry is not of type Xrecord.");
                         }
-                        //Если пусто
-                        result["isItem"] = "false";
-                        result["nameCable"] = "";
-                        return result;
-
                     }
-
                     catch (Exception ex)
                     {
-                        ed.WriteMessage("\nОшибка: {0}\n", ex.Message);
-                        result["isItem"] = "false";
-                        result["nameCable"] = "";
-                        return result;
-                    }
-                    finally
-                    {
-                        tr.Dispose();
+                        // Логирование ошибки
 
+
+                        // Возвращение null
+                        return default(T);
                     }
                 }
             }
         }
 
-
-        T BDShowExtensionDictionaryContents<T>(ObjectId entityId, string nameDictionary)
-        {
-            Dictionary<string, string> result = new Dictionary<string, string>();
-            using (DocumentLock doclock = doc.LockDocument())
-            {
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
-                {
-                    try
-                    {
-                        // Открываем объект для чтения.
-                        Entity entity = tr.GetObject(entityId, OpenMode.ForRead) as Entity;
-
-                        if (entity != null && entity.ExtensionDictionary != ObjectId.Null)
-                        {
-                            DBDictionary extDict = tr.GetObject(entity.ExtensionDictionary, OpenMode.ForRead) as DBDictionary;
-
-                            if (extDict != null && extDict.Contains(nameDictionary))
-                            {
-                                ObjectId entryId = extDict.GetAt(nameDictionary);
-
-                                if (!entryId.IsNull)
-                                {
-                                    DBObject entryObj = tr.GetObject(entryId, OpenMode.ForRead);
-
-                                    Xrecord xRecord = entryObj as Xrecord;
-
-                                    if (xRecord != null)
-                                    {
-                                        //ed.WriteMessage("ExtensionDictionary contents for entity with ObjectId {0}:\n", entityId.Handle);
-                                        /*
-                                        // Получаем данные из Xrecord
-                                        ResultBuffer data = xRecord.Data;
-                                        foreach (TypedValue value in data)
-                                        {
-                                            ed.WriteMessage("TypedValue: {0}\n", value.Value);
-                                        } */
-
-
-                                        return DeserializeFromXrecord<T>(xRecord);
-                                    }
-                                    else
-                                    {
-                                        ed.WriteMessage("\n The entry with key" + nameDictionary + " is not an Xrecord.\n");
-
-                                    }
-                                }
-                                else
-                                {
-                                    ed.WriteMessage(" \n Entry with key" + nameDictionary + " not found in ExtensionDictionary.\n");
-
-
-                                }
-                            }
-                            else
-                            {
-                                ed.WriteMessage("\n ExtensionDictionary with key " + nameDictionary + " not found.\n");
-
-
-                            }
-                        }
-                        else
-                        {
-                            ed.WriteMessage(" \n Не нашел значения из " + nameDictionary + " :(");
-                            //ed.WriteMessage("Entity is null or does not have an ExtensionDictionary.\n");
-
-                        }
-                        //Если пусто
-                        return default(T);
-
-                    }
-
-                    catch (System.Exception ex)
-                    {
-                        ed.WriteMessage("Error: {0}\n", ex.Message);
-
-                        result["nameCable"] = "";
-                        return default(T);
-                    }
-                    finally
-                    {
-                        tr.Dispose();
-
-                    }
-                }
-            }
-        }
 
 
         public T DeserializeFromXrecord<T>(Xrecord xRecord)
@@ -2856,25 +2437,44 @@ namespace ElectroTools
             {
                 if (xRecord == null)
                     throw new ArgumentNullException("xRecord");
+
+                // Получение данных Xrecord
                 ResultBuffer data = xRecord.Data;
                 if (data == null)
                     throw new ArgumentException("Xrecord does not contain valid data.", "xRecord");
+
+                // Преобразование данных в массив TypedValue
                 TypedValue[] values = data.AsArray();
+
+                // Проверка наличия единственного текстового значения
                 if (values.Length == 1 && values[0].TypeCode == (int)DxfCode.Text)
                 {
+                    // Получение XML-данных
                     string xmlData = values[0].Value.ToString();
+
+                    // Десериализация XML
                     return DeserializeFromXml<T>(xmlData);
                 }
                 else
                 {
+                    // Ошибка: Неожиданный формат данных
                     throw new ArgumentException("Unexpected data format in Xrecord.", "xRecord");
                 }
             }
             catch (InvalidOperationException ex)
             {
-                // Обработка исключения или вывод информации о нем
-                ed.WriteMessage("Ошибка десериализации: " + ex.Message);
-                ed.WriteMessage($"StackTrace: " + ex.StackTrace);
+                // Логирование ошибки
+
+
+                // Возвращение null
+                return default(T);
+            }
+            catch (Exception ex)
+            {
+                // Логирование непредвиденных ошибок
+
+
+                // Возвращение null
                 return default(T);
             }
         }
@@ -2915,7 +2515,7 @@ namespace ElectroTools
                 string filePath = Path.Combine(desktopPath, "output.xml");
 
                 // Записываем XML-строку в файл
-                //File.WriteAllText(filePath, writer.ToString());
+                File.WriteAllText(filePath, writer.ToString());
 
                 return writer.ToString();
             }
