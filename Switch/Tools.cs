@@ -12,6 +12,15 @@ using System.Data.SQLite;
 using System.Xml.Serialization;
 using System.ComponentModel;
 using System.Windows.Forms.Integration;
+using MathNet.Numerics;
+using MathNet.Numerics.Interpolation;
+using HostMgd.Windows.ToolPalette;
+using Autodesk.AutoCAD.Internal;
+using System.Windows;
+
+
+
+
 
 
 
@@ -78,7 +87,7 @@ namespace ElectroTools
                 "MaterialDesignThemes.MahApps.dll",
                 "MaterialDesignThemes.Wpf.dll",
                 "Newtonsoft.Json.dll",
-                
+
             };
 
             foreach (var assembly in assemblies)
@@ -280,6 +289,10 @@ namespace ElectroTools
             OnPropertyChanged(nameof(listPoint));
             OnPropertyChanged(nameof(listEdge));
             OnPropertyChanged(nameof(listPowerLine));
+
+            //Подписываемся на все PointLine
+            listPoint.ForEach(it => it.PropertyChanged += Tools_PropertyChanged);
+
 
         }
 
@@ -682,7 +695,7 @@ namespace ElectroTools
             }
             else
             {
-                ed.WriteMessage("| Добавил дополнительно: R1= " + rdop + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
+                ed.WriteMessage("| Добавил дополнительно: Zдоп.= " + rdop + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
                 ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformersR + " +j " + tkz.transformersX + " | " + "R0+jX0: " + tkz.transformersR0 + " +j " + tkz.transformersX0 + " (Zпетля= " + transformersPetliya + ")" + " Ом.");
                 ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + tkz.lineR + " +j " + tkz.lineX + " | " + "R0+jX0: " + tkz.lineR0 + " +j " + tkz.lineX0 + " (Zпетля= " + tkz.linePetlia + ")" + " Ом.");
                 ed.WriteMessage("| Ток КЗ в конце: " + tkz.resultTKZ + " А.");
@@ -956,7 +969,7 @@ namespace ElectroTools
             //Создает список вершин с весом
             foreach (PointLine itemPoint in listPoint)
             {
-                if (itemPoint.weightA > 0)
+                if (itemPoint.count > 0)
                 {
 
                     listWhithWeight.Add(itemPoint);
@@ -972,7 +985,7 @@ namespace ElectroTools
                         if (itemPoint == itemPowerLine.points[i])
                         {
                             PointLine perentPointMagistral = goToParent(itemPowerLine, listPowerLine[0].name).parentPoint;
-                            perentPointMagistral.weightA = perentPointMagistral.weightA + itemPoint.weightA;
+                            perentPointMagistral.count = perentPointMagistral.count + itemPoint.count;
                             if (itemPoint.isFavorite)
                             {
                                 perentPointMagistral.isFavorite = true;
@@ -997,7 +1010,7 @@ namespace ElectroTools
                 StringBuilder tempLeftPathText = new StringBuilder();
                 foreach (PointLine itemPointLine in tempLeftPath)
                 {
-                    tempLeftDifference = tempLeftDifference + itemPointLine.weightA;
+                    tempLeftDifference = tempLeftDifference + itemPointLine.count;
                 }
 
                 StringBuilder tempRightPathText = new StringBuilder();
@@ -1009,7 +1022,7 @@ namespace ElectroTools
                     {
                         continue;
                     }
-                    tempRighDifference = tempRighDifference + itemPointLine.weightA;
+                    tempRighDifference = tempRighDifference + itemPointLine.count;
                 }
 
                 //Проверяет вес и важность поинтов; itemPoint.isFavorite - проверяет в вершине магистрали есть ли важнный потербитель
@@ -1027,14 +1040,14 @@ namespace ElectroTools
 
                     foreach (PointLine itemPointLine in REC.leftPath)
                     {
-                        tempLeftPathText.Append(itemPointLine.name + " (" + itemPointLine.weightA + ")" + " ");
+                        tempLeftPathText.Append(itemPointLine.name + " (" + itemPointLine.count + ")" + " ");
                     }
 
 
                     foreach (PointLine itemPointLine in REC.rightPath)
                     {
 
-                        tempRightPathText.Append(itemPointLine.name + " (" + itemPointLine.weightA + ")" + " ");
+                        tempRightPathText.Append(itemPointLine.name + " (" + itemPointLine.count + ")" + " ");
                     }
 
                     REC.leftPathText = tempLeftPathText.ToString();
@@ -1055,7 +1068,7 @@ namespace ElectroTools
 
                 }
             }
-            //Построить окр
+            //Построить окружность
             ZoomToEntity(Draw.drawCircle(edgeREC.centerPoint, "Граф_Saidi_Saifi_Makarov.D"), 4);
 
             ed.WriteMessage("----------");
@@ -1298,87 +1311,7 @@ namespace ElectroTools
 
 
             }
-            //Анализирует падения напряжения и отрисовывает
-            /*foreach (Edge itemEdge in listEdge)
-            {
-                if ((itemEdge.startPoint.Ia > 0 && itemEdge.endPoint.Ia > 0) | (itemEdge.startPoint.Ib > 0 && itemEdge.endPoint.Ib > 0) | (itemEdge.startPoint.Ic > 0 && itemEdge.endPoint.Ic > 0))
-                {
-                    Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUa= " + Math.Round((itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -4);
-                    Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUb= " + Math.Round((itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -6);
-                    Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUc= " + Math.Round((itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) + " В.", "1", 154, -8);
 
-                    //Фаза А
-                    if (Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) > 0)
-                    {
-                        itemEdge.endPoint.Ua = Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2);
-                    }
-                    else
-                    {
-                        itemEdge.endPoint.Ua = 0;
-                    }
-
-                    //Фаза В
-                    if (Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) > 0)
-                    {
-                        itemEdge.endPoint.Ub = Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2);
-                    }
-                    else
-                    {
-                        itemEdge.endPoint.Ub = 0;
-                    }
-
-                    //Фаза С
-                    if (Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2) > 0)
-                    {
-                        itemEdge.endPoint.Uc = Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2);
-                    }
-                    else
-                    {
-                        itemEdge.endPoint.Uc = 0;
-                    }
-
-                    //Отрисовка
-                    //Фаза А
-                    if (((Uf - Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100) >= 10.0)
-                    {
-                        double percentA = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100), 2);
-                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 26, -4);
-                    }
-                    else
-                    {
-                        double percentA = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Ua - (itemEdge.Ia * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100), 2);
-                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 41, -4);
-                    }
-
-                    //Фаза В
-                    if (((Uf - Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100) >= 10.0)
-                    {
-                        double percentB = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100), 2);
-                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 26, -6);
-                    }
-                    else
-                    {
-                        double percentB = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Ub - (itemEdge.Ib * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100), 2);
-                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 74, -6);
-                    }
-
-                    //Фаза С
-                    if (((Uf - Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100) >= 10.0)
-                    {
-                        double percentC = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100), 2);
-                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 26, -8);
-                    }
-                    else
-                    {
-                        double percentC = Math.Round(((Uf - Math.Round(itemEdge.startPoint.Uc - (itemEdge.Ic * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))) * itemEdge.length), 2)) / Uf * 100), 2);
-                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 22, -8);
-                    }
-
-
-
-                }
-
-            }*/
 
             listPoint = new List<PointLine>(stateList);
             OnPropertyChanged(nameof(listPoint));
@@ -1571,15 +1504,15 @@ namespace ElectroTools
 
                     if (itemPoint.typeClient == 1)
                     {
-                        itemPoint.Ia = Math.Round(itemPoint.weightA / (0.22 * itemPoint.cos), 2);
-                        itemPoint.Ib = Math.Round(itemPoint.weightB / (0.22 * itemPoint.cos), 2);
-                        itemPoint.Ic = Math.Round(itemPoint.weightC / (0.22 * itemPoint.cos), 2);
+                        itemPoint.Ia = Math.Round(itemPoint.weightA * itemPoint.Ko*itemPoint.count / (0.22 * itemPoint.cos), 2);
+                        itemPoint.Ib = Math.Round(itemPoint.weightB * itemPoint.Ko*itemPoint.count / (0.22 * itemPoint.cos), 2);
+                        itemPoint.Ic = Math.Round(itemPoint.weightC * itemPoint.Ko * itemPoint.count / (0.22 * itemPoint.cos), 2);
                     }
                     if (itemPoint.typeClient == 3)
                     {
-                        itemPoint.Ia = Math.Round(itemPoint.weightA / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
-                        itemPoint.Ib = Math.Round(itemPoint.weightA / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
-                        itemPoint.Ic = Math.Round(itemPoint.weightA / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
+                        itemPoint.Ia = Math.Round(itemPoint.weightA * itemPoint.Ko * itemPoint.count / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
+                        itemPoint.Ib = Math.Round(itemPoint.weightA * itemPoint.Ko * itemPoint.count / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
+                        itemPoint.Ic = Math.Round(itemPoint.weightA * itemPoint.Ko * itemPoint.count / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
                     }
                     tempList.Add(itemPoint);
 
@@ -1687,7 +1620,7 @@ namespace ElectroTools
 
 
                                 //Расстояние между точками для проверки соединить их в одну точку  и 5 процентов запаса
-                                if (Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 0) <= UserData.searchDistancePL | Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 2) > 0)
+                                if (Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 0) <= UserData.searchDistancePL && Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 2) > 0)
                                 {
 
                                     //Тогда переносим вершину в нужную нам
@@ -3055,11 +2988,9 @@ namespace ElectroTools
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public void UpdateData()
+        private void Tools_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            // Пример обновления данных
-            listPoint = new List<PointLine> { new PointLine { name = 1, weightA = 2.5 } };
-            pathDLLFile = "New Path";
+            OnPropertyChanged(nameof(listPoint));
         }
 
 

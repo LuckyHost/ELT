@@ -116,8 +116,8 @@
         </Grid>
 
 
-
-        <!-- Запись вершин -->
+            
+            <!-- Запись вершин
         <Button
           IsEnabled="{Binding Path=isLock}"
           Style="{StaticResource MaterialDesignOutlinedButton}"
@@ -125,8 +125,8 @@
           Click="bt_weight" 
           Margin="20,10,20,0"
             >
-
-            <!-- Кнопка Передать веса вершина из чертежа в программу. Контейнер-->
+           
+        
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
                 <materialDesign:PackIcon
                 Width="27"
@@ -139,11 +139,11 @@
             </StackPanel>
 
         </Button>
+            -->
 
 
 
-
-        <!-- ТКЗ  -->
+            <!-- ТКЗ  -->
         <Button
             IsEnabled="{Binding Path=isLock}"
             Style="{StaticResource MaterialDesignOutlinedButton}"

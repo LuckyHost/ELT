@@ -158,6 +158,7 @@
     <Compile Include="BD.cs" />
     <Compile Include="Convertors\EdgeConverter.cs" />
     <Compile Include="Convertors\PointLineConverter.cs" />
+    <Compile Include="Convertors\PointLinePhaseСurrent.cs" />
     <Compile Include="DataForm.xaml.cs">
       <DependentUpon>DataForm.xaml</DependentUpon>
     </Compile>

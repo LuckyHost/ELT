@@ -103,13 +103,12 @@ namespace ElectroTools
             AddDataGridTextColumn("Марка провода", "cable", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             // Сопротивление R
             AddDataGridTextColumn("Сопротивление R +jX (Z), Ом", "", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center,false, "ResistanceConverter");
-            
             // Длина ребра
             AddDataGridTextColumn("Длина ребра, м", "length", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             //Допустимый ток
             AddDataGridTextColumn("Допустимый ток, А", "Icrict", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             //Продекаемый ток в ребре 
-            AddDataGridTextColumn("Протекаемый ток, А", "I", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
+            AddDataGridTextColumn("Протекаемый ток, А", "", true, Visibility.Visible, FontWeights.UltraLight, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center,false, "PointLinePhaseСurrent");
         }
 
         private void ConfigureColumnsForPowerLine()
@@ -144,10 +143,10 @@ namespace ElectroTools
             AddDataGridTextColumn("№ вершины", "name", true, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 127, 0)), TextAlignment.Center, true);
             
             // Количество потребителей
-            AddDataGridTextColumn("Количество", "count", false, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, true);
+            AddDataGridTextColumn("Количество ,шт", "count", false, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, true);
 
             //КоэфОдновремености
-            AddDataGridTextColumn("Ко", "Ko", false, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, true);
+            AddDataGridTextColumn("Ко, о.е", "Ko", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, true);
 
 
 
@@ -184,7 +183,7 @@ namespace ElectroTools
             AddDataGridTextColumn("№ вершины", "name", true, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 127, 0)), TextAlignment.Center, true);
 
             // Количество 
-            AddDataGridTextColumn("Количество потребителей, шт", "weight", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
+            AddDataGridTextColumn("Количество потребителей, шт", "count", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             //Важность
             AddDataGridCheckBoxColumn("Важность потребителя, Да\\Нет", "isFavorite");
         }

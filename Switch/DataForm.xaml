@@ -26,6 +26,7 @@
             <local:ResistanceConverter x:Key="ResistanceConverter" />
             <local:PointLineConverter x:Key="PointLineConverter" />
             <local:EdgeConverter x:Key="EdgeConverter" />
+            <local:PointLinePhaseСurrent x:Key="PointLinePhaseСurrent" />
             <!-- End.Список конверторов-->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />

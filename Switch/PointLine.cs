@@ -6,6 +6,10 @@ using ElectroTools;
 using System;
 using System.Xml.Serialization;
 using System.ComponentModel;
+using MathNet.Numerics.Interpolation;
+using System.Windows.Forms;
+
+
 
 
 
@@ -74,6 +78,8 @@ namespace ElectroTools
                     if (_typeClient == 3)
                     {
                         Text.updateTextById(IDText, name + "\\P" + value.ToString(), 256);
+                       
+
                     }
                     else
                     {
@@ -118,7 +124,15 @@ namespace ElectroTools
             set
             {
                 if (value >= 0)
-                    _weightB = value;
+                {
+                    _count = value;
+                    //Коээфицент интерполяции
+                    double[] x = { 1, 2, 3, 5, 7, 10, 15, 20, 50, 100, 200, 500 };
+                    double[] y = { 1, 0.75, 0.64, 0.53, 0.47, 0.42, 0.37, 0.34, 0.27, 0.24, 0.20, 0.18 };
+                    IInterpolation interpolation = LinearSpline.InterpolateSorted(x, y);
+                    Ko = Math.Round( interpolation.Interpolate(value),3);
+                    OnPropertyChanged(nameof(count));
+                }
             }
 
         }
@@ -130,7 +144,7 @@ namespace ElectroTools
             set
             {
                 if (value >= 0)
-                    _weightB = value;
+                    _Ko = value;
             }
 
         }
@@ -204,8 +218,9 @@ namespace ElectroTools
                     if (value == 3)
                     {
                         Text.updateColorMtext(this, 256);
-                        weightB = 0;
-                        weightC = 0;
+                        _weightB = 0;
+                        _weightC = 0;
+                       OnPropertyChanged(nameof(typeClient));
                     }
                 }
             }
@@ -277,6 +292,8 @@ namespace ElectroTools
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        
 
 
     }

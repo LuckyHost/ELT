@@ -85,7 +85,7 @@ namespace ElectroTools
         }
         private void getKnot(object sender, RoutedEventArgs e)
         {
-            _data._tools.getAllPointLine();
+            //_data._tools.getAllPointLine();
             _formData = new DataForm(_data, new PointLine());
             _formData.Show();
         }
@@ -93,7 +93,7 @@ namespace ElectroTools
         //Получить все поинты
         private void getDataAllEdge(object sender, RoutedEventArgs e)
         {
-            _data._tools.getAllEdeg();
+            //_data._tools.getAllEdeg();
             _formData = new DataForm(_data, new Edge());
             _formData.sp_check.Visibility = Visibility.Collapsed;
             _formData.Show();
