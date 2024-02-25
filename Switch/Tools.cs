@@ -8,20 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.IO;
-using System.Data.SQLite;
 using System.Xml.Serialization;
 using System.ComponentModel;
 using System.Windows.Forms.Integration;
-using MathNet.Numerics;
-using MathNet.Numerics.Interpolation;
-using HostMgd.Windows.ToolPalette;
-using Autodesk.AutoCAD.Internal;
-using System.Windows;
-using System.Diagnostics.Eventing.Reader;
-
-
-
-
 
 
 
@@ -62,7 +51,7 @@ namespace ElectroTools
         public event PropertyChangedEventHandler PropertyChanged;
 
         public Document doc;
-        public Teigha.DatabaseServices.Database dbCurrent;
+        public Database dbCurrent;
         public Editor ed;
         //Для передачи Lock состояни
         private MyData _myData;
@@ -1079,12 +1068,15 @@ namespace ElectroTools
         public void getVoltage()
         {
             //Фазное напряжение сети
-            string tempUf = creatPromptKeywordOptions("Выберите напряжение точки генерации сети.: ", BDSQL.searchAllDataInBD(dbFilePath, "voltage", "kV"), 1);
-            if (string.IsNullOrEmpty(tempUf)) { return; };
-            double Uf = double.Parse(tempUf);
-            listPoint[0].Ua = Uf;
-            listPoint[0].Ub = Uf;
-            listPoint[0].Uc = Uf;
+            string tempUgen = creatPromptKeywordOptions("Выберите напряжение точки генерации сети.: ", BDSQL.searchAllDataInBD(dbFilePath, "voltage", "kV"), 1);
+            if (string.IsNullOrEmpty(tempUgen)) { return; };
+            double Ugen = double.Parse(tempUgen);
+
+            double Ufashze = Math.Round(Ugen / Math.Sqrt(3), 2);
+
+            listPoint[0].Ua = Ufashze;
+            listPoint[0].Ub = Ufashze;
+            listPoint[0].Uc = Ufashze;
 
             using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
             {
@@ -1146,7 +1138,7 @@ namespace ElectroTools
                     double tempAddIb = 0;
                     double tempAddIc = 0;
 
-                    if (itemListPoint[i + 1].tempBoll != true)
+                    if (!itemListPoint[i + 1].tempBoll)
                     {
                         itemListPoint[i + 1].tempBoll = true;
                         itemListPoint[i + 1].Ia = Math.Round(itemListPoint[i + 1].Ia + itemListPoint[i].Ia, 3);
@@ -1204,6 +1196,7 @@ namespace ElectroTools
                 {
                     //Фаза А
                     itemEdge.endPoint.Ua = dropVoltage(itemEdge, "А");
+
                     Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUa= " + Math.Round((itemEdge.startPoint.Ua - itemEdge.endPoint.Ua), 2) + " В.", "1", 154, -4);
 
                     //Фаза В
@@ -1219,38 +1212,38 @@ namespace ElectroTools
                 if (itemEdge.endPoint.Ua > 0 | itemEdge.endPoint.Ub > 0 | itemEdge.endPoint.Uc > 0)
                 {
                     //Фаза А
-                    if (((Uf - itemEdge.endPoint.Ua) / Uf * 100) >= 10.0)
+                    if (((Ufashze - itemEdge.endPoint.Ua) / Ufashze * 100) >= 10.0)
                     {
-                        double percentA = Math.Round(((Uf - itemEdge.endPoint.Ua) / Uf * 100), 2);
+                        double percentA = Math.Round(((Ufashze - itemEdge.endPoint.Ua) / Ufashze * 100), 2);
                         Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 26, -4);
                     }
                     else
                     {
-                        double percentA = Math.Round(((Uf - itemEdge.endPoint.Ua) / Uf * 100), 2);
+                        double percentA = Math.Round(((Ufashze - itemEdge.endPoint.Ua) / Ufashze * 100), 2);
                         Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 41, -4);
                     }
 
                     //Фаза В
-                    if ((Uf - itemEdge.endPoint.Ub) / Uf * 100 >= 10.0)
+                    if ((Ufashze - itemEdge.endPoint.Ub) / Ufashze * 100 >= 10.0)
                     {
-                        double percentB = Math.Round(((Uf - itemEdge.endPoint.Ub) / Uf * 100), 2);
+                        double percentB = Math.Round(((Ufashze - itemEdge.endPoint.Ub) / Ufashze * 100), 2);
                         Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 26, -6);
                     }
                     else
                     {
-                        double percentB = Math.Round(((Uf - itemEdge.endPoint.Ub) / Uf * 100), 2);
+                        double percentB = Math.Round(((Ufashze - itemEdge.endPoint.Ub) / Ufashze * 100), 2);
                         Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 74, -6);
                     }
 
                     //Фаза С
-                    if (((Uf - itemEdge.endPoint.Uc) / Uf * 100) >= 10.0)
+                    if (((Ufashze - itemEdge.endPoint.Uc) / Ufashze * 100) >= 10.0)
                     {
-                        double percentC = Math.Round(((Uf - itemEdge.endPoint.Uc) / Uf * 100), 2);
+                        double percentC = Math.Round(((Ufashze - itemEdge.endPoint.Uc) / Ufashze * 100), 2);
                         Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 26, -8);
                     }
                     else
                     {
-                        double percentC = Math.Round(((Uf - itemEdge.endPoint.Uc) / Uf * 100), 2);
+                        double percentC = Math.Round(((Ufashze - itemEdge.endPoint.Uc) / Ufashze * 100), 2);
                         Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 22, -8);
                     }
 
@@ -1284,13 +1277,7 @@ namespace ElectroTools
                         return result;
                 }
                 return result;
-
-
-
-
-
             }
-
 
             listPoint = new List<PointLine>(stateList);
             OnPropertyChanged(nameof(listPoint));
@@ -1299,7 +1286,6 @@ namespace ElectroTools
         }
 
 
-        //Получить словари. 
         [CommandMethod("фв16", CommandFlags.UsePickSet |
                    CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad
         public void getSlovari()
@@ -1307,20 +1293,12 @@ namespace ElectroTools
         {
             PromptEntityOptions item = new PromptEntityOptions("\nВыберите объект: ");
             PromptEntityResult perItem = ed.GetEntity(item);
-            //ShowExtensionDictionaryContents(perItem.ObjectId, "ESMT_LEP_v1.0");
-            //ShowExtensionDictionaryContents(perItem.ObjectId, "Makarov.D");
-            //ShowExtensionDictionaryContents(perItem.ObjectId, "ESMT_LEP_v1.0");
-
-
-
         }
 
         public void setBD()
         {
             try
             {
-
-
                 ed.WriteMessage("\n--------------------------------\n");
                 ed.WriteMessage("Сохранение веса вершин \n");
                 ed.WriteMessage("--------------------------------\n");
@@ -1351,10 +1329,8 @@ namespace ElectroTools
         public void getBD()
 
         {
-
             try
             {
-
                 ed.WriteMessage("\n--------------------------------\n");
                 ed.WriteMessage("Восстановление веса вершин \n");
                 ed.WriteMessage("--------------------------------\n");
@@ -1365,8 +1341,8 @@ namespace ElectroTools
 
                 string isLoadNameLine = creatPromptKeywordOptions("Восстановить название линий ?", new List<string> { "Да", "Нет" }, 1);
 
-                List<PointLine> templistPoint = BDShowExtensionDictionaryContents<BD>(perItem.ObjectId, "Makarov.D").listPointLine;
-                List<PowerLine> templistPowerLine = BDShowExtensionDictionaryContents<BD>(perItem.ObjectId, "Makarov.D").listPowerLine;
+                List<PointLine> templistPoint = BDShowExtensionDictionaryContents<BD>(perItem.ObjectId, "Makarov.D")?.listPointLine;
+                List<PowerLine> templistPowerLine = BDShowExtensionDictionaryContents<BD>(perItem.ObjectId, "Makarov.D")?.listPowerLine;
 
                 foreach (PointLine itemPoint in templistPoint)
                 {
@@ -1379,8 +1355,9 @@ namespace ElectroTools
                             {
                                 item1.typeClient = itemPoint.typeClient;
                                 item1.cos = itemPoint.cos;
-                                item1.weightB = itemPoint.weightB;
-                                item1.weightC = itemPoint.weightC;
+                                //_ потому что иначе криво восстанавливает 
+                                item1._weightB = itemPoint._weightB;
+                                item1._weightC = itemPoint._weightC;
                                 item1.weightA = itemPoint.weightA;
                                 item1.count = itemPoint.count;
                                 item1.Ko = itemPoint.Ko;
@@ -1433,8 +1410,6 @@ namespace ElectroTools
 
         public void nextFormAsync()
         {
-
-
             _myData = new MyData(this);
             //Создает боковое меню
             StartPalet myUserControl = new StartPalet(_myData);
@@ -1458,14 +1433,6 @@ namespace ElectroTools
         }
 
 
-
-
-
-
-
-
-
-
         List<PointLine> GetWeightedVertices(List<PointLine> stateList)
         {
             List<PointLine> tempList = new List<PointLine>();
@@ -1473,7 +1440,6 @@ namespace ElectroTools
             {
                 if (itemPoint.weightA > 0 | itemPoint.weightB > 0 | itemPoint.weightC > 0)
                 {
-
                     if (itemPoint.typeClient == 1)
                     {
                         itemPoint.Ia = Math.Round(itemPoint.weightA * itemPoint.Ko * itemPoint.count / (0.22 * itemPoint.cos), 2);
@@ -1487,7 +1453,6 @@ namespace ElectroTools
                         itemPoint.Ic = Math.Round(itemPoint.weightA * itemPoint.Ko * itemPoint.count / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
                     }
                     tempList.Add(itemPoint);
-
                 }
             }
             return tempList;
@@ -1627,8 +1592,6 @@ namespace ElectroTools
                                 ChilderLine.cable = BDShowExtensionDictionaryContents<Conductor>(acSObj.ObjectId, "ESMT_LEP_v1.0")?.Name
                                  ?? creatPromptKeywordOptions("\n\nВыберите мару провода: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
 
-
-
                                 ChilderLine.IDLine = acSObj.ObjectId;
                                 ChilderLine.parent = masterLine;
                                 ChilderLine.lengthLine = Math.Round(lengthPolyline.Length, 3);
@@ -1706,8 +1669,6 @@ namespace ElectroTools
             public List<Edge> pathEdgeTKZ { get; set; }
             public List<PointLine> pathPointTKZ { get; set; }
 
-
-
             public TKZ()
             {
                 transformersX = 0;
@@ -1755,7 +1716,6 @@ namespace ElectroTools
                 righPathText = "";
                 LeftWeight = 0;
                 RighWeight = 0;
-
             }
 
         }
@@ -2393,9 +2353,9 @@ namespace ElectroTools
 
                         // Проверка словаря расширений
                         if (extDict == null)
-                            
+
                             return default(T);
-                            //throw new ArgumentException("ExtensionDictionary not found.", "entityId");
+                        //throw new ArgumentException("ExtensionDictionary not found.", "entityId");
 
                         // Проверка наличия записи
                         if (!extDict.Contains(nameDictionary))

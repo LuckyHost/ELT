@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -32,17 +33,17 @@ namespace ElectroTools
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public DataForm( MyData data, object T)
-       // public DataFormPoints( MyData data, object myObject)
+        public DataForm(MyData data, object T)
+        // public DataFormPoints( MyData data, object myObject)
         {
             _data = data;
             _T = T;
             InitializeComponent();
             this.DataContext = data;
 
-            if (T is PointLine ) 
+            if (T is PointLine)
             {
-            ConfigureColumnsForPointLines();
+                ConfigureColumnsForPointLines();
             }
 
             if (T is Edge)
@@ -66,14 +67,14 @@ namespace ElectroTools
             DataGridCell cell = sender as DataGridCell;
 
             // Получаем данные из этой ячейки
-          //  if (cell != null && cell.Content is TextBlock textBlock)
-            if (cell != null )
+            //  if (cell != null && cell.Content is TextBlock textBlock)
+            if (cell != null)
             {
                 if (cell.DataContext is PointLine pointLine)
                 {
-                Draw.ZoomToEntity(pointLine.IDText,10) ;
-                //string cellValue = textBlock.Text;
-                //MessageBox.Show($"Вы нажали на ячейку с значением: {cellValue}");
+                    Draw.ZoomToEntity(pointLine.IDText, 10);
+                    //string cellValue = textBlock.Text;
+                    //MessageBox.Show($"Вы нажали на ячейку с значением: {cellValue}");
                 }
 
                 if (cell.DataContext is Edge edge)
@@ -102,13 +103,13 @@ namespace ElectroTools
             //Марка провода
             AddDataGridTextColumn("Марка провода", "cable", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             // Сопротивление R
-            AddDataGridTextColumn("Сопротивление R +jX (Z), Ом", "", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center,false, "ResistanceConverter");
+            AddDataGridTextColumn("Сопротивление R +jX (Z), Ом", "", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, false, "ResistanceConverter");
             // Длина ребра
             AddDataGridTextColumn("Длина ребра, м", "length", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             //Допустимый ток
             AddDataGridTextColumn("Допустимый ток, А", "Icrict", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             //Продекаемый ток в ребре 
-            AddDataGridTextColumn("Протекаемый ток, А", "", true, Visibility.Visible, FontWeights.UltraLight, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center,false, "PointLinePhaseСurrent");
+            AddDataGridTextColumn("Протекаемый ток, А", "", true, Visibility.Visible, FontWeights.UltraLight, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, false, "PointLinePhaseСurrent");
         }
 
         private void ConfigureColumnsForPowerLine()
@@ -120,10 +121,10 @@ namespace ElectroTools
             //Родитель
             AddDataGridTextColumn("Родитель", "parent.name", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             //Лежит в ребрах
-            AddDataGridTextColumn("Лежит в ребрах", "", true, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center,false, "EdgeConverter");
+            AddDataGridTextColumn("Лежит в ребрах", "", true, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, false, "EdgeConverter");
             //Лежит в вершинах
-            AddDataGridTextColumn("Лежит в вершинах", "", true, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center,false, "PointLineConverter");
-             // Марка провода
+            AddDataGridTextColumn("Лежит в вершинах", "", true, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, false, "PointLineConverter");
+            // Марка провода
             AddDataGridTextColumn("Марка провода", "cable", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             //Длина
             AddDataGridTextColumn("Длина, м", "lengthLine", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
@@ -141,7 +142,7 @@ namespace ElectroTools
 
             // Добавьте столбец с настройками для номера вершины
             AddDataGridTextColumn("№ вершины", "name", true, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 127, 0)), TextAlignment.Center, true);
-            
+
             // Количество потребителей
             AddDataGridTextColumn("Количество ,шт", "count", false, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, true);
 
@@ -168,9 +169,25 @@ namespace ElectroTools
             AddDataGridTextColumn("Тип нагрузки", "typeClient", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
 
 
-        }
 
-       
+        }
+        /*
+        private void dataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            
+            if (e.Column.DisplayIndex == 10) // Проверка индекса колонки 10-тип нагрузки 
+            {
+                if (e.EditingElement is TextBox textBox && textBox.Text == "3")
+                {
+                    var row = (PointLine)e.Row.Item; // Получаем строку данных
+                    row.weightB= 5; // Устанавливаем значение в 4-й столбец 
+
+                }
+
+
+            }
+        } */
+
 
         //Для PointLines
         private void ConfigureColumnsForPointLinesSS()
@@ -195,12 +212,12 @@ namespace ElectroTools
             if (isReTable)
             {
                 ConfigureColumnsForPointLinesSS();
-                
+
                 SnackbarSeven.MessageQueue.Enqueue("При выборе ''Важности'', обязательно затем перейдите на другую строку для сохранение данных");
             }
             else
             {
-                ConfigureColumnsForPointLines(); 
+                ConfigureColumnsForPointLines();
             }
         }
 
@@ -208,7 +225,7 @@ namespace ElectroTools
 
 
         //Функция добавления столбцов
-        private void AddDataGridTextColumn (string header, string bindingPath, bool isReadOnly, Visibility visibility, FontWeight fontWeight, SolidColorBrush foreground, TextAlignment textAlignment, bool addEvent = false, string converter = null, string triggerPropertyName = null, object triggerValue = null, Brush triggerBackgroundColor = null, Brush triggerForegroundColor = null)
+        private void AddDataGridTextColumn(string header, string bindingPath, bool isReadOnly, Visibility visibility, FontWeight fontWeight, SolidColorBrush foreground, TextAlignment textAlignment, bool addEvent = false, string converter = null, string triggerPropertyName = null, object triggerValue = null, Brush triggerBackgroundColor = null, Brush triggerForegroundColor = null)
         {
 
             DataGridTextColumn column = new DataGridTextColumn
@@ -217,7 +234,7 @@ namespace ElectroTools
                 Binding = new Binding(bindingPath),
                 IsReadOnly = isReadOnly,
                 Visibility = visibility,
-                
+
             };
 
             if (converter != null)
@@ -225,7 +242,7 @@ namespace ElectroTools
                 // Используйте конвертер, если он указан
                 column.Binding = new Binding(bindingPath)
                 {
-                   Converter = (IValueConverter)FindResource(converter) // Предполагается, что конвертер объявлен в ресурсах окна
+                    Converter = (IValueConverter)FindResource(converter) // Предполагается, что конвертер объявлен в ресурсах окна
                 };
             }
 
@@ -252,13 +269,13 @@ namespace ElectroTools
                 };
             }
 
-         
+
             tableData.Columns.Add(column);
 
-           
+
         }
 
-      
+
 
 
 
@@ -289,11 +306,11 @@ namespace ElectroTools
 
         private void MyData_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(_data.listpoint) & _T is PointLine )
+            if (e.PropertyName == nameof(_data.listpoint) & _T is PointLine)
             {
                 tableData.ItemsSource = _data.listpoint;
             }
-            
+
             if (e.PropertyName == nameof(_data.listEdge) & _T is Edge)
             {
                 tableData.ItemsSource = _data.listEdge;
@@ -310,7 +327,7 @@ namespace ElectroTools
             }
         }
 
-      
+
     }
 
 

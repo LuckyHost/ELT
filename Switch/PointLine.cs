@@ -45,7 +45,7 @@ namespace ElectroTools
 
 
     [Serializable]
-    
+
     public class PointLine : INotifyPropertyChanged
     {
 
@@ -55,16 +55,19 @@ namespace ElectroTools
         private int _count;
         private double _Ko;
         private double _weightA;
-        private double _weightB;
-        private double _weightC;
+        //Безвыходность
+        [XmlElement("weightB")]
+        public double _weightB;
+        [XmlElement("weightC")]
+        public double _weightC;
         private bool _isFavorite;
 
 
-        
+
         public int name { get; set; }
         [XmlIgnore]
         public Point2d positionPoint { get; set; }
-        
+
         public double weightA
         {
             get { return _weightA; }
@@ -79,7 +82,7 @@ namespace ElectroTools
                     if (_typeClient == 3)
                     {
                         Text.updateTextById(IDText, name + "\\P" + value.ToString(), 256);
-                       
+
 
                     }
                     else
@@ -91,7 +94,7 @@ namespace ElectroTools
 
         }
 
-        
+        [XmlIgnore]
         public double weightB
         {
             get { return _weightB; }
@@ -109,7 +112,6 @@ namespace ElectroTools
                     }
                     else
                     {
-
                         Text.updateTextById(IDText, name + "\\P" + _weightA + "; " + value.ToString() + "; " + _weightC, 201);
                     }
 
@@ -117,7 +119,7 @@ namespace ElectroTools
             }
         }
 
-        
+        [XmlIgnore]
         public double weightC
         {
             get { return _weightC; }
@@ -144,7 +146,7 @@ namespace ElectroTools
         }
 
 
-        
+
         public int count
         {
             get { return _count; }
@@ -157,14 +159,14 @@ namespace ElectroTools
                     double[] x = { 1, 2, 3, 5, 7, 10, 15, 20, 50, 100, 200, 500 };
                     double[] y = { 1, 0.75, 0.64, 0.53, 0.47, 0.42, 0.37, 0.34, 0.27, 0.24, 0.20, 0.18 };
                     IInterpolation interpolation = LinearSpline.InterpolateSorted(x, y);
-                    Ko = Math.Round( interpolation.Interpolate(value),3);
+                    Ko = Math.Round(interpolation.Interpolate(value), 3);
                     OnPropertyChanged(nameof(count));
                 }
             }
 
         }
 
-        
+
         public double Ko
         {
             get { return _Ko; }
@@ -193,12 +195,10 @@ namespace ElectroTools
         [XmlIgnore]
         public double Ic { get; set; }
 
-        
+
         public double cos { get; set; }
 
-
-        
-       public int typeClient
+        public int typeClient
         {
             get { return _typeClient; }
             set
@@ -216,7 +216,7 @@ namespace ElectroTools
                         Text.updateColorMtext(this, 256);
                         _weightB = 0;
                         _weightC = 0;
-                       OnPropertyChanged(nameof(typeClient));
+                        OnPropertyChanged(nameof(typeClient));
                     }
                 }
             }
@@ -231,7 +231,7 @@ namespace ElectroTools
         [XmlIgnore]
         public double Uc { get; set; }
 
-        
+
         public bool isFavorite
         {
             get
@@ -242,7 +242,7 @@ namespace ElectroTools
         }
 
         [XmlIgnore]
-         public ObjectId IDText { get; set; }
+        public ObjectId IDText { get; set; }
 
 
 
@@ -251,6 +251,7 @@ namespace ElectroTools
         {
             name = 0;
             positionPoint = new Point2d();
+            typeClient = 3;
             count = 1;
             Ko = 1;
             weightA = 0;
@@ -267,7 +268,6 @@ namespace ElectroTools
             isFavorite = false;
             IDText = ObjectId.Null;
             cos = 0.96;
-            typeClient = 1;
 
         }
         protected virtual void OnPropertyChanged(string propertyName)
@@ -275,7 +275,7 @@ namespace ElectroTools
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        
+
 
 
     }
