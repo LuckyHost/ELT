@@ -71,34 +71,50 @@
             </StackPanel>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button
-             HorizontalAlignment="Center"
-             IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
-             Style="{StaticResource MaterialDesignToolButton}"
-             ToolTip="MaterialDesignFloatingActionMiniButton"
+            <Button
+                 HorizontalAlignment="Center"
+                 IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+                 Style="{StaticResource MaterialDesignToolButton}"
+                 ToolTip="Удалить все элементы плагина"
+                Click="deleteDraw"
              
             >
 
+                 <materialDesign:PackIcon
+                       Width="25"
+                       Height="25"
+                       Kind="Draw" 
+                   />
+            </Button>
+
+                    <Button
+                         HorizontalAlignment="Center"
+                         IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+                         Style="{StaticResource MaterialDesignToolButton}"
+                         ToolTip="Вывести матрицы в MS Excel"
+                        Click="creatExcel"
+ 
+                    >
 
                         <materialDesign:PackIcon
-               Width="25"
-               Height="25"
-               Kind="MicrosoftExcel" 
-               ToolTip="Вывести матрицы в MS Excel" 
-               />
+                               Width="25"
+                               Height="25"
+                               Kind="MicrosoftExcel" 
+                           />
                     </Button>
 
                     <Button
                   HorizontalAlignment="Center"
                   IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
                   Style="{StaticResource MaterialDesignToolButton}"
-                  ToolTip="MaterialDesignFloatingActionMiniButton">
-                <materialDesign:PackIcon
-                    Width="25"
-                    Height="25"
-                    Kind="InformationSlabBoxOutline" 
+                  ToolTip="MaterialDesignFloatingActionMiniButton"
+                >
+                    <materialDesign:PackIcon
+                        Width="25"
+                        Height="25"
+                        Kind="InformationSlabBoxOutline" 
                     />
-            </Button>
+             </Button>
                 </StackPanel>
 
 

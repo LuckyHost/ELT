@@ -119,9 +119,23 @@ namespace ElectroTools
 
         private void creatExcel(object sender, RoutedEventArgs e)
         {
-            if (_data._tools.matrixInc != null)
+            if (_data._tools.matrixSmej != null)
             {
-                Excel.creadFile(_data._tools.matrixInc);
+                Excel.creadFile(_data._tools.matrixSmej, _data._tools.matrixInc);
+            }
+
+        }
+
+        private void deleteDraw (object sender, RoutedEventArgs e)
+        {
+            if (_data._tools.listPowerLine != null)
+            {
+                Layer.deleteObjectsOnLayer("Узлы_Saidi_Saifi_Makarov.D");
+                Layer.deleteObjectsOnLayer("Граф_Saidi_Saifi_Makarov.D");
+                Layer.deleteObjectsOnLayer("НазванияЛиний_Saidi_Saifi_Makarov.D");
+                Layer.deleteObjectsOnLayer("Ребра_Saidi_Saifi_Makarov.D");
+                Layer.deleteObjectsOnLayer("TKZ_Makarov.D");
+                Layer.deleteObjectsOnLayer("Напряжение_Makarov.D");
             }
 
         }
