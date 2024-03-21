@@ -70,8 +70,26 @@
             
             </StackPanel>
 
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button
+         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                    <Button
+                         HorizontalAlignment="Center"
+                         IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+                         Style="{StaticResource MaterialDesignToolButton}"
+                         ToolTip="Обойти от вершины до вершины"
+                        Click="creatPathPoint"
+ 
+                    >
+
+                         <materialDesign:PackIcon
+                               Width="25"
+                               Height="25"
+                               Kind="MapMarkerPath" 
+                           />
+                    </Button>
+             
+             
+                    <Button
                  HorizontalAlignment="Center"
                  IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
                  Style="{StaticResource MaterialDesignToolButton}"
@@ -87,7 +105,7 @@
                    />
             </Button>
 
-                    <Button
+            <Button
                          HorizontalAlignment="Center"
                          IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
                          Style="{StaticResource MaterialDesignToolButton}"
@@ -120,7 +138,7 @@
 
 
 
-            </StackPanel>
+        </StackPanel>
 
         <!-- Разделитель -->
         <Separator VerticalAlignment="Center" Margin="80,0" />

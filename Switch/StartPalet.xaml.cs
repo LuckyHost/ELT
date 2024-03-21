@@ -115,7 +115,16 @@ namespace ElectroTools
         }
 
 
+        
 
+        private void creatPathPoint(object sender, RoutedEventArgs e)
+        {
+            if (_data._tools.listPoint != null)
+            {
+                _data._tools.creatPathPoint();
+            }
+
+        }
 
         private void creatExcel(object sender, RoutedEventArgs e)
         {
@@ -125,6 +134,7 @@ namespace ElectroTools
             }
 
         }
+
 
         private void deleteDraw (object sender, RoutedEventArgs e)
         {

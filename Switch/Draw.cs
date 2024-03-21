@@ -33,7 +33,7 @@ namespace ElectroTools
         static Database dbCurrent = MyOpenDocument.dbCurrent;
         static Document doc = MyOpenDocument.doc;
 
-        public static void drawPolyline(List<PointLine> masterListPont, string nameLayer, short color, double ConstantWidth)
+        public static ObjectId drawPolyline(List<PointLine> masterListPont, string nameLayer, short color, double ConstantWidth)
         {
 
            
@@ -63,6 +63,7 @@ namespace ElectroTools
 
                     // Commit the transaction
                     tr.Commit();
+                    return polyline.ObjectId;
 
                 }
             }

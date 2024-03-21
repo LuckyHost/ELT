@@ -35,12 +35,6 @@ namespace ElectroTools
                 worksheet3.Name = "Матрица Веса Вершин";
 
 
-                /*
-                Range range1 = (Range)worksheet1.Cells[2, 7];
-                range1.Value = "Ветви";
-                range1.Font.Color = ColorTranslator.ToOle(Color.FromArgb(255, 191, 0));
-                range1.Font.Bold = true;*/
-
                 //Матрица смежности
                 fillDataWorkSheet("Матрица Смежности Сети", "Узлы", Color.FromArgb(0, 127, 0), "Узлы", Color.FromArgb(0, 127, 0), matrixSmej, worksheetMatrixSmej);
 

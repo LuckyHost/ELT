@@ -539,8 +539,6 @@ namespace ElectroTools
 
 
         // Fun Для Создания Пути обхода 
-        [CommandMethod("фв10", CommandFlags.UsePickSet |
-                       CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad
         public void creatPathPoint()
         {
             int startPoint = 0;
@@ -561,6 +559,12 @@ namespace ElectroTools
 
             //Создает путь из классов !!
             List<PointLine> path = ListPathIntToPoint(findPath(matrixSmej, startPoint, endPoint));
+
+            //Нарисовать и приблизить 
+            ObjectId idPL = Draw.drawPolyline(path, "Напряжение_Makarov.D", 52, 0.4);
+            Draw.ZoomToEntity(idPL, 1);
+            ed.SetImpliedSelection(new ObjectId[] { idPL });
+
 
             ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             ed.WriteMessage("Путь ОБХОДА :");
