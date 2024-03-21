@@ -15,7 +15,7 @@ namespace ElectroTools
             InitializeComponent();
             _data = data;
             this.DataContext = _data;
-           
+
         }
 
 
@@ -34,7 +34,7 @@ namespace ElectroTools
         private void bt_weight(object sender, RoutedEventArgs e)
         {
             //this.Hide();
-           
+
             //this.Show();
         }
         //ТКЗ
@@ -112,6 +112,18 @@ namespace ElectroTools
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             _data._tools.getPointLine();
+        }
+
+
+
+
+        private void creatExcel(object sender, RoutedEventArgs e)
+        {
+            if (_data._tools.matrixInc != null)
+            {
+                Excel.creadFile(_data._tools.matrixInc);
+            }
+
         }
 
         private void Button_ImageFailed(object sender, ExceptionRoutedEventArgs e)

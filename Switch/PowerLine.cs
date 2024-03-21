@@ -2,7 +2,6 @@
 
 
 
-using ElectroTools;
 using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
@@ -21,15 +20,7 @@ using Teigha.Runtime;
 using Teigha.Colors;
 using Exception = Teigha.Runtime.Exception;
 #else
-using Application = Autodesk.AutoCAD.ApplicationServices.Application;
-using Color = Autodesk.AutoCAD.Colors.Color;
-using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.EditorInput;
-using Autodesk.AutoCAD.Geometry;
-using Autodesk.AutoCAD.Runtime;
-using Autodesk.AutoCAD.Colors;
-using Exception = Autodesk.AutoCAD.Runtime.Exception;
 #endif
 #endregion Namespaces
 

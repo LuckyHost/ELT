@@ -11,6 +11,10 @@ using System.IO;
 using System.Xml.Serialization;
 using System.ComponentModel;
 using System.Windows.Forms.Integration;
+using System.Windows;
+using ElectroTools.TestTools;
+
+
 
 
 
@@ -53,7 +57,7 @@ namespace ElectroTools
         public Document doc;
         public Database dbCurrent;
         public Editor ed;
-        //Для передачи Lock состояни
+        //Для передачи Lock состояния
         private MyData _myData;
         private NetWork _netWork = new NetWork();
         private string _pathDLLFile;
@@ -71,22 +75,33 @@ namespace ElectroTools
             MyOpenDocument.doc = doc;
             MyOpenDocument.dbCurrent = dbCurrent;
 
-            var currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var assemblies = new string[]
+
+            List<string> assemblies = new List<string>
             {
                 "MaterialDesignColors.dll",
                 "MaterialDesignThemes.MahApps.dll",
                 "MaterialDesignThemes.Wpf.dll",
                 "Newtonsoft.Json.dll",
-
             };
 
-            foreach (var assembly in assemblies)
+            var getListAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            List<string> assembliesToLoadCopy = new List<string>(assemblies);
+
+            foreach (string assemblyName in assemblies)
+            {
+                if (getListAssemblies.Any(assembly => assembly.GetName().Name.StartsWith(assemblyName.Substring(0, assemblyName.Length - 4))))
+                {
+                    assembliesToLoadCopy.Remove(assemblyName);
+                }
+
+            }
+            //Загрузка dll
+            string currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            foreach (string assembly in assembliesToLoadCopy)
             {
                 Assembly.LoadFrom(Path.Combine(currentDir, assembly));
             }
-
-
 
         }
 
@@ -1407,6 +1422,8 @@ namespace ElectroTools
 
         }
 
+      
+
 
         public void nextFormAsync()
         {
@@ -1477,16 +1494,16 @@ namespace ElectroTools
             PromptEntityResult perMagistral = ed.GetEntity(magistral);
             Polyline Plyline = trAdding.GetObject(perMagistral.ObjectId, OpenMode.ForRead) as Polyline;
 
+            //Приблизить и подсветить
             Draw.ZoomToEntity(perMagistral.ObjectId, 4);
-
-            ed.WriteMessage("\n\nВыберите марку провода магистрали: \n\n");
+            ed.SetImpliedSelection(new ObjectId[] { perMagistral.ObjectId });
 
             PowerLine considerPowerLine = new PowerLine();
             int defult = BDSQL.searchAllDataInBD(dbFilePath, "cable", "default").IndexOf("true") + 1;
 
 
             considerPowerLine.cable = BDShowExtensionDictionaryContents<Conductor>(perMagistral.ObjectId, "ESMT_LEP_v1.0")?.Name
-                ?? creatPromptKeywordOptions("\n\nВыберите марку провода: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
+                ?? creatPromptKeywordOptions("\n\nВыберите марку провода магистрали: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
             considerPowerLine.Icrict = BDSQL.searchDataInBD(dbFilePath, "cable", considerPowerLine.cable, "name", "Icrit");
             considerPowerLine.name = "Магистраль";
             considerPowerLine.IDLine = Plyline.ObjectId;
@@ -1514,9 +1531,11 @@ namespace ElectroTools
                 {
                     // Поиск других полилиний вблизи текущей вершины
                     Point3d searchPoint = new Point3d(polyline.GetPoint2dAt(i).X, polyline.GetPoint2dAt(i).Y, 0);
-                    SelectionFilter acSF = new SelectionFilter(new TypedValue[] { new TypedValue((int)DxfCode.Start, "LWPOLYLINE") });
+                    SelectionFilter acSF = new SelectionFilter(
+                        new TypedValue[] { new TypedValue((int)DxfCode.Start, "LWPOLYLINE") }
+                        );
                     //вектор это допусе поиска
-                    PromptSelectionResult acPSR = ed.SelectCrossingWindow(searchPoint, searchPoint + new Vector3d(UserData.searchDistancePL, UserData.searchDistancePL, 0), acSF);
+                    PromptSelectionResult acPSR = ed.SelectCrossingWindow(searchPoint, searchPoint + new Vector3d(UserData.searchDistancePL, UserData.searchDistancePL, UserData.searchDistancePL), acSF);
                     //PromptSelectionResult acPSR = ed.SelectCrossingWindow(searchPoint, searchPoint, acSF);
 
                     //Создаем поинты
@@ -1536,21 +1555,22 @@ namespace ElectroTools
                     if (acPSR.Status == PromptStatus.OK)
                     {
 
-
                         // Пройдите по найденным объектам
                         foreach (SelectedObject acSObj in acPSR.Value)
                         {
-
+                            
+                           
                             //Отсечь родителя 
                             if (acSObj.ObjectId != masterLine.IDLine && acSObj.ObjectId != masterLine.parent.IDLine)
                             {
+                                //Приближаем
+                                Draw.ZoomToEntity(acSObj.ObjectId, 4);
 
                                 //Вытянуть длинну и посмотреть на циклицность.
                                 Polyline lengthPolyline = trAdding.GetObject(acSObj.ObjectId, OpenMode.ForWrite) as Polyline;
 
-
                                 //Расстояние между точками для проверки соединить их в одну точку  и 5 процентов запаса
-                                if (Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 0) <= UserData.searchDistancePL && Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 2) > 0)
+                                if (Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 0) <= UserData.searchDistancePL & Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 2) > 0)
                                 {
 
                                     //Тогда переносим вершину в нужную нам
@@ -1578,9 +1598,7 @@ namespace ElectroTools
                                     ed.WriteMessage("Линия была построена не от \"Питания\" к \"Нагрузки\", я ее развернул ");
                                 }
 
-                                //Приближаем
-                                Draw.ZoomToEntity(acSObj.ObjectId, 4);
-
+                                                              
                                 //Подсветка что выделилось
                                 ed.SetImpliedSelection(new ObjectId[] { acSObj.ObjectId });
                                 ed.CurrentUserCoordinateSystem = Matrix3d.Identity; // Сброс координатной системы, если необходимо
@@ -2051,8 +2069,8 @@ namespace ElectroTools
                 }
 
             }
-
-            return null;
+            //Заглушка
+            return new List<int> { 0 };
         }
 
         List<PointLine> ListPathIntToPoint(List<int> masterList)
@@ -2102,35 +2120,37 @@ namespace ElectroTools
         }
 
 
+
+
+
+
+
+
         //Создание матрицы смежности узел узел
         int[,] сreatMatrixSmej(List<PointLine> masterListPoint, List<Edge> masterListEdge)
-
         {
+            int size = masterListPoint.Count;
+            int[,] matrix = new int[size, size];
 
-            int rows = masterListPoint.Count();
-            int columns = masterListPoint.Count();
-            int[,] matrix = new int[rows, columns];
-
-            for (int j = 0; j < columns + 1; j++)
+            for (int j = 0; j < size; j++)
             {
-                for (int i = 0; i < columns + 1; i++)
+                for (int i = 0; i < size; i++)
                 {
-
-                    if ((i + 1 < columns) & (j + 1 <= columns))
+                    if (i != j)
                     {
-                        if ((masterListPoint[j] == masterListEdge[i].startPoint) ^ (masterListPoint[j] == masterListEdge[i].endPoint))
+                        foreach (Edge itemEdge in masterListEdge)
                         {
-                            for (int k = 0; k < columns; k++)
+                            if ((masterListPoint[j] == itemEdge.startPoint) && (masterListPoint[i] == itemEdge.endPoint))
                             {
-                                if (((masterListPoint[k] == masterListEdge[i].endPoint) ^ (masterListPoint[k] == masterListEdge[i].startPoint)) & (j != k))
-                                {
-                                    matrix[j, k] = 1;
+                                matrix[j, i] = 1;
+                            }
 
-                                }
+                            if ((masterListPoint[j] == itemEdge.endPoint) && (masterListPoint[i] == itemEdge.startPoint))
+                            {
+                                matrix[j, i] = 1;
                             }
 
                         }
-
                     }
 
                 }
@@ -2138,6 +2158,9 @@ namespace ElectroTools
             }
             return matrix;
         }
+
+
+
 
         TKZ сreatTKZ(bool isI1TKZ)
         {
@@ -2162,7 +2185,8 @@ namespace ElectroTools
 
             foreach (PointLine itemPoint in listLastPoint)
             {
-                newPointPathKZ = ListPathIntToPoint(findPath(matrixSmej, itemPoint.name - 1, 0));
+                List<int> listInt = findPath(matrixSmej, itemPoint.name - 1, 0);
+                newPointPathKZ = ListPathIntToPoint(listInt);
 
                 for (int i = 0; i < newPointPathKZ.Count() - 1; i++)
                 {
@@ -2475,7 +2499,7 @@ namespace ElectroTools
                 string filePath = Path.Combine(desktopPath, "output.xml");
 
                 // Записываем XML-строку в файл
-                File.WriteAllText(filePath, writer.ToString());
+                // File.WriteAllText(filePath, writer.ToString());
 
                 return writer.ToString();
             }
@@ -2580,134 +2604,7 @@ namespace ElectroTools
 
 
 
-
-
-
-
-
-        /*	 	 
-         public class Excel
-         {
-                //CreadFile();
-                OpenFileExcel( CreadFile ( matrixInc ) );
-
-
-                string CreadFile(int[,] matrix)
-                {
-                //Первое создани
-
-                Microsoft.Office.Interop.Excel.Application excel = new Microsoft.Office.Interop.Excel.Application();
-                Workbook workbook = excel.Workbooks.Add();
-
-                Worksheet worksheet1 = (Worksheet)workbook.Worksheets.Add();
-                worksheet1.Name = "Матрица Инцидентности";
-
-                Worksheet worksheet2 = (Worksheet)workbook.Worksheets.Add();
-                worksheet2.Name = "Матрица Смежности";
-
-                Worksheet worksheet4 = (Worksheet)workbook.Worksheets.Add();
-                worksheet4.Name = "Матрица Веса Ребер";
-
-                Worksheet worksheet3 = (Worksheet)workbook.Worksheets.Add();
-                worksheet3.Name = "Матрица Веса Вершин";
-
-
-
-                Range range1 = (Range)worksheet1.Cells[2, 7];
-                range1.Value = "Ветви";
-                range1.Font.Color = ColorTranslator.ToOle(System.Drawing.Color.Blue);
-                range1.Font.Bold = true;
-
-                Range range11 = (Range)worksheet1.Cells[1, 7];
-                range11.Value = "Матрица Инцидентности Сети";
-                range11.Font.Color = ColorTranslator.ToOle(System.Drawing.Color.Black);
-                range11.Font.Bold = true;
-                range11.Font.Size = 20;
-
-                Range range2 = (Range)worksheet1.Cells[7, 1];
-                range2.Value = "Узлы";
-                range2.Font.Color = ColorTranslator.ToOle(System.Drawing.Color.Red);
-                range2.Font.Bold = true;
-
-
-
-
-                int up = 2;
-                int left = 1;
-
-
-                for (int row = 1; row <= matrix.GetLength(0); row++)
-                {
-
-                    Range range3 = (Range)worksheet1.Cells[up + 1 + row, left + 1];
-                    range3.Value = row;
-                    range3.Font.Bold = true;
-                    range3.HorizontalAlignment = Microsoft.Office.Interop.Excel.Constants.xlCenter;
-
-                }
-
-                for (int col = 1; col <= matrix.GetLength(1); col++)
-                {
-                    Range range4 = worksheet1.Cells[up + 1, left + 1 + col] as Range;
-                    range4.Value = col;
-                    range4.Font.Bold = true;
-                    range4.HorizontalAlignment = Microsoft.Office.Interop.Excel.Constants.xlCenter;
-                }
-
-
-                for (int j = 0; j < matrix.GetLength(0); j++)
-                {
-                    for (int i = 0; i < matrix.GetLength(1); i++)
-                    {
-                        Range range5 = worksheet1.Cells[up + 2 + j, left + 2 + i] as Range;
-                        range5.Value = matrix[j, i];
-
-
-                    }
-                }
-
-                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop); //Путь на рабочий стол
-                string filePath = Path.Combine(desktopPath, "Матрицы.xlsx"); //Клеим стрингу
-
-                workbook.SaveAs(filePath);
-                workbook.Close();
-                excel.Quit();
-
-                Marshal.ReleaseComObject(worksheet1);
-                Marshal.ReleaseComObject(worksheet2);
-                Marshal.ReleaseComObject(worksheet3);
-                Marshal.ReleaseComObject(worksheet4);
-                Marshal.ReleaseComObject(workbook);
-                Marshal.ReleaseComObject(excel);
-                return filePath;
-                }
-
-
-
-
-            void OpenFileExcel(string path)
-            {
-                Microsoft.Office.Interop.Excel.Application excel = new Microsoft.Office.Interop.Excel.Application();
-                //Открыть книгу по пути
-                Workbook workbook = excel.Workbooks.Open(path);
-                excel.Visible = true;
-                // Для первого плана
-                excel.WindowState = Microsoft.Office.Interop.Excel.XlWindowState.xlMaximized;
-
-                //Активный лист
-                //Worksheet ws =workbook.ActiveSheet as Worksheet;
-
-                foreach (Worksheet ws in workbook.Sheets)
-                {
-                    ws.Rows.RowHeight = 20;
-                    ws.Columns.ColumnWidth = 4;
-                }
-
-            }
-
-            }*/
-
-
+       
 
 
 
