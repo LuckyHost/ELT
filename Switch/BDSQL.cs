@@ -1,14 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Windows;
+
 
 
 #if nanoCAD
 using HostMgd.ApplicationServices;
 using HostMgd.EditorInput;
 using Teigha.DatabaseServices;
+using Exception = Teigha.Runtime.Exception;
 #else
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
+
 using Autodesk.AutoCAD.EditorInput;
 
 #endif
@@ -82,35 +86,45 @@ namespace ElectroTools
 
             // SQL-запрос для выполнения (замените на свой запрос)
             string query = "SELECT * FROM " + nameTable + " WHERE " + searchColum + "= @searchItem";
-
-            using (DocumentLock doclock = doc.LockDocument())
+            try
             {
-                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                using (DocumentLock doclock = doc.LockDocument())
                 {
-                    connection.Open();
-                    using (SQLiteCommand command = new SQLiteCommand(query, connection))
+                    using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                     {
-                        command.Parameters.AddWithValue("@searchItem", searchItem);
-
-                        using (SQLiteDataReader reader = command.ExecuteReader())
+                        connection.Open();
+                        using (SQLiteCommand command = new SQLiteCommand(query, connection))
                         {
-                            while (reader.Read())
+                            command.Parameters.AddWithValue("@searchItem", searchItem);
+
+                            using (SQLiteDataReader reader = command.ExecuteReader())
                             {
-                                if (double.TryParse(reader[gethColum].ToString(), out resultValue))
+                                while (reader.Read())
                                 {
-                                    // Вернуть найденное значение из столбца "result"
-                                    //ed.WriteMessage(resultValue.ToString());
+                                    if (double.TryParse(reader[gethColum].ToString(), out resultValue))
+                                    {
+                                        // Вернуть найденное значение из столбца "result"
+                                        //ed.WriteMessage(resultValue.ToString());
+                                    }
                                 }
+
                             }
-
+                            connection.Close();
                         }
-                        connection.Close();
-                    }
 
-                    return resultValue;
+                        return resultValue;
+                    }
                 }
             }
-        }
 
+
+            catch (Exception ex)
+            {
+
+                MessageBox.Show("В базе данных отсутствует такая позиция, добавьте ее и повторите снова попытку."); ;
+
+            return -1;
+            }
+        }
     }
 }

@@ -27,9 +27,14 @@ namespace ElectroTools.TestTools
             _deBag = new DeBag();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void dfxCodes(object sender, RoutedEventArgs e)
         {
             _deBag.ExportSelectedToDxf();
+        }
+
+        private void getID(object sender, RoutedEventArgs e)
+        {
+            _deBag.getInfo();
         }
     }
 }

@@ -35,6 +35,30 @@ namespace ElectroTools
             form.Show();
         }
 
+        public void getInfo()
+        {
+            using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+            {
+                PromptEntityOptions magistral = new PromptEntityOptions("\nВыберите объект для получения ID : ");
+                PromptEntityResult perMagistral = ed.GetEntity(magistral);
+                if (perMagistral.Status != PromptStatus.OK) { return; }
+                Entity Plyline = trAdding.GetObject(perMagistral.ObjectId, OpenMode.ForRead) as Entity;
+
+                ed.WriteMessage("\n  ");
+                ed.WriteMessage("!!!!!!!!!!!!!!!!!!!");
+                ed.WriteMessage("У выбранного объекта ID:  " + Plyline.ObjectId);
+                ed.WriteMessage("!!!!!!!!!!!!!!!!!!!");
+                ed.WriteMessage("\n  ");
+            }
+
+        }
+        public void getSlovari()
+
+        {
+            PromptEntityOptions item = new PromptEntityOptions("\nВыберите объект: ");
+            PromptEntityResult perItem = ed.GetEntity(item);
+        }
+
         public void ExportSelectedToDxf()
         {
 

@@ -1,14 +1,34 @@
-﻿using Microsoft.Office.Interop.Excel;
+﻿
+
+#region Namespaces
+
+using Microsoft.Office.Interop.Excel;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using Application = Microsoft.Office.Interop.Excel.Application;
+
+
+#if nanoCAD
+using HostMgd.ApplicationServices;
+using HostMgd.EditorInput;
+using System.Collections.Generic;
+using System.Windows.Controls;
+using Teigha.DatabaseServices;
+using Teigha.Geometry;
+
+#else
+using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.Geometry;
+
+
+#endif
+
+#endregion Namespaces
+
 
 namespace ElectroTools
 {
@@ -17,22 +37,30 @@ namespace ElectroTools
 
         public static void creadFile(int[,] matrixSmej, int[,]  matrixInc)
         {
+             Editor ed = MyOpenDocument.ed;
+             Database dbCurrent = MyOpenDocument.dbCurrent;
+             Document doc = MyOpenDocument.doc;
+
+
             //Первое создани
             Application excel = new Application();
             Workbook workbook = excel.Workbooks.Add();
             try
             {
+                ed.WriteMessage("Работаю....");
+                Worksheet worksheet4 = (Worksheet)workbook.Worksheets.Add();
+                worksheet4.Name = "Матрица Веса Ребер";
+
+                Worksheet worksheet3 = (Worksheet)workbook.Worksheets.Add();
+                worksheet3.Name = "Матрица Веса Вершин";
+
                 Worksheet worksheetMatrixInc = (Worksheet)workbook.Worksheets.Add();
                 worksheetMatrixInc.Name = "Матрица Инцидентности";
 
                 Worksheet worksheetMatrixSmej = (Worksheet)workbook.Worksheets.Add();
                 worksheetMatrixSmej.Name = "Матрица Смежности";
 
-                Worksheet worksheet4 = (Worksheet)workbook.Worksheets.Add();
-                worksheet4.Name = "Матрица Веса Ребер";
-
-                Worksheet worksheet3 = (Worksheet)workbook.Worksheets.Add();
-                worksheet3.Name = "Матрица Веса Вершин";
+                
 
 
                 //Матрица смежности
@@ -69,6 +97,7 @@ namespace ElectroTools
                 // Освобождение ресурсов
                 Marshal.ReleaseComObject(workbook);
                 Marshal.ReleaseComObject(excel);
+                ed.WriteMessage("Готово.");
 
             }
         }

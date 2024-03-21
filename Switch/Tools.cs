@@ -256,6 +256,21 @@ namespace ElectroTools
                     //Собрать весь список PowerLine
                     listPowerLine = creatListPowerLine(magistralLine);
 
+                    foreach (PowerLine item in listPowerLine)
+                    {
+                        //Проверка на наличие в БД
+                        if (!BDSQL.searchAllDataInBD(dbFilePath, "cable", "name").Contains(item.cable))
+                        {
+                            _myData.isLock = false;
+                            _myData.isLoadProcessAnim = true;
+                            Draw.ZoomToEntity(item.IDLine, 5);
+                            ed.SetImpliedSelection(new ObjectId[] { item.IDLine });
+                            MessageBox.Show("Элемент отсутствует в базе данных, добавьте его и повторите попытку.");
+                            return;
+
+                        };
+                    }
+
                     //Добавление родителя точки и обновление списка
                     addPointPerent(listPowerLine, listPoint, trAdding);
 
@@ -303,26 +318,8 @@ namespace ElectroTools
         }
 
 
-        // Fun Для получения ID
-        [CommandMethod("фв2", CommandFlags.UsePickSet |
-                       CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad
-        public void getInfo()
-        {
-            using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
-            {
-                PromptEntityOptions magistral = new PromptEntityOptions("\nВыберите объект для получения ID : ");
-                PromptEntityResult perMagistral = ed.GetEntity(magistral);
-                if (perMagistral.Status != PromptStatus.OK) { return; }
-                Entity Plyline = trAdding.GetObject(perMagistral.ObjectId, OpenMode.ForRead) as Entity;
-
-                ed.WriteMessage("\n  ");
-                ed.WriteMessage("!!!!!!!!!!!!!!!!!!!");
-                ed.WriteMessage("У выбранного объекта ID:  " + Plyline.ObjectId);
-                ed.WriteMessage("!!!!!!!!!!!!!!!!!!!");
-                ed.WriteMessage("\n  ");
-            }
-
-        }
+        
+      
 
 
         // Fun Для получения PointLine 
@@ -579,11 +576,7 @@ namespace ElectroTools
 
         }
 
-        /*
-        // Fun Для Создания Пути обхода (выбор автоматического выключателя) КЗ
-        [CommandMethod("фв11", CommandFlags.UsePickSet |
-                       CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad
-        */
+        
         public void getPathKZ(bool isI1Tkz = true)
         {
 
@@ -698,9 +691,7 @@ namespace ElectroTools
 
         }
 
-        /*
-        [CommandMethod("фв12", CommandFlags.UsePickSet |
-                       CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad */
+       
         public void getMyPathKZ(bool isI1Tkz = true)
         {
             List<string> tempListPoint = new List<string>();
@@ -841,8 +832,7 @@ namespace ElectroTools
 
         /*
         //Для проверки АВ, до куда чувсвителен, по самой удаленной точки
-        [CommandMethod("фв13", CommandFlags.UsePickSet |
-                   CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad */
+        */
         public void getMyPathKZFromAV()
         {
             int nomivalAV = 0;
@@ -945,8 +935,7 @@ namespace ElectroTools
 
         /*
         //Поиск места установки рекоузера в магистрали. 
-        [CommandMethod("фв14", CommandFlags.UsePickSet |
-                   CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad */
+        */
         public void getLocalREC()
         {
             List<PointLine> masterPointLine = listPowerLine[0].points;
@@ -1082,8 +1071,7 @@ namespace ElectroTools
 
         /*
         //Поиск Падения напряжения. 
-        [CommandMethod("фв15", CommandFlags.UsePickSet |
-                   CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad */
+       */
         public void getVoltage()
         {
             //Фазное напряжение сети
@@ -1305,14 +1293,8 @@ namespace ElectroTools
         }
 
 
-        [CommandMethod("фв16", CommandFlags.UsePickSet |
-                   CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad
-        public void getSlovari()
-
-        {
-            PromptEntityOptions item = new PromptEntityOptions("\nВыберите объект: ");
-            PromptEntityResult perItem = ed.GetEntity(item);
-        }
+       
+       
 
         public void setBD()
         {
@@ -1509,6 +1491,10 @@ namespace ElectroTools
             considerPowerLine.cable = BDShowExtensionDictionaryContents<Conductor>(perMagistral.ObjectId, "ESMT_LEP_v1.0")?.Name
                 ?? creatPromptKeywordOptions("\n\nВыберите марку провода магистрали: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
             considerPowerLine.Icrict = BDSQL.searchDataInBD(dbFilePath, "cable", considerPowerLine.cable, "name", "Icrit");
+
+           
+            
+
             considerPowerLine.name = "Магистраль";
             considerPowerLine.IDLine = Plyline.ObjectId;
             considerPowerLine.parent = considerPowerLine;
@@ -1614,6 +1600,7 @@ namespace ElectroTools
                                 ChilderLine.cable = BDShowExtensionDictionaryContents<Conductor>(acSObj.ObjectId, "ESMT_LEP_v1.0")?.Name
                                  ?? creatPromptKeywordOptions("\n\nВыберите мару провода: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
 
+                              
                                 ChilderLine.IDLine = acSObj.ObjectId;
                                 ChilderLine.parent = masterLine;
                                 ChilderLine.lengthLine = Math.Round(lengthPolyline.Length, 3);

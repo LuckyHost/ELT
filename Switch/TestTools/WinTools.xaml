@@ -10,7 +10,9 @@
 
     <StackPanel>
 
-        <Button Content="Dfx Codes" Click="Button_Click"/>
+        <Button Content="Dfx Codes" Click="dfxCodes"/>
+
+        <Button Content="Получить ID элемента" Click="getID"/>
 
     </StackPanel>
 
