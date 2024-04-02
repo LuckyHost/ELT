@@ -13,5 +13,6 @@ namespace ElectroTools
 
         //Дальность поиска
        public static int searchDistancePL=1;
+       public static string defaultBlock= "Блок_Нумерации_Makarov.D";
     }
 }

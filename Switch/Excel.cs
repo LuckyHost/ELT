@@ -391,6 +391,8 @@ namespace ElectroTools
             Workbook workbook = null;
             Application excelApp = null;
 
+            List<ObjectId> listObjectID = new List<ObjectId>();
+
             try
             {
                 excelApp = new Application
@@ -430,7 +432,7 @@ namespace ElectroTools
                         if (value1 == null && value2 != null)
                         {
                             count++;
-                            Draw.drawCoordinatePolyline(listX, listY);
+                            listObjectID.Add( Draw.drawCoordinatePolyline(listX, listY));
                             listX.Clear();
                             listY.Clear();
                             continue;
@@ -445,9 +447,10 @@ namespace ElectroTools
 
                     }
 
-                    Draw.drawCoordinatePolyline(listX, listY);
+                    listObjectID.Add(Draw.drawCoordinatePolyline(listX, listY));
 
-
+                    ed.SetImpliedSelection(listObjectID.ToArray());
+                    
 
                 }
                 else

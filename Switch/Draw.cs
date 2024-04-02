@@ -170,7 +170,7 @@ namespace ElectroTools
                     // Commit the transaction
                     tr.Commit();
                     ZoomToEntity(polyline.ObjectId, 4);
-                    ed.SetImpliedSelection(new ObjectId[] { polyline.ObjectId });
+                   // ed.SetImpliedSelection(new ObjectId[] { polyline.ObjectId });
                     return polyline.ObjectId;
 
                 }

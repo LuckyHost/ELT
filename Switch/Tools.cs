@@ -12,6 +12,8 @@ using System.Xml.Serialization;
 using System.ComponentModel;
 using System.Windows.Forms.Integration;
 using System.Windows;
+using ControlzEx.Standard;
+
 
 #if nanoCAD
 using Application = HostMgd.ApplicationServices.Application;
@@ -308,8 +310,8 @@ namespace ElectroTools
         }
 
 
-        
-      
+
+
 
 
         // Fun Для получения PointLine 
@@ -566,7 +568,7 @@ namespace ElectroTools
 
         }
 
-        
+
         public void getPathKZ(bool isI1Tkz = true)
         {
 
@@ -681,7 +683,7 @@ namespace ElectroTools
 
         }
 
-       
+
         public void getMyPathKZ(bool isI1Tkz = true)
         {
             List<string> tempListPoint = new List<string>();
@@ -1283,8 +1285,8 @@ namespace ElectroTools
         }
 
 
-       
-       
+
+
 
         public void setBD()
         {
@@ -1398,7 +1400,7 @@ namespace ElectroTools
 
         }
 
-      
+
 
 
         public void nextFormAsync()
@@ -1576,7 +1578,7 @@ namespace ElectroTools
                                     ed.WriteMessage("Линия была построена не от \"Питания\" к \"Нагрузки\", я ее развернул ");
                                 }
 
-                                                              
+
                                 //Подсветка что выделилось
                                 ed.SetImpliedSelection(new ObjectId[] { acSObj.ObjectId });
                                 ed.CurrentUserCoordinateSystem = Matrix3d.Identity; // Сброс координатной системы, если необходимо
@@ -1588,7 +1590,7 @@ namespace ElectroTools
                                 ChilderLine.cable = BDShowExtensionDictionaryContents<Conductor>(acSObj.ObjectId, "ESMT_LEP_v1.0")?.Name
                                  ?? Text.creatPromptKeywordOptions("\n\nВыберите мару провода: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
 
-                              
+
                                 ChilderLine.IDLine = acSObj.ObjectId;
                                 ChilderLine.parent = masterLine;
                                 ChilderLine.lengthLine = Math.Round(lengthPolyline.Length, 3);
@@ -1904,7 +1906,7 @@ namespace ElectroTools
         }
 
 
-      
+
 
 
 
@@ -2305,13 +2307,62 @@ namespace ElectroTools
         public void InsertBlockAtVertices()
         {
 
+            bool isNumBlock = false;
+            int startNumber =0;
+            string sufBlockName ="";
+            string prefBlockName="";
+            List<ObjectId> listObjectID = new List<ObjectId>();
 
-            PromptStringOptions promptForBlockName = new PromptStringOptions("\nВведите название блока: ");
+            PromptStringOptions promptForBlockName = new PromptStringOptions("\nВведите название блока ["+ UserData.defaultBlock + "]: ");
             promptForBlockName.AllowSpaces = true;
             PromptResult blockNameResult = ed.GetString(promptForBlockName);
 
             if (blockNameResult.Status != PromptStatus.OK) return;
             string blockName = blockNameResult.StringResult;
+
+
+
+            //нужна ли нумерация
+            PromptKeywordOptions options = new PromptKeywordOptions("\nБудем нумеровать блок? [Да/Нет] : ");
+            options.Keywords.Add("Да");
+            options.Keywords.Add("Нет");
+            PromptResult resultYesNo = ed.GetKeywords(options);
+            if (resultYesNo.Status != PromptStatus.OK) return;
+
+            if (resultYesNo.StringResult == "Да") isNumBlock = true;
+
+
+            if (isNumBlock)
+            {
+
+                //Старт нумерации
+                PromptIntegerOptions startNumBlock = new PromptIntegerOptions("\n С какого числа начать нумерацию? [1] ");
+                PromptIntegerResult startNumBlockResult = ed.GetInteger(startNumBlock);
+
+                if (startNumBlockResult.Status != PromptStatus.OK) return;
+                startNumber = startNumBlockResult.Value;
+
+
+                //Суффикс
+                PromptStringOptions promptSufBlockName = new PromptStringOptions("\nВведите суффикс (или пусто) ?: ");
+                promptSufBlockName.AllowSpaces = true;
+                PromptResult sufBlockNameResult = ed.GetString(promptSufBlockName);
+
+                if (sufBlockNameResult.Status != PromptStatus.OK) return;
+                sufBlockName = sufBlockNameResult.StringResult;
+
+                //Преффикс
+
+                PromptStringOptions promptPrefBlockName = new PromptStringOptions("\nВведите преффикс (или пусто) ?: ");
+                promptPrefBlockName.AllowSpaces = true;
+                PromptResult prefBlockNameResult = ed.GetString(promptPrefBlockName);
+
+                if (prefBlockNameResult.Status != PromptStatus.OK) return;
+                prefBlockName = prefBlockNameResult.StringResult;
+            }
+
+
+
 
             using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
             {
@@ -2345,12 +2396,42 @@ namespace ElectroTools
                     using (BlockReference br = new BlockReference(pt, bt[blockName]))
                     {
                         BlockTableRecord ms = tr.GetObject(dbCurrent.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
+
                         ms.AppendEntity(br);
                         tr.AddNewlyCreatedDBObject(br, true);
+
+                        listObjectID.Add(br.ObjectId);
+
+
+                        if (isNumBlock)
+                        {
+                            // Получаем определение блока
+                            BlockTableRecord blkDef = tr.GetObject(bt[blockName], OpenMode.ForRead) as BlockTableRecord;
+
+                            // Ищем первый атрибут в блоке и изменяем его текст
+                            foreach (ObjectId objId in blkDef)
+                            {
+                                DBObject obj = tr.GetObject(objId, OpenMode.ForRead);
+                                if (obj is AttributeDefinition attDef)
+                                {
+                                    using (AttributeReference attRef = new AttributeReference())
+                                    {
+                                        // Найден атрибут, устанавливаем новое значение текста
+                                        attRef.SetAttributeFromBlock(attDef, br.BlockTransform);
+                                        attRef.TextString = sufBlockName + (startNumber+i).ToString()+ prefBlockName;
+                                        br.AttributeCollection.AppendAttribute(attRef);
+                                        tr.AddNewlyCreatedDBObject(attRef, true);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
                 tr.Commit();
+                ed.SetImpliedSelection(listObjectID.ToArray());
+
             }
         }
 
@@ -2613,7 +2694,7 @@ namespace ElectroTools
 
 
 
-       
+
 
 
 
