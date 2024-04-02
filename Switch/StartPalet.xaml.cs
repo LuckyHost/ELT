@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace ElectroTools
@@ -115,7 +117,7 @@ namespace ElectroTools
         }
 
 
-        
+
 
         private void creatPathPoint(object sender, RoutedEventArgs e)
         {
@@ -130,13 +132,17 @@ namespace ElectroTools
         {
             if (_data._tools.matrixSmej != null)
             {
-                Excel.creadFile(_data._tools.matrixSmej, _data._tools.matrixInc);
+                Excel.creadFile(_data._tools.matrixSmej, _data._tools.matrixInc, _data._tools.listEdge);
             }
+        }
 
+        private void insertBlock(object sender, RoutedEventArgs e)
+        {
+            _data._tools.InsertBlockAtVertices();
         }
 
 
-        private void deleteDraw (object sender, RoutedEventArgs e)
+        private void deleteDraw(object sender, RoutedEventArgs e)
         {
             if (_data._tools.listPowerLine != null)
             {
@@ -147,12 +153,32 @@ namespace ElectroTools
                 Layer.deleteObjectsOnLayer("TKZ_Makarov.D");
                 Layer.deleteObjectsOnLayer("Напряжение_Makarov.D");
             }
-
         }
 
-        private void Button_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        private void creatExcelFile(object sender, RoutedEventArgs e)
         {
+            if (_data._tools.listPowerLine != null)
+            {
+                string result= Text.creatPromptKeywordOptions("Имеется шаблон с координатами ? : ", new List<string>() { "Да", "Нет" }, 1);
 
+                switch (result)
+                {
+                    case null: return;
+                    case "Да":
+                        string filePath = Excel.selectExcelFile();
+                        if (filePath != null)
+                        {
+                            Excel.openExceleFileForCreatPL(filePath);
+                        } break;
+                    case "Нет": Excel.creatExcelFileCoordinate(); break;
+                    default:
+                        break;
+                }
+                
+                
+            }
         }
+
+
     }
 }

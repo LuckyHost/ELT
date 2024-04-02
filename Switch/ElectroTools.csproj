@@ -47,7 +47,7 @@
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
@@ -63,19 +63,16 @@
     <DefineConstants>TRACE;nanoCAD2</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AcCoreMgd, Version=23.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Autodesk\ObjectARX_for_AutoCAD_2020_Win_64_bit\inc\AcCoreMgd.dll</HintPath>
+    <Reference Include="AcCoreMgd">
+      <HintPath>..\..\..\..\..\Autodesk\ObjectARX_for_AutoCAD_2024_Win_64bit_dlm\inc\AcCoreMgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="AcDbMgd, Version=23.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Autodesk\ObjectARX_for_AutoCAD_2020_Win_64_bit\inc\AcDbMgd.dll</HintPath>
+    <Reference Include="AcDbMgd">
+      <HintPath>..\..\..\..\..\Autodesk\ObjectARX_for_AutoCAD_2024_Win_64bit_dlm\inc\AcDbMgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="AcMgd, Version=23.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Autodesk\ObjectARX_for_AutoCAD_2020_Win_64_bit\inc\AcMgd.dll</HintPath>
+    <Reference Include="AcMgd">
+      <HintPath>..\..\..\..\..\Autodesk\ObjectARX_for_AutoCAD_2024_Win_64bit_dlm\inc\AcMgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ControlzEx, Version=5.0.0.0, Culture=neutral, PublicKeyToken=69f1c32f803d307e, processorArchitecture=MSIL">

@@ -4,8 +4,6 @@ using ElectroTools.TestTools;
 #if nanoCAD
 using HostMgd.ApplicationServices;
 using HostMgd.EditorInput;
-using System.Collections.Generic;
-using System.Xml.Linq;
 using Teigha.DatabaseServices;
 using Teigha.Runtime;
 #else

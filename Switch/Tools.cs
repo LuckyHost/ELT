@@ -12,24 +12,14 @@ using System.Xml.Serialization;
 using System.ComponentModel;
 using System.Windows.Forms.Integration;
 using System.Windows;
-using ElectroTools.TestTools;
-
-
-
-
-
-
-
 
 #if nanoCAD
 using Application = HostMgd.ApplicationServices.Application;
-using Color = Teigha.Colors.Color;
 using HostMgd.ApplicationServices;
 using Teigha.DatabaseServices;
 using HostMgd.EditorInput;
 using Teigha.Geometry;
 using Teigha.Runtime;
-using Teigha.Colors;
 using Exception = Teigha.Runtime.Exception;
 using HostMgd.Windows;
 
@@ -217,9 +207,9 @@ namespace ElectroTools
             int j = 0;
 
             int defult = BDSQL.searchAllDataInBD(dbFilePath, "text", "default").IndexOf("true") + 1;
-            string sizeTextPoint = creatPromptKeywordOptions("Выберите высотку текста для вершины и ребра", BDSQL.searchAllDataInBD(dbFilePath, "text", "size"), defult);
+            string sizeTextPoint = Text.creatPromptKeywordOptions("Выберите высотку текста для вершины и ребра", BDSQL.searchAllDataInBD(dbFilePath, "text", "size"), defult);
             if (string.IsNullOrEmpty(sizeTextPoint)) { return; }
-            string sizeTextLine = creatPromptKeywordOptions("Выберите высотку текста названия линии", BDSQL.searchAllDataInBD(dbFilePath, "text", "size"), defult);
+            string sizeTextLine = Text.creatPromptKeywordOptions("Выберите высотку текста названия линии", BDSQL.searchAllDataInBD(dbFilePath, "text", "size"), defult);
             if (string.IsNullOrEmpty(sizeTextLine)) { return; }
 
 
@@ -247,7 +237,7 @@ namespace ElectroTools
                 using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
                 {
                     //Создаем магистраль
-                    PowerLine magistralLine = CrearMagistral(ed, trAdding, listPoint, listPointXY, listPowerLine);
+                    PowerLine magistralLine = creatMagistral(ed, trAdding, listPoint, listPointXY, listPowerLine);
 
                     //Ищем все отпайки у магистрали и у их детей и делает листпоинт
                     searchPlyline(ed, magistralLine, trAdding, listPoint, listPointXY, j);
@@ -585,7 +575,7 @@ namespace ElectroTools
 
             //Добавляю свой ввод
 
-            string strResistancetTransformers = creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 2);
+            string strResistancetTransformers = Text.creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 2);
             if (string.IsNullOrEmpty(strResistancetTransformers)) { return; }
 
             //берем сопротивление в BD по тексту
@@ -605,7 +595,7 @@ namespace ElectroTools
                 List<string> tempList = BDSQL.searchAllDataInBD(dbFilePath, "voltage", "kV");
                 tempList.Insert(0, "Свое");
 
-                string resultPromt = creatPromptKeywordOptions("Выберите ЛИНЕЙНОЕ  напряжение сети.: ", tempList, 2);
+                string resultPromt = Text.creatPromptKeywordOptions("Выберите ЛИНЕЙНОЕ  напряжение сети.: ", tempList, 2);
 
                 switch (resultPromt)
                 {
@@ -704,7 +694,7 @@ namespace ElectroTools
             //Добавка в начало списка
             tempListPoint.Insert(0, "Выбрать самостоятельно узел");
 
-            string pointKZ = creatPromptKeywordOptions("Введите номер узла КЗ:", tempListPoint, 1);
+            string pointKZ = Text.creatPromptKeywordOptions("Введите номер узла КЗ:", tempListPoint, 1);
             if (string.IsNullOrEmpty(pointKZ)) { return; };
 
 
@@ -728,7 +718,7 @@ namespace ElectroTools
 
             //Получает данные TKZ
             TKZ tkz = сreatMyTKZ(int.Parse(pointKZ));
-            string strResistancetTransformers = creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 1);
+            string strResistancetTransformers = Text.creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 1);
             //берем сопротивление в BD по тексту
             tkz.transformersR = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
             tkz.transformersX = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
@@ -746,7 +736,7 @@ namespace ElectroTools
                 List<string> tempList = BDSQL.searchAllDataInBD(dbFilePath, "voltage", "kV");
                 tempList.Insert(0, "Свое");
 
-                string resultPromt = creatPromptKeywordOptions("Выберите ЛИНЕЙНОЕ  напряжение сети.: ", tempList, 2);
+                string resultPromt = Text.creatPromptKeywordOptions("Выберите ЛИНЕЙНОЕ  напряжение сети.: ", tempList, 2);
 
                 switch (resultPromt)
                 {
@@ -849,7 +839,7 @@ namespace ElectroTools
 
             //Получает данные TKZ
             TKZ tkz = сreatTKZ(true);
-            string strResistancetTransformers = creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 1);
+            string strResistancetTransformers = Text.creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 1);
 
             //берем сопротивление в BD по тексту
             tkz.transformersR = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
@@ -1075,7 +1065,7 @@ namespace ElectroTools
         public void getVoltage()
         {
             //Фазное напряжение сети
-            string tempUgen = creatPromptKeywordOptions("Выберите напряжение точки генерации сети.: ", BDSQL.searchAllDataInBD(dbFilePath, "voltage", "kV"), 1);
+            string tempUgen = Text.creatPromptKeywordOptions("Выберите напряжение точки генерации сети.: ", BDSQL.searchAllDataInBD(dbFilePath, "voltage", "kV"), 1);
             if (string.IsNullOrEmpty(tempUgen)) { return; };
             double Ugen = double.Parse(tempUgen);
 
@@ -1340,7 +1330,7 @@ namespace ElectroTools
 
                 if (perItem.Status != PromptStatus.OK) { return; }
 
-                string isLoadNameLine = creatPromptKeywordOptions("Восстановить название линий ?", new List<string> { "Да", "Нет" }, 1);
+                string isLoadNameLine = Text.creatPromptKeywordOptions("Восстановить название линий ?", new List<string> { "Да", "Нет" }, 1);
 
                 List<PointLine> templistPoint = BDShowExtensionDictionaryContents<BD>(perItem.ObjectId, "Makarov.D")?.listPointLine;
                 List<PowerLine> templistPowerLine = BDShowExtensionDictionaryContents<BD>(perItem.ObjectId, "Makarov.D")?.listPowerLine;
@@ -1474,7 +1464,7 @@ namespace ElectroTools
         }
 
 
-        PowerLine CrearMagistral(Editor ed, Transaction trAdding, List<PointLine> listPoint, List<Point2d> listPointXY, List<PowerLine> listPowerLine)
+        PowerLine creatMagistral(Editor ed, Transaction trAdding, List<PointLine> listPoint, List<Point2d> listPointXY, List<PowerLine> listPowerLine)
         {
             PromptEntityOptions magistral = new PromptEntityOptions("\n\nВыберите магистраль: \n\n");
             PromptEntityResult perMagistral = ed.GetEntity(magistral);
@@ -1489,12 +1479,8 @@ namespace ElectroTools
 
 
             considerPowerLine.cable = BDShowExtensionDictionaryContents<Conductor>(perMagistral.ObjectId, "ESMT_LEP_v1.0")?.Name
-                ?? creatPromptKeywordOptions("\n\nВыберите марку провода магистрали: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
+                ?? Text.creatPromptKeywordOptions("\n\nВыберите марку провода магистрали: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
             considerPowerLine.Icrict = BDSQL.searchDataInBD(dbFilePath, "cable", considerPowerLine.cable, "name", "Icrit");
-
-           
-            
-
             considerPowerLine.name = "Магистраль";
             considerPowerLine.IDLine = Plyline.ObjectId;
             considerPowerLine.parent = considerPowerLine;
@@ -1548,8 +1534,10 @@ namespace ElectroTools
                         // Пройдите по найденным объектам
                         foreach (SelectedObject acSObj in acPSR.Value)
                         {
-                            
-                           
+                            /*
+                            ed.SetImpliedSelection(new ObjectId[] { acSObj.ObjectId });
+                            creatPromptKeywordOptions("Заглушка",new List<string>() { "1"},1);
+                           */
                             //Отсечь родителя 
                             if (acSObj.ObjectId != masterLine.IDLine && acSObj.ObjectId != masterLine.parent.IDLine)
                             {
@@ -1598,7 +1586,7 @@ namespace ElectroTools
                                 PowerLine ChilderLine = new PowerLine();
 
                                 ChilderLine.cable = BDShowExtensionDictionaryContents<Conductor>(acSObj.ObjectId, "ESMT_LEP_v1.0")?.Name
-                                 ?? creatPromptKeywordOptions("\n\nВыберите мару провода: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
+                                 ?? Text.creatPromptKeywordOptions("\n\nВыберите мару провода: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
 
                               
                                 ChilderLine.IDLine = acSObj.ObjectId;
@@ -1916,30 +1904,7 @@ namespace ElectroTools
         }
 
 
-        //Создает текст вершин
-        string creatPromptKeywordOptions(string textName, List<string> listOptions, int defaultOptions)
-        {
-            //Для Acad, если пробел, он берет только первую часть 
-            List<string> modifiedListOptions = listOptions.Select(option => option.Replace(" ", "_")).ToList();
-
-
-            PromptKeywordOptions options = new PromptKeywordOptions(textName);
-
-            foreach (string itemString in modifiedListOptions)
-            {
-                options.Keywords.Add(itemString);
-            }
-            options.Keywords.Default = modifiedListOptions[defaultOptions - 1]; // если сам, то -1
-
-            PromptResult result = ed.GetKeywords(options);
-            if (result.Status == PromptStatus.OK)
-            {
-                string selectedKeyword = result.StringResult.Replace("_", " ");
-                ed.WriteMessage("\n\nВы выбрали : " + selectedKeyword + "\n\n");
-                return selectedKeyword;
-            }
-            return null;
-        }
+      
 
 
 
@@ -2334,6 +2299,59 @@ namespace ElectroTools
             info.pathEdgeTKZ = oldPathKZ;
 
             return info;
+        }
+
+        //Вставка блоков в вершины
+        public void InsertBlockAtVertices()
+        {
+
+
+            PromptStringOptions promptForBlockName = new PromptStringOptions("\nВведите название блока: ");
+            promptForBlockName.AllowSpaces = true;
+            PromptResult blockNameResult = ed.GetString(promptForBlockName);
+
+            if (blockNameResult.Status != PromptStatus.OK) return;
+            string blockName = blockNameResult.StringResult;
+
+            using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+            {
+                BlockTable bt = tr.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
+
+                // Проверяем, существует ли блок с введенным именем
+                if (!bt.Has(blockName))
+                {
+                    ed.WriteMessage("\nБлок '" + blockName + "' не найден.");
+                    return;
+                }
+
+                // Запрашиваем у пользователя выбор полилинии
+                PromptEntityOptions peo = new PromptEntityOptions("\nВыберите полилинию:");
+                peo.SetRejectMessage("\nМожно выбрать только полилинию.");
+                peo.AddAllowedClass(typeof(Polyline), true);
+                PromptEntityResult per = ed.GetEntity(peo);
+
+                if (per.Status != PromptStatus.OK) return;
+
+                ObjectId plId = per.ObjectId;
+
+                Polyline pl = tr.GetObject(plId, OpenMode.ForRead) as Polyline;
+
+                // Перебираем вершины полилинии
+                for (int i = 0; i < pl.NumberOfVertices; i++)
+                {
+                    Point3d pt = pl.GetPoint3dAt(i);
+
+                    // Создаем новый экземпляр блока
+                    using (BlockReference br = new BlockReference(pt, bt[blockName]))
+                    {
+                        BlockTableRecord ms = tr.GetObject(dbCurrent.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
+                        ms.AppendEntity(br);
+                        tr.AddNewlyCreatedDBObject(br, true);
+                    }
+                }
+
+                tr.Commit();
+            }
         }
 
 

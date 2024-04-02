@@ -2,6 +2,8 @@
 #region Namespaces
 using System;
 using System.Collections.Generic;
+using System.Linq;
+
 
 
 
@@ -351,6 +353,31 @@ namespace ElectroTools
 
 
 
+        }
+
+        //Создает текст вершин
+      public static string creatPromptKeywordOptions(string textName, List<string> listOptions, int defaultOptions)
+        {
+            //Для Acad, если пробел, он берет только первую часть 
+            List<string> modifiedListOptions = listOptions.Select(option => option.Replace(" ", "_")).ToList();
+
+
+            PromptKeywordOptions options = new PromptKeywordOptions(textName);
+
+            foreach (string itemString in modifiedListOptions)
+            {
+                options.Keywords.Add(itemString);
+            }
+            options.Keywords.Default = modifiedListOptions[defaultOptions - 1]; // если сам, то -1
+
+            PromptResult result = ed.GetKeywords(options);
+            if (result.Status == PromptStatus.OK)
+            {
+                string selectedKeyword = result.StringResult.Replace("_", " ");
+                ed.WriteMessage("\n\nВы выбрали : " + selectedKeyword + "\n\n");
+                return selectedKeyword;
+            }
+            return null;
         }
 
 

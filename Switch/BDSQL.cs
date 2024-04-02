@@ -12,7 +12,7 @@ using Exception = Teigha.Runtime.Exception;
 #else
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-
+using Exception = Autodesk.AutoCAD.Runtime.Exception;
 using Autodesk.AutoCAD.EditorInput;
 
 #endif

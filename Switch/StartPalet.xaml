@@ -73,6 +73,38 @@
          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 
                     <Button
+                     HorizontalAlignment="Center"
+                     IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+                     Style="{StaticResource MaterialDesignToolButton}"
+                     ToolTip="Создает шаблон для координат, и строит по координатам полилинию"
+                    Click="creatExcelFile"
+ 
+                    >
+
+                                        <materialDesign:PackIcon
+                           Width="25"
+                           Height="25"
+                           Kind="CrosshairsGps" 
+                       />
+                    </Button>
+
+                    <Button
+                         HorizontalAlignment="Center"
+                         IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+                         Style="{StaticResource MaterialDesignToolButton}"
+                         ToolTip="Расставить блоки в вершинах полиллинии"
+                        Click="insertBlock"
+ 
+                    >
+
+                                            <materialDesign:PackIcon
+                               Width="25"
+                               Height="25"
+                               Kind="ElectricSwitchClosed" 
+                           />
+                    </Button>
+             
+                    <Button
                          HorizontalAlignment="Center"
                          IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
                          Style="{StaticResource MaterialDesignToolButton}"

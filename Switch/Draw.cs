@@ -2,6 +2,8 @@
 #region Namespaces
 
 using System.Collections.Generic;
+using System.Linq;
+
 
 #if nanoCAD
 using HostMgd.ApplicationServices;
@@ -36,7 +38,7 @@ namespace ElectroTools
         public static ObjectId drawPolyline(List<PointLine> masterListPont, string nameLayer, short color, double ConstantWidth)
         {
 
-           
+
 
             using (DocumentLock doclock = doc.LockDocument())
             {
@@ -69,9 +71,9 @@ namespace ElectroTools
             }
         }
 
-        public static ObjectId  drawCircle(PointLine itemPoint, string nameLayer)
+        public static ObjectId drawCircle(PointLine itemPoint, string nameLayer)
         {
-           
+
 
             using (DocumentLock doclock = doc.LockDocument())
             {
@@ -137,5 +139,44 @@ namespace ElectroTools
             }
         }
 
+        public static ObjectId drawCoordinatePolyline(List<double> listX, List<double> listY /*List<PointLine> masterListPont, string nameLayer, short color, double ConstantWidth*/)
+        {
+
+            using (DocumentLock doclock = doc.LockDocument())
+            {
+                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+                {
+                    BlockTable bt = tr.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
+
+                    BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
+
+                    Polyline polyline = new Polyline();
+
+
+                    for (int i = 0; i < listX.Count; i++)
+                    {
+
+                        polyline.AddVertexAt(polyline.NumberOfVertices, new Point2d(listX[i], listY[i]), 0, 0, 0);
+                    }
+
+
+                    // polyline.Color = Color.FromColorIndex(ColorMethod.ByAci, color); // Color 256 is ByLayer
+                    //polyline.Layer = nameLayer;
+                    // polyline.ConstantWidth = ConstantWidth;
+
+                    btr.AppendEntity(polyline);
+                    tr.AddNewlyCreatedDBObject(polyline, true);
+
+                    // Commit the transaction
+                    tr.Commit();
+                    ZoomToEntity(polyline.ObjectId, 4);
+                    ed.SetImpliedSelection(new ObjectId[] { polyline.ObjectId });
+                    return polyline.ObjectId;
+
+                }
+            }
+
+
+        }
     }
 }
