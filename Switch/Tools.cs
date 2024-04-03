@@ -2308,12 +2308,16 @@ namespace ElectroTools
         {
 
             bool isNumBlock = false;
-            int startNumber =0;
-            string sufBlockName ="";
-            string prefBlockName="";
+            bool isCreatFileExcelCoordinate = false;
+            int startNumber = 0;
+            string sufBlockName = "";
+            string prefBlockName = "";
             List<ObjectId> listObjectID = new List<ObjectId>();
+            List<double> listX = new List<double>();
+            List<double> listY = new List<double>();
 
-            PromptStringOptions promptForBlockName = new PromptStringOptions("\nВведите название блока ["+ UserData.defaultBlock + "]: ");
+
+            PromptStringOptions promptForBlockName = new PromptStringOptions("\nВведите название блока [" + UserData.defaultBlock + "]: ");
             promptForBlockName.AllowSpaces = true;
             PromptResult blockNameResult = ed.GetString(promptForBlockName);
 
@@ -2329,7 +2333,19 @@ namespace ElectroTools
             PromptResult resultYesNo = ed.GetKeywords(options);
             if (resultYesNo.Status != PromptStatus.OK) return;
 
-            if (resultYesNo.StringResult == "Да") isNumBlock = true;
+            if (resultYesNo.StringResult == "Да")
+            {
+                isNumBlock = true;
+
+                //Результат в Excel
+                PromptKeywordOptions optionsCreatFileExcelCoordinate = new PromptKeywordOptions("\nВывести результат координат в Excel? [Да/Нет] : ");
+                optionsCreatFileExcelCoordinate.Keywords.Add("Да");
+                optionsCreatFileExcelCoordinate.Keywords.Add("Нет");
+                PromptResult resultCreatFileExcelCoordinateo = ed.GetKeywords(optionsCreatFileExcelCoordinate);
+                if (resultCreatFileExcelCoordinateo.Status != PromptStatus.OK) return;
+                if (resultCreatFileExcelCoordinateo.StringResult == "Да") isCreatFileExcelCoordinate = true;
+            }
+
 
 
             if (isNumBlock)
@@ -2344,7 +2360,7 @@ namespace ElectroTools
 
 
                 //Суффикс
-                PromptStringOptions promptSufBlockName = new PromptStringOptions("\nВведите суффикс (или пусто) ?: ");
+                PromptStringOptions promptSufBlockName = new PromptStringOptions("\nВведите суффикс (или пусто) ? []: ");
                 promptSufBlockName.AllowSpaces = true;
                 PromptResult sufBlockNameResult = ed.GetString(promptSufBlockName);
 
@@ -2353,7 +2369,7 @@ namespace ElectroTools
 
                 //Преффикс
 
-                PromptStringOptions promptPrefBlockName = new PromptStringOptions("\nВведите преффикс (или пусто) ?: ");
+                PromptStringOptions promptPrefBlockName = new PromptStringOptions("\nВведите преффикс (или пусто) ? []: ");
                 promptPrefBlockName.AllowSpaces = true;
                 PromptResult prefBlockNameResult = ed.GetString(promptPrefBlockName);
 
@@ -2391,6 +2407,8 @@ namespace ElectroTools
                 for (int i = 0; i < pl.NumberOfVertices; i++)
                 {
                     Point3d pt = pl.GetPoint3dAt(i);
+                    listX.Add(pl.GetPoint3dAt(i).X);
+                    listY.Add(pl.GetPoint3dAt(i).Y);
 
                     // Создаем новый экземпляр блока
                     using (BlockReference br = new BlockReference(pt, bt[blockName]))
@@ -2418,18 +2436,29 @@ namespace ElectroTools
                                     {
                                         // Найден атрибут, устанавливаем новое значение текста
                                         attRef.SetAttributeFromBlock(attDef, br.BlockTransform);
-                                        attRef.TextString = sufBlockName + (startNumber+i).ToString()+ prefBlockName;
+                                        attRef.TextString = sufBlockName + (startNumber + i).ToString() + prefBlockName;
                                         br.AttributeCollection.AppendAttribute(attRef);
                                         tr.AddNewlyCreatedDBObject(attRef, true);
                                         break;
                                     }
                                 }
                             }
+
+
                         }
                     }
                 }
 
+
+
                 tr.Commit();
+
+                //куда сохранить
+                if (isCreatFileExcelCoordinate)
+                {
+                    Excel.creatFileExcelCoodrinate(startNumber,listX,listY);
+                }
+
                 ed.SetImpliedSelection(listObjectID.ToArray());
 
             }

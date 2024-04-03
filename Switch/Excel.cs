@@ -9,27 +9,29 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Application = Microsoft.Office.Interop.Excel.Application;
 using System.Collections.Generic;
-using HostMgd.Windows;
 using System.Windows.Forms;
-using System.Threading;
+using MathNet.Numerics.LinearAlgebra;
+
+
+
+
 
 
 
 #if nanoCAD
 using HostMgd.ApplicationServices;
 using HostMgd.EditorInput;
-using System.Collections.Generic;
-using System.Windows.Controls;
 using Teigha.DatabaseServices;
-using Teigha.Geometry;
 using Database = Teigha.DatabaseServices.Database;
 using OpenFileDialog = HostMgd.Windows.OpenFileDialog;
-
+using SaveFileDialog = HostMgd.Windows.SaveFileDialog;
 #else
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.EditorInput;
 using Database = Autodesk.AutoCAD.DatabaseServices.Database;
 using OpenFileDialog = Autodesk.AutoCAD.Windows.OpenFileDialog;
+using SaveFileDialog = Autodesk.AutoCAD.Windows.SaveFileDialog;
+
 
 
 #endif
@@ -303,8 +305,7 @@ namespace ElectroTools
                 Y.Value = "Y";
                 Y.Font.Color = ColorTranslator.ToOle(Color.Black);
                 Y.Font.Bold = true;
-                Y.HorizontalAlignment = HorizontalAlignment.Center;
-                Y.VerticalAlignment = XlVAlign.xlVAlignCenter;
+                Y.VerticalAlignment = Constants.xlCenter;
                 Y.Offset[1, 0].Value = 2205789.66;
                 Y.Offset[2, 0].Value = 2205808.02;
                 Y.Offset[3, 0].Value = 2205773.68;
@@ -317,8 +318,7 @@ namespace ElectroTools
                 X.Value = "X";
                 X.Font.Color = ColorTranslator.ToOle(Color.Black);
                 X.Font.Bold = true;
-                X.HorizontalAlignment = HorizontalAlignment.Center;
-                X.VerticalAlignment = XlVAlign.xlVAlignCenter;
+                X.VerticalAlignment = HorizontalAlignment.Center;
                 X.Offset[1, 0].Value = 587220.57;
                 X.Offset[2, 0].Value = 587193.26;
                 X.Offset[3, 0].Value = 587184.01;
@@ -384,6 +384,36 @@ namespace ElectroTools
             }
         }
 
+        static public string SaveExcelFile()
+        {
+            Editor ed = MyOpenDocument.ed;
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog(
+                "Сохранение координат в Excel файл", // Заголовок окна
+                "Координаты", // Имя файла по умолчанию
+                "xlsx;*.xls", // Фильтр файлов
+                "ExcelFileSave", // Имя диалога
+                SaveFileDialog.SaveFileDialogFlags.DefaultIsFolder);
+
+            // Показать диалоговое окно и обработать результат
+            DialogResult dialogResult = saveFileDialog.ShowDialog();
+
+            if (dialogResult == DialogResult.OK)
+            {
+                // Пользователь выбрал файл и нажал "Сохранить"
+                ed.WriteMessage($"\nФайл будет сохранён: {saveFileDialog.Filename}");
+                return saveFileDialog.Filename;
+
+                // Здесь вы можете добавить код для сохранения данных в выбранный файл
+            }
+            else
+            {
+                // Пользователь отменил сохранение файла
+                ed.WriteMessage("\nСохранение файла отменено.");
+                return null;
+            }
+        }
+
 
         public static void openExceleFileForCreatPL(string filePath)
         {
@@ -432,7 +462,7 @@ namespace ElectroTools
                         if (value1 == null && value2 != null)
                         {
                             count++;
-                            listObjectID.Add( Draw.drawCoordinatePolyline(listX, listY));
+                            listObjectID.Add(Draw.drawCoordinatePolyline(listX, listY));
                             listX.Clear();
                             listY.Clear();
                             continue;
@@ -450,7 +480,7 @@ namespace ElectroTools
                     listObjectID.Add(Draw.drawCoordinatePolyline(listX, listY));
 
                     ed.SetImpliedSelection(listObjectID.ToArray());
-                    
+
 
                 }
                 else
@@ -478,6 +508,122 @@ namespace ElectroTools
 
             }
         }
-    }
 
+        public static void creatFileExcelCoodrinate(int startNumber, List<double> listX, List<double> listY)
+        {
+            Editor ed = MyOpenDocument.ed;
+            Database dbCurrent = MyOpenDocument.dbCurrent;
+            Document doc = MyOpenDocument.doc;
+
+            Application excel = new Application();
+            Workbook workbook = excel.Workbooks.Add();
+            try
+            {
+
+                Worksheet workSheet = (Worksheet)workbook.Worksheets.Add();
+                workSheet.Name = "Координаты";
+
+                Range number = (Range)workSheet.Cells[5, 2];
+                number.Value = "№";
+                number.Font.Color = ColorTranslator.ToOle(Color.Black);
+                number.Font.Bold = true;
+                number.Style.VerticalAlignment = Constants.xlCenter;
+
+                for (int i = 0; i < listX.Count; i++)
+                {
+                    number.Offset[i + 1, 0].Value = startNumber + i;
+                }
+
+                number.Offset[listX.Count + 1, 0].Value = startNumber;
+
+
+
+
+                Range Y = (Range)workSheet.Cells[5, 3];
+                Y.Value = "Y";
+                Y.Font.Color = ColorTranslator.ToOle(Color.Black);
+                Y.Font.Bold = true;
+                Y.Style.VerticalAlignment = Constants.xlCenter;
+                for (int i = 0; i < listX.Count; i++)
+                {
+                    Y.Offset[i + 1, 0].Value = Math.Round(listX[i], UserData.roundCoordinateXYFileExcel);
+                }
+                //Последняя/первая точка
+                Y.Offset[listX.Count + 1, 0].Value = Math.Round(listX[0], UserData.roundCoordinateXYFileExcel);
+
+
+                Range X = (Range)workSheet.Cells[5, 4];
+                X.Value = "X";
+                X.Font.Color = ColorTranslator.ToOle(Color.Black);
+                X.Font.Bold = true;
+                X.Style.VerticalAlignment = Constants.xlCenter;
+                ;
+                for (int i = 0; i < listY.Count; i++)
+                {
+                    X.Offset[i + 1, 0].Value = Math.Round(listY[i], UserData.roundCoordinateXYFileExcel);
+                }
+                //Последняя/первая точка
+                //X.Offset[listX.Count + 1, 0].Value = Math.Round(listY[listY.Count-1], UserData.roundCoordinateXYFileExcel);
+                X.Offset[listX.Count + 1, 0].Value = Math.Round(listY[0], UserData.roundCoordinateXYFileExcel);
+
+
+                Range dist = (Range)workSheet.Cells[5, 5];
+                dist.Value = "Отрезок;Длина";
+                dist.Font.Color = ColorTranslator.ToOle(Color.Black);
+                dist.Font.Bold = true;
+                dist.Style.VerticalAlignment = Constants.xlCenter;
+                ;
+                for (int i = 0; i < listY.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        dist.Offset[i + 1, 0].Value = "-";
+                        continue;
+                    }
+
+                    Vector<double> point1 = Vector<double>.Build.DenseOfArray(new double[] { listY[i - 1], listX[i - 1] });
+                    Vector<double> point2 = Vector<double>.Build.DenseOfArray(new double[] { listY[i], listX[i] });
+
+                    double distance = Math.Round((point2 - point1).L2Norm(), UserData.roundCoordinateDistFileExcel);
+
+                    dist.Offset[i + 1, 0].Value = ("'" + (startNumber + i - 1) + " - " + (startNumber + i)).ToString() + " ; " + distance.ToString();
+
+
+                }
+                //Последняя/первая точка
+                dist.Offset[listX.Count + 1, 0].Value = ("'"+startNumber+" - "+ (startNumber+ listX.Count -1))+" ; " + Math.Round(((Vector<double>.Build.DenseOfArray(new double[] { listY[0], listX[0] })) - (Vector<double>.Build.DenseOfArray(new double[] { listY[listX.Count-1], listX[listX.Count - 1] }))).L2Norm(), UserData.roundCoordinateDistFileExcel); ;
+
+
+                //Путь на рабочий стол
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                //Клеим стрингу
+                string filePath = Path.Combine(desktopPath, "Координаты.xlsx");
+
+                workbook.SaveAs(filePath);
+                workbook.Close();
+                excel.Quit();
+
+                OpenFileExcel(filePath, false);
+                ed.WriteMessage("Файл  создан.");
+            }
+
+            catch (Exception ex)
+            {
+                // Обработка исключений
+                Console.WriteLine($"Ошибка при создании файла Excel: {ex.Message}");
+                ed.WriteMessage("Произошла какая-то ошибка.");
+            }
+
+            finally
+            {
+
+                // Освобождение ресурсов
+                Marshal.ReleaseComObject(workbook);
+                Marshal.ReleaseComObject(excel);
+
+
+            }
+        }
+
+    }
 }
