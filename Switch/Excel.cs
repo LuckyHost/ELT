@@ -381,7 +381,7 @@ namespace ElectroTools
 
         static public string SaveExcelFile()
         {
-            Editor ed = MyOpenDocument.ed;
+            
 
             SaveFileDialog saveFileDialog = new SaveFileDialog(
                 "Сохранение координат в Excel файл", // Заголовок окна
@@ -396,7 +396,7 @@ namespace ElectroTools
             if (dialogResult == DialogResult.OK)
             {
                 // Пользователь выбрал файл и нажал "Сохранить"
-                ed.WriteMessage($"\nФайл будет сохранён: {saveFileDialog.Filename}");
+                MyOpenDocument.ed.WriteMessage($"\nФайл будет сохранён: {saveFileDialog.Filename}");
                 return saveFileDialog.Filename;
 
                 // Здесь вы можете добавить код для сохранения данных в выбранный файл
@@ -404,7 +404,7 @@ namespace ElectroTools
             else
             {
                 // Пользователь отменил сохранение файла
-                ed.WriteMessage("\nСохранение файла отменено.");
+                MyOpenDocument.ed.WriteMessage("\nСохранение файла отменено.");
                 return null;
             }
         }
@@ -412,10 +412,7 @@ namespace ElectroTools
 
         public static void openExceleFileForCreatPL(string filePath)
         {
-            //Это что бы когда чисто используешь функционал координат
-            MyOpenDocument.ed = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor;
-            MyOpenDocument.doc = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-            MyOpenDocument.dbCurrent = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Database;
+            
 
 
             Workbook workbook = null;
@@ -512,13 +509,7 @@ namespace ElectroTools
         public static void creatFileExcelCoodrinate(int startNumber, List<double> listX, List<double> listY, ObjectId plID)
         {
 
-            //Это что бы когда чисто используешь функционал координат
-            MyOpenDocument.ed = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor;
-            MyOpenDocument.doc = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-            MyOpenDocument.dbCurrent = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Database;
-
-
-
+            
             bool isAddArea = false;
 
             PromptEntityResult perMtext = null;

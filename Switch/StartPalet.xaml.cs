@@ -141,6 +141,12 @@ namespace ElectroTools
 
         private void insertBlock(object sender, RoutedEventArgs e)
         {
+            //Это что бы когда чисто используешь функционал координат
+            MyOpenDocument.ed = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor;
+            MyOpenDocument.doc = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+            MyOpenDocument.dbCurrent = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Database;
+
+
             _data._tools.InsertBlockAtVertices();
         }
 
@@ -160,6 +166,13 @@ namespace ElectroTools
 
         private void creatExcelFile(object sender, RoutedEventArgs e)
         {
+
+            //Это что бы когда чисто используешь функционал координат
+            MyOpenDocument.ed = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor;
+            MyOpenDocument.doc = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+            MyOpenDocument.dbCurrent = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Database;
+
+
             if (_data._tools.listPowerLine != null)
             {
                 string result= Text.creatPromptKeywordOptions("Имеется шаблон с координатами ? : ", new List<string>() { "Да", "Нет" }, 1);
