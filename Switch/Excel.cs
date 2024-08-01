@@ -284,16 +284,14 @@ namespace ElectroTools
 
         public static void creatExcelFileCoordinate()
         {
-            Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
-            Document doc = MyOpenDocument.doc;
+            
 
 
             Application excel = new Application();
             Workbook workbook = excel.Workbooks.Add();
             try
             {
-                ed.WriteMessage("Создаю файл шаблон на рабочем столе");
+                MyOpenDocument.ed.WriteMessage("Создаю файл шаблон на рабочем столе");
 
                 Worksheet workSheet = (Worksheet)workbook.Worksheets.Add();
                 workSheet.Name = "Лист Координат";
@@ -335,14 +333,14 @@ namespace ElectroTools
                 excel.Quit();
 
                 OpenFileExcel(filePath, false);
-                ed.WriteMessage("Шаблон создан.");
+                MyOpenDocument.ed.WriteMessage("Шаблон создан.");
             }
 
             catch (Exception ex)
             {
                 // Обработка исключений
                 Console.WriteLine($"Ошибка при создании файла Excel: {ex.Message}");
-                ed.WriteMessage("Произошла какая-то ошибка.");
+                MyOpenDocument.ed.WriteMessage("Произошла какая-то ошибка.");
             }
 
             finally
@@ -368,7 +366,7 @@ namespace ElectroTools
             if (dr == DialogResult.OK)
             {
                 // Если пользователь выбрал файл, выводим путь к файлу в командную строку AutoCAD
-                ed.WriteMessage("\nВыбранный файл: " + ofd.Filename);
+                MyOpenDocument.ed.WriteMessage("\nВыбранный файл: " + ofd.Filename);
                 return ofd.Filename;
 
                 // Здесь может быть ваш код для дальнейшей работы с выбранным файлом Excel
@@ -414,7 +412,7 @@ namespace ElectroTools
 
         public static void openExceleFileForCreatPL(string filePath)
         {
-            Editor ed = MyOpenDocument.ed;
+            
             Workbook workbook = null;
             Application excelApp = null;
 
@@ -438,7 +436,7 @@ namespace ElectroTools
 
                 if (range != null)
                 {
-                    ed.WriteMessage($"Значение 'Y' найдено в ячейке: {range.Address}");
+                    MyOpenDocument.ed.WriteMessage($"Значение 'Y' найдено в ячейке: {range.Address}");
 
                     int count = 1;
                     List<double> listX = new List<double>();
@@ -476,13 +474,13 @@ namespace ElectroTools
 
                     listObjectID.Add(Draw.drawCoordinatePolyline(listX, listY));
 
-                    ed.SetImpliedSelection(listObjectID.ToArray());
+                    MyOpenDocument.ed.SetImpliedSelection(listObjectID.ToArray());
 
 
                 }
                 else
                 {
-                    ed.WriteMessage("Значение 'X' не найдено.");
+                    MyOpenDocument.ed.WriteMessage("Значение 'X' не найдено.");
                 }
 
                 // Закрываем книгу и приложение
@@ -494,7 +492,7 @@ namespace ElectroTools
             catch (Exception ex)
             {
                 // Обработка исключений
-                ed.WriteMessage("Произошла какая-то ошибка.");
+                MyOpenDocument.ed.WriteMessage("Произошла какая-то ошибка.");
             }
 
             finally
@@ -508,9 +506,7 @@ namespace ElectroTools
 
         public static void creatFileExcelCoodrinate(int startNumber, List<double> listX, List<double> listY, ObjectId plID)
         {
-            Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
-            Document doc = MyOpenDocument.doc;
+             
 
             bool isAddArea = false;
 
@@ -521,7 +517,7 @@ namespace ElectroTools
             PromptKeywordOptions options = new PromptKeywordOptions("\nБудем выводить площадь и КН участка? [Да/Нет] : ");
             options.Keywords.Add("Да");
             options.Keywords.Add("Нет");
-            PromptResult resultOptions = ed.GetKeywords(options);
+            PromptResult resultOptions = MyOpenDocument.ed.GetKeywords(options);
             if (resultOptions.Status != PromptStatus.OK) return;
 
             if (resultOptions.StringResult == "Да")
@@ -531,7 +527,7 @@ namespace ElectroTools
                 PromptEntityOptions peo = new PromptEntityOptions("\nВыберите Mtext с КН:");
                 peo.SetRejectMessage("\nМожно выбрать только Mtext.");
                 peo.AddAllowedClass(typeof(MText), true);
-                perMtext = ed.GetEntity(peo);
+                perMtext = MyOpenDocument.ed.GetEntity(peo);
 
                 /*
                 // Запрашиваем у пользователя выбор полилинии
@@ -627,47 +623,13 @@ namespace ElectroTools
 
                 }
                 //Последняя/первая точка
-                dist.Offset[listX.Count + 1, 0].Value = ("'" + (startNumber + listX.Count - 1))  + " - " + startNumber + " ; " + Math.Round(((Vector<double>.Build.DenseOfArray(new double[] { listY[0], listX[0] })) - (Vector<double>.Build.DenseOfArray(new double[] { listY[listX.Count - 1], listX[listX.Count - 1] }))).L2Norm(), UserData.roundCoordinateDistFileExcel); ;
+                dist.Offset[listX.Count + 1, 0].Value = ("'" + (startNumber + listX.Count - 1))   + " - " + startNumber + " ; " + Math.Round(((Vector<double>.Build.DenseOfArray(new double[] { listY[0], listX[0] })) - (Vector<double>.Build.DenseOfArray(new double[] { listY[listX.Count - 1], listX[listX.Count - 1] }))).L2Norm(), UserData.roundCoordinateDistFileExcel); ;
 
 
 
-                // Открываем диалог сохранения файла
-                SaveFileDialog saveFileDialog = new SaveFileDialog
-                (
-            "Сохранение координат в Excel файл",
-            "Координаты",
-            "xlsx",
-            "SaveExcelFileDialog",
-            SaveFileDialog.SaveFileDialogFlags.DoNotTransferRemoteFiles
-            );
+                
 
-
-
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    // Путь к файлу, выбранный пользователем
-                    string filePath = saveFileDialog.Filename;
-
-                    // Сохраняем рабочую книгу
-                    workbook.SaveAs(filePath);
-                    // Закрываем рабочую книгу и приложение
-                    workbook.Close();
-                    excel.Quit();
-
-                    // Освобождаем COM-объекты
-                    Marshal.ReleaseComObject(workbook);
-                    Marshal.ReleaseComObject(excel);
-
-                    // Уведомляем пользователя
-                    Console.WriteLine("Файл сохранен: " + filePath);
-                }
-                else
-                {
-                    // Если пользователь отменил сохранение
-                    Console.WriteLine("Сохранение файла отменено.");
-                }
-
-                /*
+                
                 //Путь на рабочий стол
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 //Клеим стрингу
@@ -675,17 +637,17 @@ namespace ElectroTools
 
                 workbook.SaveAs(filePath);
                 workbook.Close();
-                excel.Quit();*/
+                excel.Quit();
 
-                //OpenFileExcel(filePath, false);
-                ed.WriteMessage("Файл  создан.");
+                OpenFileExcel(filePath, false);
+                MyOpenDocument.ed.WriteMessage("Файл  создан.");
             }
 
             catch (Exception ex)
             {
                 // Обработка исключений
                 Console.WriteLine($"Ошибка при создании файла Excel: {ex.Message}");
-                ed.WriteMessage("Произошла какая-то ошибка.");
+                MyOpenDocument.ed.WriteMessage("Произошла какая-то ошибка.");
                 Marshal.ReleaseComObject(workbook);
                 Marshal.ReleaseComObject(excel);
 
