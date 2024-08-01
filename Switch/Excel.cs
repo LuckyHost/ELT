@@ -357,7 +357,7 @@ namespace ElectroTools
 
         static public string selectExcelFile()
         {
-            Editor ed = MyOpenDocument.ed;
+           
 
             // Создаем новый диалог выбора файла
             OpenFileDialog ofd = new OpenFileDialog("Выберите файл Excel c координатами", null, "xlsx;xls", "ExcelFileDialog", OpenFileDialog.OpenFileDialogFlags.DoNotTransferRemoteFiles);
@@ -374,7 +374,7 @@ namespace ElectroTools
             else
             {
 
-                ed.WriteMessage("\nВыбор файла отменен пользователем.");
+                MyOpenDocument.ed.WriteMessage("\nВыбор файла отменен пользователем.");
                 return null;
             }
         }
@@ -412,7 +412,12 @@ namespace ElectroTools
 
         public static void openExceleFileForCreatPL(string filePath)
         {
-            
+            //Это что бы когда чисто используешь функционал координат
+            MyOpenDocument.ed = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor;
+            MyOpenDocument.doc = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+            MyOpenDocument.dbCurrent = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Database;
+
+
             Workbook workbook = null;
             Application excelApp = null;
 
@@ -506,7 +511,13 @@ namespace ElectroTools
 
         public static void creatFileExcelCoodrinate(int startNumber, List<double> listX, List<double> listY, ObjectId plID)
         {
-             
+
+            //Это что бы когда чисто используешь функционал координат
+            MyOpenDocument.ed = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor;
+            MyOpenDocument.doc = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+            MyOpenDocument.dbCurrent = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Database;
+
+
 
             bool isAddArea = false;
 
