@@ -162,11 +162,11 @@ namespace ElectroTools
         public double[,] matrixEdjeWeight;
 
 
-        /*
+        /**
         [CommandMethod("фв", CommandFlags.UsePickSet |
                        CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad */
 
-
+        
 
         public void addInfo()
         {

@@ -627,7 +627,7 @@ namespace ElectroTools
 
                 }
                 //Последняя/первая точка
-                dist.Offset[listX.Count + 1, 0].Value = ("'" + startNumber + " - " + (startNumber + listX.Count - 1)) + " ; " + Math.Round(((Vector<double>.Build.DenseOfArray(new double[] { listY[0], listX[0] })) - (Vector<double>.Build.DenseOfArray(new double[] { listY[listX.Count - 1], listX[listX.Count - 1] }))).L2Norm(), UserData.roundCoordinateDistFileExcel); ;
+                dist.Offset[listX.Count + 1, 0].Value = ("'" + (startNumber + listX.Count - 1))  + " - " + startNumber + " ; " + Math.Round(((Vector<double>.Build.DenseOfArray(new double[] { listY[0], listX[0] })) - (Vector<double>.Build.DenseOfArray(new double[] { listY[listX.Count - 1], listX[listX.Count - 1] }))).L2Norm(), UserData.roundCoordinateDistFileExcel); ;
 
 
 
