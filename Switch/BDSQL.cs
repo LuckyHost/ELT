@@ -23,9 +23,7 @@ namespace ElectroTools
 
     {
 
-        static Editor ed = MyOpenDocument.ed;
-        static Database dbCurrent = MyOpenDocument.dbCurrent;
-        static Document doc = MyOpenDocument.doc;
+        
 
         static public List<string> searchAllDataInBD(string dbFilePath, string nameTable, string searchColum, string filterColumn = null, string filterValue = null)
         {
@@ -47,7 +45,7 @@ namespace ElectroTools
             }
 
 
-            using (DocumentLock doclock = doc.LockDocument())
+            using (DocumentLock doclock = MyOpenDocument.doc.LockDocument())
             {
 
                 using (SQLiteConnection connection = new SQLiteConnection(connectionString))
@@ -88,7 +86,7 @@ namespace ElectroTools
             string query = "SELECT * FROM " + nameTable + " WHERE " + searchColum + "= @searchItem";
             try
             {
-                using (DocumentLock doclock = doc.LockDocument())
+                using (DocumentLock doclock = MyOpenDocument.doc.LockDocument())
                 {
                     using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                     {

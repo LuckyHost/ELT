@@ -203,9 +203,9 @@ namespace ElectroTools
 
 
             //получаю имя файла
-            if (e.PropertyName == nameof(Tools.ed))
+            if (e.PropertyName == nameof(MyOpenDocument.ed))
             {
-                string[] tempArrayString = _tools.ed.Document.Name.Split('\\');
+                string[] tempArrayString = MyOpenDocument.ed.Document.Name.Split('\\');
                 pathDWGFile = tempArrayString.Last();
             }
 

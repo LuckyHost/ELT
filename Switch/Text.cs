@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
+
 
 
 
@@ -37,18 +39,15 @@ namespace ElectroTools
 {
     public static class Text
     {
-        static Editor ed = MyOpenDocument.ed;
-        static Database dbCurrent = MyOpenDocument.dbCurrent;
-        static Document doc = MyOpenDocument.doc;
-
+       
         //Функция создания текста узлов
         static public void creatTextFromKnot(string nameSearchLayer, List<PointLine> masterPoint, string sizeText)
         {
             
-            using (DocumentLock docloc = doc.LockDocument())
+            using (DocumentLock docloc = MyOpenDocument.doc.LockDocument())
             {
 
-                using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
 
                     double size;
@@ -62,7 +61,7 @@ namespace ElectroTools
 
 
                     // Ищу на какой слой закинуть
-                    LayerTable acLyrTbl = trAdding.GetObject(dbCurrent.LayerTableId, OpenMode.ForRead) as LayerTable;
+                    LayerTable acLyrTbl = trAdding.GetObject(MyOpenDocument.dbCurrent.LayerTableId, OpenMode.ForRead) as LayerTable;
 
                     ObjectId acLyrId = ObjectId.Null;
                     if (acLyrTbl.Has(nameSearchLayer))
@@ -72,7 +71,7 @@ namespace ElectroTools
 
 
                     // Для того что бы закинуть текст
-                    BlockTable acBlkTbl = trAdding.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
+                    BlockTable acBlkTbl = trAdding.GetObject(MyOpenDocument.dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
 
                     BlockTableRecord acBlkTblRec = trAdding.GetObject(acBlkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
 
@@ -109,13 +108,13 @@ namespace ElectroTools
             size = double.Parse(sizeText);
 
             // Ищу на какой слой закинуть
-            using (DocumentLock docloc = doc.LockDocument())
+            using (DocumentLock docloc = MyOpenDocument.doc.LockDocument())
             {
 
-                using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
 
-                    LayerTable acLyrTbl = trAdding.GetObject(dbCurrent.LayerTableId, OpenMode.ForRead) as LayerTable;
+                    LayerTable acLyrTbl = trAdding.GetObject(MyOpenDocument.dbCurrent.LayerTableId, OpenMode.ForRead) as LayerTable;
 
                     ObjectId acLyrId = ObjectId.Null;
                     if (acLyrTbl.Has(nameSearchLayer))
@@ -124,7 +123,7 @@ namespace ElectroTools
                     }
 
                     // Для того что бы закинуть текст
-                    BlockTable acBlkTbl = trAdding.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
+                    BlockTable acBlkTbl = trAdding.GetObject(MyOpenDocument.dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
 
                     BlockTableRecord acBlkTblRec = trAdding.GetObject(acBlkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
 
@@ -155,17 +154,17 @@ namespace ElectroTools
         {
             
 
-            using (DocumentLock docloc = doc.LockDocument())
+            using (DocumentLock docloc = MyOpenDocument.doc.LockDocument())
             {
 
-                using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
 
                     double size;
                     Double.TryParse(sizeText, out size);
 
                     // Ищу на какой слой закинуть
-                    LayerTable acLyrTbl = trAdding.GetObject(dbCurrent.LayerTableId, OpenMode.ForRead) as LayerTable;
+                    LayerTable acLyrTbl = trAdding.GetObject(MyOpenDocument.dbCurrent.LayerTableId, OpenMode.ForRead) as LayerTable;
 
                     ObjectId acLyrId = ObjectId.Null;
                     if (acLyrTbl.Has(nameSearchLayer))
@@ -177,7 +176,7 @@ namespace ElectroTools
                     // LayerTableRecord acLyrTblRec = trAdding.GetObject(acLyrId, OpenMode.ForRead) as LayerTableRecord;
 
                     // Для того что бы закинуть текст
-                    BlockTable acBlkTbl = trAdding.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
+                    BlockTable acBlkTbl = trAdding.GetObject(MyOpenDocument.dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
 
                     BlockTableRecord acBlkTblRec = trAdding.GetObject(acBlkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
 
@@ -209,17 +208,17 @@ namespace ElectroTools
         {
            
 
-            using (DocumentLock docloc = doc.LockDocument())
+            using (DocumentLock docloc = MyOpenDocument.doc.LockDocument())
             {
 
-                using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
 
                     double size;
                     Double.TryParse(sizeText, out size);
 
                     // Ищу на какой слой закинуть
-                    LayerTable acLyrTbl = trAdding.GetObject(dbCurrent.LayerTableId, OpenMode.ForRead) as LayerTable;
+                    LayerTable acLyrTbl = trAdding.GetObject(MyOpenDocument.dbCurrent.LayerTableId, OpenMode.ForRead) as LayerTable;
 
                     ObjectId acLyrId = ObjectId.Null;
                     if (acLyrTbl.Has(nameSearchLayer))
@@ -231,7 +230,7 @@ namespace ElectroTools
                     // LayerTableRecord acLyrTblRec = trAdding.GetObject(acLyrId, OpenMode.ForRead) as LayerTableRecord;
 
                     // Для того что бы закинуть текст
-                    BlockTable acBlkTbl = trAdding.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
+                    BlockTable acBlkTbl = trAdding.GetObject(MyOpenDocument.dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
 
                     BlockTableRecord acBlkTblRec = trAdding.GetObject(acBlkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
 
@@ -258,9 +257,9 @@ namespace ElectroTools
         public static void updateColorMtext(ElectroTools.PointLine itemPoint, int ColorIndex)
         {
          
-            using (DocumentLock doclock = doc.LockDocument())
+            using (DocumentLock doclock = MyOpenDocument.doc.LockDocument())
             {
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
                     try
                     {
@@ -292,9 +291,9 @@ namespace ElectroTools
             
             if (textId == null | newText == null)
             { return; }
-            using (DocumentLock doclock = doc.LockDocument())
+            using (DocumentLock doclock = MyOpenDocument.doc.LockDocument())
             {
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
                     try
                     {
@@ -316,7 +315,7 @@ namespace ElectroTools
                         else
                         {
                             // Обработка случая, если не удалось получить объект MText
-                            ed.WriteMessage("Unable to open MText with ObjectId\n");
+                            MyOpenDocument.ed.WriteMessage("Unable to open MText with ObjectId\n");
                         }
                     }
 
@@ -333,9 +332,9 @@ namespace ElectroTools
         public static int getColorMtext(PointLine itemPoint)
         {
             int colorIndex = 0;
-            using (DocumentLock doclock = doc.LockDocument())
+            using (DocumentLock doclock = MyOpenDocument.doc.LockDocument())
             {
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
                     MText mtext = tr.GetObject(itemPoint.IDText, OpenMode.ForRead) as MText;
 
@@ -358,6 +357,9 @@ namespace ElectroTools
         //Создает текст вершин
       public static string creatPromptKeywordOptions(string textName, List<string> listOptions, int defaultOptions)
         {
+
+           
+
             //Для Acad, если пробел, он берет только первую часть 
             List<string> modifiedListOptions = listOptions.Select(option => option.Replace(" ", "_")).ToList();
 
@@ -370,14 +372,34 @@ namespace ElectroTools
             }
             options.Keywords.Default = modifiedListOptions[defaultOptions - 1]; // если сам, то -1
 
-            PromptResult result = ed.GetKeywords(options);
+            PromptResult result = MyOpenDocument.ed.GetKeywords(options);
             if (result.Status == PromptStatus.OK)
             {
                 string selectedKeyword = result.StringResult.Replace("_", " ");
-                ed.WriteMessage("\n\nВы выбрали : " + selectedKeyword + "\n\n");
+                MyOpenDocument.ed.WriteMessage("\n\nВы выбрали : " + selectedKeyword + "\n\n");
                 return selectedKeyword;
             }
             return null;
+        }
+
+        public static string getMTextContent(ObjectId mTextId)
+        {
+            using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
+            {
+                // Открытие выбранного объекта MText для чтения
+                MText mText = tr.GetObject(mTextId, OpenMode.ForRead) as MText;
+
+                if (mText != null)
+                {
+                    // Вывод содержимого MText
+                    MyOpenDocument.ed.WriteMessage("\nСодержимое MText: " + mText.Contents);
+                    return mText.Contents;
+                }
+                else { return null; }
+
+                // Не нужно коммитить транзакцию, так как мы только читаем данные
+
+            }
         }
 
 

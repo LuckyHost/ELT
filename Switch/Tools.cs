@@ -46,9 +46,7 @@ namespace ElectroTools
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public Document doc;
-        public Database dbCurrent;
-        public Editor ed;
+         Editor oldEd;
         //Для передачи Lock состояния
         private MyData _myData;
         private NetWork _netWork = new NetWork();
@@ -60,12 +58,10 @@ namespace ElectroTools
 
         public Tools()
         {
-            this.doc = Application.DocumentManager.MdiActiveDocument;
-            this.dbCurrent = Application.DocumentManager.MdiActiveDocument.Database;
-            this.ed = Application.DocumentManager.MdiActiveDocument.Editor;
-            MyOpenDocument.ed = ed;
-            MyOpenDocument.doc = doc;
-            MyOpenDocument.dbCurrent = dbCurrent;
+            
+            MyOpenDocument.ed = Application.DocumentManager.MdiActiveDocument.Editor;
+            MyOpenDocument.doc = Application.DocumentManager.MdiActiveDocument;
+            MyOpenDocument.dbCurrent = Application.DocumentManager.MdiActiveDocument.Database;
 
 
             List<string> assemblies = new List<string>
@@ -174,15 +170,21 @@ namespace ElectroTools
 
         public void addInfo()
         {
+
             //подписывается на обновление чертежа
             Application.DocumentManager.DocumentActivated += DocumentActivatedEventHandler;
 
-            //Обновляем
-            doc = Application.DocumentManager.MdiActiveDocument;
-            dbCurrent = Application.DocumentManager.MdiActiveDocument.Database;
-            ed = Application.DocumentManager.MdiActiveDocument.Editor;
+            oldEd = Application.DocumentManager.MdiActiveDocument.Editor;
 
-            OnPropertyChanged(nameof(ed));
+
+            //Обновляем при запуске анализа
+            MyOpenDocument.ed = Application.DocumentManager.MdiActiveDocument.Editor;
+            MyOpenDocument.doc = Application.DocumentManager.MdiActiveDocument;
+            MyOpenDocument.dbCurrent = Application.DocumentManager.MdiActiveDocument.Database;
+
+
+
+            OnPropertyChanged(nameof(MyOpenDocument.ed));
 
             //Получить Путь где лежит DLL
             Assembly assembly = Assembly.GetExecutingAssembly();
@@ -234,15 +236,15 @@ namespace ElectroTools
             Layer.deleteObjectsOnLayer("Напряжение_Makarov.D");
 
 
-            using (DocumentLock docloc = doc.LockDocument())
+            using (DocumentLock docloc = MyOpenDocument.doc.LockDocument())
             {
-                using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
                     //Создаем магистраль
-                    PowerLine magistralLine = creatMagistral(ed, trAdding, listPoint, listPointXY, listPowerLine);
+                    PowerLine magistralLine = creatMagistral(MyOpenDocument.ed, trAdding, listPoint, listPointXY, listPowerLine);
 
                     //Ищем все отпайки у магистрали и у их детей и делает листпоинт
-                    searchPlyline(ed, magistralLine, trAdding, listPoint, listPointXY, j);
+                    searchPlyline(MyOpenDocument.ed, magistralLine, trAdding, listPoint, listPointXY, j);
 
 
                     //Собрать весь список PowerLine
@@ -256,7 +258,7 @@ namespace ElectroTools
                             _myData.isLock = false;
                             _myData.isLoadProcessAnim = true;
                             Draw.ZoomToEntity(item.IDLine, 5);
-                            ed.SetImpliedSelection(new ObjectId[] { item.IDLine });
+                            MyOpenDocument.ed.SetImpliedSelection(new ObjectId[] { item.IDLine });
                             MessageBox.Show("Элемент отсутствует в базе данных, добавьте его и повторите попытку.");
                             return;
 
@@ -319,10 +321,10 @@ namespace ElectroTools
                        CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad
         public void getPointLine()
         {
-            using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+            using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
             {
                 PromptEntityOptions magistral = new PromptEntityOptions("\n Выберите объект для получения Информации Линии : ");
-                PromptEntityResult perMagistral = ed.GetEntity(magistral);
+                PromptEntityResult perMagistral = MyOpenDocument.ed.GetEntity(magistral);
                 if (perMagistral.Status != PromptStatus.OK) { return; }
                 Polyline Plyline = trAdding.GetObject(perMagistral.ObjectId, OpenMode.ForRead) as Polyline;
 
@@ -331,37 +333,37 @@ namespace ElectroTools
 
                     if (itemLine.IDLine == perMagistral.ObjectId)
                     {
-                        ed.WriteMessage("\n  ");
-                        ed.WriteMessage("~~~~~~~~~~~~~~~~");
-                        ed.WriteMessage("\n У выбранного объекта ID:  " + itemLine.IDLine);
-                        ed.WriteMessage("\n У выбранного объекта имя:  " + itemLine.name);
-                        ed.WriteMessage("\n У выбранного объекта марка провода:  " + itemLine.cable);
-                        ed.WriteMessage("\n У выбранного объекта допустимый ток :  " + itemLine.Icrict);
-                        ed.WriteMessage("\n У выбранного объекта длинна:  " + itemLine.lengthLine);
-                        ed.WriteMessage("\n У выбранного объекта родитель:  " + itemLine.parent.name);
-                        ed.WriteMessage("\n Отпайка от вершины родителя:  " + itemLine.parentPoint.name);
-                        ed.WriteMessage("\n Последняя вершина объекта:  " + itemLine.endPoint.name);
-                        ed.WriteMessage("\n У выбранного объекта детей: " + itemLine.children.Count + " шт.");
-                        ed.WriteMessage("Выбранный объект основан на вершинах:  ");
+                        MyOpenDocument.ed.WriteMessage("\n  ");
+                        MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~");
+                        MyOpenDocument.ed.WriteMessage("\n У выбранного объекта ID:  " + itemLine.IDLine);
+                        MyOpenDocument.ed.WriteMessage("\n У выбранного объекта имя:  " + itemLine.name);
+                        MyOpenDocument.ed.WriteMessage("\n У выбранного объекта марка провода:  " + itemLine.cable);
+                        MyOpenDocument.ed.WriteMessage("\n У выбранного объекта допустимый ток :  " + itemLine.Icrict);
+                        MyOpenDocument.ed.WriteMessage("\n У выбранного объекта длинна:  " + itemLine.lengthLine);
+                        MyOpenDocument.ed.WriteMessage("\n У выбранного объекта родитель:  " + itemLine.parent.name);
+                        MyOpenDocument.ed.WriteMessage("\n Отпайка от вершины родителя:  " + itemLine.parentPoint.name);
+                        MyOpenDocument.ed.WriteMessage("\n Последняя вершина объекта:  " + itemLine.endPoint.name);
+                        MyOpenDocument.ed.WriteMessage("\n У выбранного объекта детей: " + itemLine.children.Count + " шт.");
+                        MyOpenDocument.ed.WriteMessage("Выбранный объект основан на вершинах:  ");
 
                         StringBuilder text = new StringBuilder();
                         foreach (PointLine itemPoint in itemLine.points)
                         {
                             text.Append(itemPoint.name + " ");
                         }
-                        ed.WriteMessage(text.ToString());
+                        MyOpenDocument.ed.WriteMessage(text.ToString());
 
-                        ed.WriteMessage("Выбранный объект лежит в ребрах:  ");
+                        MyOpenDocument.ed.WriteMessage("Выбранный объект лежит в ребрах:  ");
 
                         StringBuilder text2 = new StringBuilder();
                         foreach (Edge itemEdge in itemLine.Edges)
                         {
                             text2.Append(itemEdge.name + " ");
                         }
-                        ed.WriteMessage(text2.ToString());
+                        MyOpenDocument.ed.WriteMessage(text2.ToString());
 
-                        ed.WriteMessage("~~~~~~~~~~~~~~~~");
-                        ed.WriteMessage("\n  ");
+                        MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~");
+                        MyOpenDocument.ed.WriteMessage("\n  ");
                     }
 
                 }
@@ -378,19 +380,19 @@ namespace ElectroTools
 
         public void getAllPointLine()
         {
-            using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+            using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
             {
-                ed.WriteMessage("\n  ");
-                ed.WriteMessage("~~~~~~~~~~~~~~~~");
-                ed.WriteMessage("СПИСОК ВСЕХ ВЕРШИН: ");
+                MyOpenDocument.ed.WriteMessage("\n  ");
+                MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~");
+                MyOpenDocument.ed.WriteMessage("СПИСОК ВСЕХ ВЕРШИН: ");
 
                 foreach (PointLine itemPoint in listPoint)
                 {
 
-                    ed.WriteMessage(itemPoint.name.ToString() + " " + "weight: " + itemPoint.weightA + " " + itemPoint.positionPoint + " I: " + itemPoint.Ia + " " + itemPoint.isFavorite);
+                    MyOpenDocument.ed.WriteMessage(itemPoint.name.ToString() + " " + "weight: " + itemPoint.weightA + " " + itemPoint.positionPoint + " I: " + itemPoint.Ia + " " + itemPoint.isFavorite);
                 }
-                ed.WriteMessage("~~~~~~~~~~~~~~~~");
-                ed.WriteMessage("\n  ");
+                MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~");
+                MyOpenDocument.ed.WriteMessage("\n  ");
 
             }
 
@@ -405,19 +407,19 @@ namespace ElectroTools
         */
         public void getAllPowerLine()
         {
-            using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+            using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
             {
-                ed.WriteMessage("\n  ");
-                ed.WriteMessage("~~~~~~~~~~~~~~~~");
-                ed.WriteMessage("СПИСОК ВСЕХ СУЩЕСТВУЮЩИХ ЛИНИЙ: ");
+                MyOpenDocument.ed.WriteMessage("\n  ");
+                MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~");
+                MyOpenDocument.ed.WriteMessage("СПИСОК ВСЕХ СУЩЕСТВУЮЩИХ ЛИНИЙ: ");
 
                 foreach (PowerLine itemLine in listPowerLine)
                 {
-                    ed.WriteMessage(itemLine.name);
+                    MyOpenDocument.ed.WriteMessage(itemLine.name);
                 }
 
-                ed.WriteMessage("~~~~~~~~~~~~~~~~");
-                ed.WriteMessage("\n  ");
+                MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~");
+                MyOpenDocument.ed.WriteMessage("\n  ");
 
             }
         }
@@ -427,20 +429,20 @@ namespace ElectroTools
                        CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad
         public void getAllEdeg()
         {
-            using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+            using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
             {
-                ed.WriteMessage("\n  ");
-                ed.WriteMessage("~~~~~~~~~~~~~~~~");
-                ed.WriteMessage("СПИСОК ВСЕХ РЕБЕР: ");
+                MyOpenDocument.ed.WriteMessage("\n  ");
+                MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~");
+                MyOpenDocument.ed.WriteMessage("СПИСОК ВСЕХ РЕБЕР: ");
 
                 foreach (Edge itemEdge in listEdge)
                 {
-                    ed.WriteMessage(itemEdge.name.ToString() + " | Длина ребра: " + itemEdge.length + " | Марка провода ребра: " + itemEdge.cable + " | Допустимый ток: " + itemEdge.Icrict + " | Протекаемый ток: " + itemEdge.Ia + " | Data: " + itemEdge.r + " | StartPoint: " + itemEdge.startPoint.name + " |EndPoint: " + itemEdge.endPoint.name);
+                    MyOpenDocument.ed.WriteMessage(itemEdge.name.ToString() + " | Длина ребра: " + itemEdge.length + " | Марка провода ребра: " + itemEdge.cable + " | Допустимый ток: " + itemEdge.Icrict + " | Протекаемый ток: " + itemEdge.Ia + " | Data: " + itemEdge.r + " | StartPoint: " + itemEdge.startPoint.name + " |EndPoint: " + itemEdge.endPoint.name);
 
                     // ed.WriteMessage(itemEdge.name.ToString() + " | Длина ребра: " + itemEdge.length + " | Марка провода: " + itemEdge.cable + " | Data: " + itemEdge.data + " | " + itemEdge.centerPoint.name.ToString() + ": " + itemEdge.centerPoint.positionPoint);
                 }
-                ed.WriteMessage("~~~~~~~~~~~~~~~~");
-                ed.WriteMessage("\n  ");
+                MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~");
+                MyOpenDocument.ed.WriteMessage("\n  ");
 
             }
             OnPropertyChanged(nameof(listEdge));
@@ -451,17 +453,17 @@ namespace ElectroTools
                        CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad
         public void getInfoPoint()
         {
-            using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+            using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
             {
                 PromptEntityOptions InfoPoint = new PromptEntityOptions("\nВыберите узел для получения информации : ");
-                PromptEntityResult perInfoPoint = ed.GetEntity(InfoPoint);
+                PromptEntityResult perInfoPoint = MyOpenDocument.ed.GetEntity(InfoPoint);
                 MText mtext = trAdding.GetObject(perInfoPoint.ObjectId, OpenMode.ForRead) as MText;
 
                 int index = (mtext.Contents).IndexOf('P');
 
-                ed.WriteMessage("\n  ");
-                ed.WriteMessage("~~~~~~~~~~~~~~~~");
-                ed.WriteMessage("ИНФОРМАЦИЯ ПО УЗЛУ №: ");
+                MyOpenDocument.ed.WriteMessage("\n  ");
+                MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~");
+                MyOpenDocument.ed.WriteMessage("ИНФОРМАЦИЯ ПО УЗЛУ №: ");
 
                 foreach (PointLine itemPoint in listPoint)
                 {
@@ -471,14 +473,14 @@ namespace ElectroTools
 
                         if (int.Parse((mtext.Contents).Substring(0, index - 1)) == itemPoint.name)
                         {
-                            ed.WriteMessage(int.Parse((mtext.Contents).Substring(0, index - 1)) + " | Вес вершины: " + itemPoint.weightA + " | " + itemPoint.positionPoint);
+                            MyOpenDocument.ed.WriteMessage(int.Parse((mtext.Contents).Substring(0, index - 1)) + " | Вес вершины: " + itemPoint.weightA + " | " + itemPoint.positionPoint);
                         }
                     }
                     else
                     {
                         if (int.Parse(mtext.Contents) == itemPoint.name)
                         {
-                            ed.WriteMessage(itemPoint.name.ToString() + " | Вес вершины: " + itemPoint.weightA + " | " + itemPoint.positionPoint);
+                            MyOpenDocument.ed.WriteMessage(itemPoint.name.ToString() + " | Вес вершины: " + itemPoint.weightA + " | " + itemPoint.positionPoint);
                         }
                     }
 
@@ -486,8 +488,8 @@ namespace ElectroTools
 
                 }
 
-                ed.WriteMessage("~~~~~~~~~~~~~~~~");
-                ed.WriteMessage("\n  ");
+                MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~");
+                MyOpenDocument.ed.WriteMessage("\n  ");
 
             }
         }
@@ -498,29 +500,29 @@ namespace ElectroTools
                        CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad
         public void getInfoEdge()
         {
-            using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+            using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
             {
                 PromptEntityOptions InfoPoint = new PromptEntityOptions("\nВыберите ребро для получения информации : ");
-                PromptEntityResult perInfoPoint = ed.GetEntity(InfoPoint);
+                PromptEntityResult perInfoPoint = MyOpenDocument.ed.GetEntity(InfoPoint);
                 MText mtext = trAdding.GetObject(perInfoPoint.ObjectId, OpenMode.ForRead) as MText;
 
-                ed.WriteMessage("\n  ");
-                ed.WriteMessage("~~~~~~~~~~~~~~~~");
-                ed.WriteMessage("ИНФОРМАЦИЯ ПО РЕБРУ №: " + mtext.Contents);
+                MyOpenDocument.ed.WriteMessage("\n  ");
+                MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~");
+                MyOpenDocument.ed.WriteMessage("ИНФОРМАЦИЯ ПО РЕБРУ №: " + mtext.Contents);
 
                 foreach (Edge itemEdge in listEdge)
                 {
 
                     if (mtext.Contents == itemEdge.name.ToString())
                     {
-                        ed.WriteMessage(itemEdge.name.ToString() + " | Длина ребра: " + itemEdge.length + " | Марка провода ребра: " + itemEdge.cable + " | Допустимый ток: " + itemEdge.Icrict + " | Протекаемый ток: " + itemEdge.Ia + " | Data: " + itemEdge.r + " | StartPoint: " + itemEdge.startPoint.name + " |EndPoint: " + itemEdge.endPoint.name);
+                        MyOpenDocument.ed.WriteMessage(itemEdge.name.ToString() + " | Длина ребра: " + itemEdge.length + " | Марка провода ребра: " + itemEdge.cable + " | Допустимый ток: " + itemEdge.Icrict + " | Протекаемый ток: " + itemEdge.Ia + " | Data: " + itemEdge.r + " | StartPoint: " + itemEdge.startPoint.name + " |EndPoint: " + itemEdge.endPoint.name);
                     }
 
 
                 }
 
-                ed.WriteMessage("~~~~~~~~~~~~~~~~");
-                ed.WriteMessage("\n  ");
+                MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~");
+                MyOpenDocument.ed.WriteMessage("\n  ");
 
             }
 
@@ -533,14 +535,14 @@ namespace ElectroTools
             int startPoint = 0;
             int endPoint = 0;
 
-            PromptResult result = ed.GetString("С какой вершине начать обходить ?: ");
+            PromptResult result = MyOpenDocument.ed.GetString("С какой вершине начать обходить ?: ");
             if (result.Status == PromptStatus.OK)
             {
                 startPoint = int.Parse(result.StringResult) - 1; //+1 что бы билось с визуализацией 
             }
 
             //Ввод Конечной вершины
-            PromptResult result2 = ed.GetString("Конечная вершина обхода ?:");
+            PromptResult result2 = MyOpenDocument.ed.GetString("Конечная вершина обхода ?:");
             if (result2.Status == PromptStatus.OK)
             {
                 endPoint = int.Parse(result2.StringResult) - 1;//+1 что бы билось с визуализацией 
@@ -552,19 +554,19 @@ namespace ElectroTools
             //Нарисовать и приблизить 
             ObjectId idPL = Draw.drawPolyline(path, "Напряжение_Makarov.D", 52, 0.4);
             Draw.ZoomToEntity(idPL, 1);
-            ed.SetImpliedSelection(new ObjectId[] { idPL });
+            MyOpenDocument.ed.SetImpliedSelection(new ObjectId[] { idPL });
 
 
-            ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            ed.WriteMessage("Путь ОБХОДА :");
+            MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            MyOpenDocument.ed.WriteMessage("Путь ОБХОДА :");
 
             StringBuilder resultPath = new StringBuilder();
             foreach (PointLine item in path)
             {
                 resultPath.Append(item.name + " ");
             }
-            ed.WriteMessage(resultPath.ToString());
-            ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            MyOpenDocument.ed.WriteMessage(resultPath.ToString());
+            MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         }
 
@@ -602,16 +604,16 @@ namespace ElectroTools
                 switch (resultPromt)
                 {
                     case null:
-                        ed.WriteMessage("Отмена");
+                        MyOpenDocument.ed.WriteMessage("Отмена");
                         return;
                     case "Свое":
 
 
                         PromptDoubleOptions options = new PromptDoubleOptions("Введите свою ЛИНЕЙНУЮ ЭДС:");
-                        PromptDoubleResult result = ed.GetDouble(options);
+                        PromptDoubleResult result = MyOpenDocument.ed.GetDouble(options);
                         if (result.Status == PromptStatus.OK)
                         {
-                            ed.WriteMessage("\n\nВы ввели: " + result.Value.ToString());
+                            MyOpenDocument.ed.WriteMessage("\n\nВы ввели: " + result.Value.ToString());
                             resultPromt = result.Value.ToString();
                         }
                         break;
@@ -649,34 +651,34 @@ namespace ElectroTools
 
             //Создает PL
             Draw.drawPolyline(tkz.pathPointTKZ, "TKZ_Makarov.D", 256, 2);
-            ed.WriteMessage("Линия протекания ТКЗ построена!");
+            MyOpenDocument.ed.WriteMessage("Линия протекания ТКЗ построена!");
 
-            ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
-            ed.WriteMessage("| Самая нечувствительная точка КЗ: " + tkz.pointTKZ.name + " ");
-            ed.WriteMessage("| Путь ТКЗ: " + text + " ");
-            ed.WriteMessage("| Длинна ТКЗ: " + tkz.length + " м.");
-            ed.WriteMessage("| Линейное напряжение сети: " + Uline + " В.");
+            MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
+            MyOpenDocument.ed.WriteMessage("| Самая нечувствительная точка КЗ: " + tkz.pointTKZ.name + " ");
+            MyOpenDocument.ed.WriteMessage("| Путь ТКЗ: " + text + " ");
+            MyOpenDocument.ed.WriteMessage("| Длинна ТКЗ: " + tkz.length + " м.");
+            MyOpenDocument.ed.WriteMessage("| Линейное напряжение сети: " + Uline + " В.");
             if (!isI1Tkz)
             {
-                ed.WriteMessage("| Сопротивление тр-р: " + tkz.transformersR + " +j " + tkz.transformersX + " (Z= " + Math.Sqrt(Math.Pow((tkz.transformersR), 2) + Math.Pow((tkz.transformersX), 2)) + ")" + " Ом.");
-                ed.WriteMessage("| Итоговое сопротивление линии: " + tkz.lineR + " +j " + tkz.lineX + " (Z= " + Math.Sqrt(Math.Pow((tkz.lineR), 2) + Math.Pow((tkz.lineX), 2)) + ")" + " Ом.");
-                ed.WriteMessage("| Ток КЗ в конце: " + tkz.resultTKZ + " А.");
+                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + tkz.transformersR + " +j " + tkz.transformersX + " (Z= " + Math.Sqrt(Math.Pow((tkz.transformersR), 2) + Math.Pow((tkz.transformersX), 2)) + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + tkz.lineR + " +j " + tkz.lineX + " (Z= " + Math.Sqrt(Math.Pow((tkz.lineR), 2) + Math.Pow((tkz.lineX), 2)) + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + tkz.resultTKZ + " А.");
                 //ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ / 3) + " А.");
-                ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
-                ed.WriteMessage("Расчет выполнен согласно ГОСТ 28249-93");
+                MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
+                MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно ГОСТ 28249-93");
             }
             else
             {
-                ed.WriteMessage("| Добавил дополнительно: Zдоп.= " + rdop + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
-                ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformersR + " +j " + tkz.transformersX + " | " + "R0+jX0: " + tkz.transformersR0 + " +j " + tkz.transformersX0 + " (Zпетля= " + transformersPetliya + ")" + " Ом.");
-                ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + tkz.lineR + " +j " + tkz.lineX + " | " + "R0+jX0: " + tkz.lineR0 + " +j " + tkz.lineX0 + " (Zпетля= " + tkz.linePetlia + ")" + " Ом.");
-                ed.WriteMessage("| Ток КЗ в конце: " + tkz.resultTKZ + " А.");
-                ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ / 3) + " А.");
-                ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
-                ed.WriteMessage("Расчет выполнен согласно Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.");
+                MyOpenDocument.ed.WriteMessage("| Добавил дополнительно: Zдоп.= " + rdop + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
+                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformersR + " +j " + tkz.transformersX + " | " + "R0+jX0: " + tkz.transformersR0 + " +j " + tkz.transformersX0 + " (Zпетля= " + transformersPetliya + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + tkz.lineR + " +j " + tkz.lineX + " | " + "R0+jX0: " + tkz.lineR0 + " +j " + tkz.lineX0 + " (Zпетля= " + tkz.linePetlia + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + tkz.resultTKZ + " А.");
+                MyOpenDocument.ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ / 3) + " А.");
+                MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
+                MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.");
             }
 
-            ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
+            MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
 
 
 
@@ -703,11 +705,11 @@ namespace ElectroTools
             if (pointKZ == "Выбрать_самостоятельно_узел" | pointKZ == "самостоятельно узел" | pointKZ == "Выбрать самостоятельно узел")
             {
                 PromptEntityOptions tempPointKZ = new PromptEntityOptions("\nВыберите узел для КЗ: ");
-                PromptEntityResult pertempPointKZ = ed.GetEntity(tempPointKZ);
+                PromptEntityResult pertempPointKZ = MyOpenDocument.ed.GetEntity(tempPointKZ);
 
-                using (DocumentLock docloc = doc.LockDocument())
+                using (DocumentLock docloc = MyOpenDocument.doc.LockDocument())
                 {
-                    using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+                    using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                     {
                         MText mtext = trAdding.GetObject(pertempPointKZ.ObjectId, OpenMode.ForRead) as MText;
                         pointKZ = mtext.Contents;
@@ -743,16 +745,16 @@ namespace ElectroTools
                 switch (resultPromt)
                 {
                     case null:
-                        ed.WriteMessage("Отмена");
+                        MyOpenDocument.ed.WriteMessage("Отмена");
                         return;
                     case "Свое":
 
 
                         PromptDoubleOptions options = new PromptDoubleOptions("Введите свою ЛИНЕЙНУЮ ЭДС:");
-                        PromptDoubleResult result = ed.GetDouble(options);
+                        PromptDoubleResult result = MyOpenDocument.ed.GetDouble(options);
                         if (result.Status == PromptStatus.OK)
                         {
-                            ed.WriteMessage("\n\nВы ввели: " + result.Value.ToString());
+                            MyOpenDocument.ed.WriteMessage("\n\nВы ввели: " + result.Value.ToString());
                             resultPromt = result.Value.ToString();
                         }
                         break;
@@ -790,34 +792,34 @@ namespace ElectroTools
 
             //Создает PL
             Draw.drawPolyline(tkz.pathPointTKZ, "TKZ_Makarov.D", 256, 2);
-            ed.WriteMessage("Линия протекания ТКЗ построена!");
+            MyOpenDocument.ed.WriteMessage("Линия протекания ТКЗ построена!");
 
-            ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
-            ed.WriteMessage("| Самая нечувствительная точка КЗ: " + tkz.pointTKZ.name + " ");
-            ed.WriteMessage("| Путь ТКЗ: " + text + " ");
-            ed.WriteMessage("| Длинна ТКЗ: " + tkz.length + " м.");
-            ed.WriteMessage("| Линейное напряжение сети: " + Uline + " В.");
+            MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
+            MyOpenDocument.ed.WriteMessage("| Самая нечувствительная точка КЗ: " + tkz.pointTKZ.name + " ");
+            MyOpenDocument.ed.WriteMessage("| Путь ТКЗ: " + text + " ");
+            MyOpenDocument.ed.WriteMessage("| Длинна ТКЗ: " + tkz.length + " м.");
+            MyOpenDocument.ed.WriteMessage("| Линейное напряжение сети: " + Uline + " В.");
             if (!isI1Tkz)
             {
-                ed.WriteMessage("| Сопротивление тр-р: " + tkz.transformersR + " +j " + tkz.transformersX + " (Z= " + Math.Sqrt(Math.Pow((tkz.transformersR), 2) + Math.Pow((tkz.transformersX), 2)) + ")" + " Ом.");
-                ed.WriteMessage("| Итоговое сопротивление линии: " + tkz.lineR + " +j " + tkz.lineX + " (Z= " + Math.Sqrt(Math.Pow((tkz.lineR), 2) + Math.Pow((tkz.lineX), 2)) + ")" + " Ом.");
-                ed.WriteMessage("| Ток КЗ в конце: " + tkz.resultTKZ + " А.");
+                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + tkz.transformersR + " +j " + tkz.transformersX + " (Z= " + Math.Sqrt(Math.Pow((tkz.transformersR), 2) + Math.Pow((tkz.transformersX), 2)) + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + tkz.lineR + " +j " + tkz.lineX + " (Z= " + Math.Sqrt(Math.Pow((tkz.lineR), 2) + Math.Pow((tkz.lineX), 2)) + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + tkz.resultTKZ + " А.");
                 //ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ / 3) + " А.");
-                ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
-                ed.WriteMessage("Расчет выполнен согласно ГОСТ 28249-93");
+                MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
+                MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно ГОСТ 28249-93");
             }
             else
             {
-                ed.WriteMessage("| Добавил дополнительно: Zконт.= " + rdop + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
-                ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformersR + " +j " + tkz.transformersX + " | " + "R0+jX0: " + tkz.transformersR0 + " +j " + tkz.transformersX0 + " (Zпетля= " + transformersPetliya + ")" + " Ом.");
-                ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + tkz.lineR + " +j " + tkz.lineX + " | " + "R0+jX0: " + tkz.lineR0 + " +j " + tkz.lineX0 + " (Zпетля= " + tkz.linePetlia + ")" + " Ом.");
-                ed.WriteMessage("| Ток КЗ в конце: " + tkz.resultTKZ + " А.");
-                ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ / UserData.coefficientMultiplicity) + " А.");
-                ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
-                ed.WriteMessage("Расчет выполнен согласно Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.");
+                MyOpenDocument.ed.WriteMessage("| Добавил дополнительно: Zконт.= " + rdop + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
+                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformersR + " +j " + tkz.transformersX + " | " + "R0+jX0: " + tkz.transformersR0 + " +j " + tkz.transformersX0 + " (Zпетля= " + transformersPetliya + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + tkz.lineR + " +j " + tkz.lineX + " | " + "R0+jX0: " + tkz.lineR0 + " +j " + tkz.lineX0 + " (Zпетля= " + tkz.linePetlia + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + tkz.resultTKZ + " А.");
+                MyOpenDocument.ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ / UserData.coefficientMultiplicity) + " А.");
+                MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
+                MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.");
             }
 
-            ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
+            MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
 
         }
 
@@ -832,11 +834,11 @@ namespace ElectroTools
             options.AllowNegative = false;
             options.AllowZero = false;
 
-            PromptIntegerResult result = ed.GetInteger(options);
+            PromptIntegerResult result = MyOpenDocument.ed.GetInteger(options);
             if (result.Status == PromptStatus.OK)
             {
                 nomivalAV = result.Value;
-                ed.WriteMessage("Вы ввели: " + result.Value.ToString());
+                MyOpenDocument.ed.WriteMessage("Вы ввели: " + result.Value.ToString());
             }
 
             //Получает данные TKZ
@@ -861,7 +863,7 @@ namespace ElectroTools
             // /3-это почти эквивалент 5сек
             if (nomivalAV <= tkz.resultTKZ / UserData.coefficientMultiplicity)
             {
-                ed.WriteMessage("Ваш автоматический выключатель на " + nomivalAV + " А, защищает всю линую до точки максимальной нечувствительности.");
+                MyOpenDocument.ed.WriteMessage("Ваш автоматический выключатель на " + nomivalAV + " А, защищает всю линую до точки максимальной нечувствительности.");
             }
 
             else
@@ -902,20 +904,20 @@ namespace ElectroTools
 
                 //Создает PL
                 Draw.drawPolyline(resultTkzDist.pathPointTKZ, "TKZ_Makarov.D", 256, 2);
-                ed.WriteMessage("Линия протекания ТКЗ построена!");
+                MyOpenDocument.ed.WriteMessage("Линия протекания ТКЗ построена!");
 
-                ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
-                ed.WriteMessage("| Самая нечувствительная точка КЗ: " + resultTkzDist.pointTKZ.name + " ");
-                ed.WriteMessage("| Путь ТКЗ: " + text + " ");
-                ed.WriteMessage("| Длинна ТКЗ: " + resultTkzDist.length + " м.");
-                ed.WriteMessage("| Линейное напряжение сети: " + Uline + " В.");
-                ed.WriteMessage("| Добавил дополнительно: Z= " + rdop + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
-                ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformersR + " +j " + tkz.transformersX + " | " + "R0+jX0: " + tkz.transformersR0 + " +j " + tkz.transformersX0 + " (Zпетля= " + transformersPetliya + ")" + " Ом.");
-                ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + resultTkzDist.lineR + " +j " + resultTkzDist.lineX + " | " + "R0+jX0: " + resultTkzDist.lineR0 + " +j " + resultTkzDist.lineX0 + " (Zпетля= " + resultTkzDist.linePetlia + ")" + " Ом.");
-                ed.WriteMessage("| Ток КЗ в конце: " + resultTkzDist.resultTKZ + " А.");
-                ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(resultTkzDist.resultTKZ / UserData.coefficientMultiplicity) + " А.");
-                ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
-                ed.WriteMessage("Расчет выполнен согласно Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.");
+                MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
+                MyOpenDocument.ed.WriteMessage("| Самая нечувствительная точка КЗ: " + resultTkzDist.pointTKZ.name + " ");
+                MyOpenDocument.ed.WriteMessage("| Путь ТКЗ: " + text + " ");
+                MyOpenDocument.ed.WriteMessage("| Длинна ТКЗ: " + resultTkzDist.length + " м.");
+                MyOpenDocument.ed.WriteMessage("| Линейное напряжение сети: " + Uline + " В.");
+                MyOpenDocument.ed.WriteMessage("| Добавил дополнительно: Z= " + rdop + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
+                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformersR + " +j " + tkz.transformersX + " | " + "R0+jX0: " + tkz.transformersR0 + " +j " + tkz.transformersX0 + " (Zпетля= " + transformersPetliya + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + resultTkzDist.lineR + " +j " + resultTkzDist.lineX + " | " + "R0+jX0: " + resultTkzDist.lineR0 + " +j " + resultTkzDist.lineX0 + " (Zпетля= " + resultTkzDist.linePetlia + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + resultTkzDist.resultTKZ + " А.");
+                MyOpenDocument.ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(resultTkzDist.resultTKZ / UserData.coefficientMultiplicity) + " А.");
+                MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
+                MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.");
 
 
 
@@ -1039,12 +1041,12 @@ namespace ElectroTools
             //Построить окружность
             Draw.ZoomToEntity(Draw.drawCircle(edgeREC.centerPoint, "Граф_Saidi_Saifi_Makarov.D"), 4);
 
-            ed.WriteMessage("----------");
-            ed.WriteMessage("Рекомендуемое место установки REC в ребро №: " + edgeREC.name);
-            ed.WriteMessage("Рекомендуемое место установки REC между вершинами № " + edgeREC.startPoint.name + " И " + edgeREC.endPoint.name);
-            ed.WriteMessage("Вес левой части: " + REC.LeftWeight + " | " + REC.leftPathText);
-            ed.WriteMessage("Вес правой части: " + REC.RighWeight + " | " + REC.righPathText);
-            ed.WriteMessage("----------");
+            MyOpenDocument.ed.WriteMessage("----------");
+            MyOpenDocument.ed.WriteMessage("Рекомендуемое место установки REC в ребро №: " + edgeREC.name);
+            MyOpenDocument.ed.WriteMessage("Рекомендуемое место установки REC между вершинами № " + edgeREC.startPoint.name + " И " + edgeREC.endPoint.name);
+            MyOpenDocument.ed.WriteMessage("Вес левой части: " + REC.LeftWeight + " | " + REC.leftPathText);
+            MyOpenDocument.ed.WriteMessage("Вес правой части: " + REC.RighWeight + " | " + REC.righPathText);
+            MyOpenDocument.ed.WriteMessage("----------");
 
 
 
@@ -1077,7 +1079,7 @@ namespace ElectroTools
             listPoint[0].Ub = Ufashze;
             listPoint[0].Uc = Ufashze;
 
-            using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+            using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
             {
                 Layer.deleteObjectsOnLayer("Напряжение_Makarov.D");
                 trAdding.Commit();
@@ -1292,9 +1294,9 @@ namespace ElectroTools
         {
             try
             {
-                ed.WriteMessage("\n--------------------------------\n");
-                ed.WriteMessage("Сохранение веса вершин \n");
-                ed.WriteMessage("--------------------------------\n");
+                MyOpenDocument.ed.WriteMessage("\n--------------------------------\n");
+                MyOpenDocument.ed.WriteMessage("Сохранение веса вершин \n");
+                MyOpenDocument.ed.WriteMessage("--------------------------------\n");
 
                 BD bd = new BD();
                 //Для восстановления имени линии
@@ -1303,17 +1305,17 @@ namespace ElectroTools
                 bd.listPointLine = listPoint;
 
                 PromptEntityOptions item = new PromptEntityOptions("\nВыберите объект куда сохранить веса вершин: ");
-                PromptEntityResult perItem = ed.GetEntity(item);
+                PromptEntityResult perItem = MyOpenDocument.ed.GetEntity(item);
                 if (perItem.Status != PromptStatus.OK) { return; }
 
                 string xmlData = SerializeToXml(bd);
                 SaveXmlToXrecord(xmlData, perItem.ObjectId, "Makarov.D");
-                ed.WriteMessage("\nСписок успешно сохранен в Xrecord.\n");
+                MyOpenDocument.ed.WriteMessage("\nСписок успешно сохранен в Xrecord.\n");
             }
             catch (Exception ex)
             {
-                ed.WriteMessage(ex.ToString());
-                ed.WriteMessage("Что-то пошло не так....");
+                MyOpenDocument.ed.WriteMessage(ex.ToString());
+                MyOpenDocument.ed.WriteMessage("Что-то пошло не так....");
             }
         }
 
@@ -1324,11 +1326,11 @@ namespace ElectroTools
         {
             try
             {
-                ed.WriteMessage("\n--------------------------------\n");
-                ed.WriteMessage("Восстановление веса вершин \n");
-                ed.WriteMessage("--------------------------------\n");
+                MyOpenDocument.ed.WriteMessage("\n--------------------------------\n");
+                MyOpenDocument.ed.WriteMessage("Восстановление веса вершин \n");
+                MyOpenDocument.ed.WriteMessage("--------------------------------\n");
                 PromptEntityOptions item = new PromptEntityOptions("\nВыберите объект откуда взять БД: ");
-                PromptEntityResult perItem = ed.GetEntity(item);
+                PromptEntityResult perItem = MyOpenDocument.ed.GetEntity(item);
 
                 if (perItem.Status != PromptStatus.OK) { return; }
 
@@ -1371,13 +1373,13 @@ namespace ElectroTools
                     }
                 }
 
-                ed.WriteMessage("\nПолучили данные из БД.\n");
+                MyOpenDocument.ed.WriteMessage("\nПолучили данные из БД.\n");
                 OnPropertyChanged(nameof(listPoint));
             }
             catch (Exception ex)
             {
-                ed.WriteMessage(ex.ToString());
-                ed.WriteMessage("Что-то пошло не так....");
+                MyOpenDocument.ed.WriteMessage(ex.ToString());
+                MyOpenDocument.ed.WriteMessage("Что-то пошло не так....");
             }
 
         }
@@ -1512,10 +1514,22 @@ namespace ElectroTools
                     SelectionFilter acSF = new SelectionFilter(
                         new TypedValue[] { new TypedValue((int)DxfCode.Start, "LWPOLYLINE") }
                         );
-                    //вектор это допусе поиска
-                    PromptSelectionResult acPSR = ed.SelectCrossingWindow(searchPoint, searchPoint + new Vector3d(UserData.searchDistancePL, UserData.searchDistancePL, UserData.searchDistancePL), acSF);
-                    //PromptSelectionResult acPSR = ed.SelectCrossingWindow(searchPoint, searchPoint, acSF);
+                    //вектор это допусе поиска это поиск окружность
 
+                    Point3d center = new Point3d(polyline.GetPoint2dAt(i).X, polyline.GetPoint2dAt(i).Y, 0);
+                    double radius = UserData.searchDistancePL;
+                    /*
+                    Point3d corner1 = new Point3d(center.X - radius, center.Y - radius, 0);
+                    Point3d corner2 = new Point3d(center.X + radius, center.Y + radius, 0);
+                    PromptSelectionResult acPSR = ed.SelectCrossingWindow(corner1, corner2, acSF);
+                    */
+                    //Тут рамка
+                    PromptSelectionResult acPSR = ed.SelectCrossingWindow
+                        (
+                            searchPoint + new Vector3d(-UserData.searchDistancePL, -UserData.searchDistancePL, 0), // Верхний левый угол
+                            searchPoint + new Vector3d(UserData.searchDistancePL, UserData.searchDistancePL, 0),   // Нижний правый угол
+                            acSF
+                        );
                     //Создаем поинты
                     PointLine point = new PointLine();
                     point.positionPoint = new Point2d(polyline.GetPoint2dAt(i).X, polyline.GetPoint2dAt(i).Y);
@@ -1546,11 +1560,12 @@ namespace ElectroTools
                                 //Приближаем
                                 Draw.ZoomToEntity(acSObj.ObjectId, 4);
 
+                               
                                 //Вытянуть длинну и посмотреть на циклицность.
                                 Polyline lengthPolyline = trAdding.GetObject(acSObj.ObjectId, OpenMode.ForWrite) as Polyline;
-
+                                
                                 //Расстояние между точками для проверки соединить их в одну точку  и 5 процентов запаса
-                                if (Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 0) <= UserData.searchDistancePL & Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 2) > 0)
+                                if (Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 4) != 0 && Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 0) <= UserData.searchDistancePL  )
                                 {
 
                                     //Тогда переносим вершину в нужную нам
@@ -1581,7 +1596,7 @@ namespace ElectroTools
 
                                 //Подсветка что выделилось
                                 ed.SetImpliedSelection(new ObjectId[] { acSObj.ObjectId });
-                                ed.CurrentUserCoordinateSystem = Matrix3d.Identity; // Сброс координатной системы, если необходимо
+                                //ed.CurrentUserCoordinateSystem = Matrix3d.Identity; // Сброс координатной системы, если необходимо
 
 
                                 int defult = BDSQL.searchAllDataInBD(dbFilePath, "cable", "default").IndexOf("true") + 1;
@@ -1640,7 +1655,7 @@ namespace ElectroTools
                 //Рекурсия
                 foreach (PowerLine line in childrenList)
                 {
-                    searchPlyline(ed, line, trAdding, listPoint, listPointXY, j);
+                    searchPlyline(MyOpenDocument.ed, line, trAdding, listPoint, listPointXY, j);
                 }
             }
             return masterLine;
@@ -2241,7 +2256,7 @@ namespace ElectroTools
             //Для 1ой вершины
             if (newPointPathKZ.Count() == 1)
             {
-                ed.WriteMessage("!Нельзя выбрать точку генерации!");
+                MyOpenDocument.ed.WriteMessage("!Нельзя выбрать точку генерации!");
                 return null;
             }
 
@@ -2319,7 +2334,7 @@ namespace ElectroTools
 
             PromptStringOptions promptForBlockName = new PromptStringOptions("\nВведите название блока [" + UserData.defaultBlock + "]: ");
             promptForBlockName.AllowSpaces = true;
-            PromptResult blockNameResult = ed.GetString(promptForBlockName);
+            PromptResult blockNameResult = MyOpenDocument.ed.GetString(promptForBlockName);
 
             if (blockNameResult.Status != PromptStatus.OK) return;
             string blockName = blockNameResult.StringResult;
@@ -2330,7 +2345,7 @@ namespace ElectroTools
             PromptKeywordOptions options = new PromptKeywordOptions("\nБудем нумеровать блок? [Да/Нет] : ");
             options.Keywords.Add("Да");
             options.Keywords.Add("Нет");
-            PromptResult resultYesNo = ed.GetKeywords(options);
+            PromptResult resultYesNo = MyOpenDocument.ed.GetKeywords(options);
             if (resultYesNo.Status != PromptStatus.OK) return;
 
             if (resultYesNo.StringResult == "Да")
@@ -2341,7 +2356,7 @@ namespace ElectroTools
                 PromptKeywordOptions optionsCreatFileExcelCoordinate = new PromptKeywordOptions("\nВывести результат координат в Excel? [Да/Нет] : ");
                 optionsCreatFileExcelCoordinate.Keywords.Add("Да");
                 optionsCreatFileExcelCoordinate.Keywords.Add("Нет");
-                PromptResult resultCreatFileExcelCoordinateo = ed.GetKeywords(optionsCreatFileExcelCoordinate);
+                PromptResult resultCreatFileExcelCoordinateo = MyOpenDocument.ed.GetKeywords(optionsCreatFileExcelCoordinate);
                 if (resultCreatFileExcelCoordinateo.Status != PromptStatus.OK) return;
                 if (resultCreatFileExcelCoordinateo.StringResult == "Да") isCreatFileExcelCoordinate = true;
             }
@@ -2353,7 +2368,7 @@ namespace ElectroTools
 
                 //Старт нумерации
                 PromptIntegerOptions startNumBlock = new PromptIntegerOptions("\n С какого числа начать нумерацию? [1] ");
-                PromptIntegerResult startNumBlockResult = ed.GetInteger(startNumBlock);
+                PromptIntegerResult startNumBlockResult = MyOpenDocument.ed.GetInteger(startNumBlock);
 
                 if (startNumBlockResult.Status != PromptStatus.OK) return;
                 startNumber = startNumBlockResult.Value;
@@ -2362,7 +2377,7 @@ namespace ElectroTools
                 //Суффикс
                 PromptStringOptions promptSufBlockName = new PromptStringOptions("\nВведите суффикс (или пусто) ? []: ");
                 promptSufBlockName.AllowSpaces = true;
-                PromptResult sufBlockNameResult = ed.GetString(promptSufBlockName);
+                PromptResult sufBlockNameResult = MyOpenDocument.ed.GetString(promptSufBlockName);
 
                 if (sufBlockNameResult.Status != PromptStatus.OK) return;
                 sufBlockName = sufBlockNameResult.StringResult;
@@ -2371,7 +2386,7 @@ namespace ElectroTools
 
                 PromptStringOptions promptPrefBlockName = new PromptStringOptions("\nВведите преффикс (или пусто) ? []: ");
                 promptPrefBlockName.AllowSpaces = true;
-                PromptResult prefBlockNameResult = ed.GetString(promptPrefBlockName);
+                PromptResult prefBlockNameResult = MyOpenDocument.ed.GetString(promptPrefBlockName);
 
                 if (prefBlockNameResult.Status != PromptStatus.OK) return;
                 prefBlockName = prefBlockNameResult.StringResult;
@@ -2380,14 +2395,14 @@ namespace ElectroTools
 
 
 
-            using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+            using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
             {
-                BlockTable bt = tr.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
+                BlockTable bt = tr.GetObject(MyOpenDocument.dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
 
                 // Проверяем, существует ли блок с введенным именем
                 if (!bt.Has(blockName))
                 {
-                    ed.WriteMessage("\nБлок '" + blockName + "' не найден.");
+                    MyOpenDocument.ed.WriteMessage("\nБлок '" + blockName + "' не найден.");
                     return;
                 }
 
@@ -2395,7 +2410,7 @@ namespace ElectroTools
                 PromptEntityOptions peo = new PromptEntityOptions("\nВыберите полилинию:");
                 peo.SetRejectMessage("\nМожно выбрать только полилинию.");
                 peo.AddAllowedClass(typeof(Polyline), true);
-                PromptEntityResult per = ed.GetEntity(peo);
+                PromptEntityResult per = MyOpenDocument.ed.GetEntity(peo);
 
                 if (per.Status != PromptStatus.OK) return;
 
@@ -2413,7 +2428,7 @@ namespace ElectroTools
                     // Создаем новый экземпляр блока
                     using (BlockReference br = new BlockReference(pt, bt[blockName]))
                     {
-                        BlockTableRecord ms = tr.GetObject(dbCurrent.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
+                        BlockTableRecord ms = tr.GetObject(MyOpenDocument.dbCurrent.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
 
                         ms.AppendEntity(br);
                         tr.AddNewlyCreatedDBObject(br, true);
@@ -2456,10 +2471,10 @@ namespace ElectroTools
                 //куда сохранить
                 if (isCreatFileExcelCoordinate)
                 {
-                    Excel.creatFileExcelCoodrinate(startNumber,listX,listY);
+                    Excel.creatFileExcelCoodrinate(startNumber, listX, listY, per.ObjectId);
                 }
 
-                ed.SetImpliedSelection(listObjectID.ToArray());
+                MyOpenDocument.ed.SetImpliedSelection(listObjectID.ToArray());
 
             }
         }
@@ -2478,9 +2493,9 @@ namespace ElectroTools
                 throw new ArgumentNullException("nameDictionary");
 
 
-            using (DocumentLock doclock = doc.LockDocument())
+            using (DocumentLock doclock = MyOpenDocument.doc.LockDocument())
             {
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
                     try
                     {
@@ -2598,7 +2613,7 @@ namespace ElectroTools
             }
             catch (Exception ex)
             {
-                ed.WriteMessage("Error during deserialization: " + ex.Message);
+                MyOpenDocument.ed.WriteMessage("Error during deserialization: " + ex.Message);
                 // Обработайте ошибку в соответствии с вашими потребностями
                 throw;
             }
@@ -2632,9 +2647,9 @@ namespace ElectroTools
 
         private void SaveXmlToXrecord(string xmlData, ObjectId entityId, string nameDictionary)
         {
-            using (DocumentLock doclock = doc.LockDocument())
+            using (DocumentLock doclock = MyOpenDocument.doc.LockDocument())
             {
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
                     try
                     {
@@ -2680,7 +2695,7 @@ namespace ElectroTools
 
                     catch (System.Exception ex)
                     {
-                        ed.WriteMessage("Ошибка: {0}\n", ex.Message);
+                        MyOpenDocument.ed.WriteMessage("Ошибка: {0}\n", ex.Message);
                     }
                 }
             }
@@ -2702,12 +2717,16 @@ namespace ElectroTools
             Document activatedDocument = e.Document;
             Editor ed = activatedDocument.Editor;
 
-            if (ed != this.ed)
+            if (ed != this.oldEd)
             {
                 //ed.WriteMessage("\nДокумент активирован: {0}", activatedDocument.Name);
                 //MessageBox.Show(activatedDocument.Name);
                 _myData.isLock = !true;
                 _myData.isLoadProcessAnim = true;
+
+
+                
+             
 
             }
             else

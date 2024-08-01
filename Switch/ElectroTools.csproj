@@ -34,7 +34,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DefineConstants>nanoCAD</DefineConstants>
+    <DefineConstants>CODE_ANALYSIS;nanoCAD</DefineConstants>
     <WarningLevel>2</WarningLevel>
     <Optimize>false</Optimize>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>

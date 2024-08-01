@@ -37,15 +37,13 @@ namespace ElectroTools
         //Создание слоев
         public static void creatLayer(string Name, byte ColorR, byte ColorG, byte ColorB)
         {
-            Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
-            Document doc = MyOpenDocument.doc;
-            using (DocumentLock docloc = doc.LockDocument())
+            
+            using (DocumentLock docloc = MyOpenDocument.doc.LockDocument())
             {
-                using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
 
-                    LayerTable layerTable = trAdding.GetObject(dbCurrent.LayerTableId, OpenMode.ForWrite) as LayerTable;
+                    LayerTable layerTable = trAdding.GetObject(MyOpenDocument.dbCurrent.LayerTableId, OpenMode.ForWrite) as LayerTable;
 
                     if (!layerTable.Has(Name))
                     {
@@ -56,7 +54,7 @@ namespace ElectroTools
                         layerTable.UpgradeOpen();
                         ObjectId acObjId = layerTable.Add(acLyrTblRec);
                         trAdding.AddNewlyCreatedDBObject(acLyrTblRec, true);
-                        ed.WriteMessage("\nСлой создан: " + Name + " !!!Не удаляйте данный слой!!");
+                        MyOpenDocument.ed.WriteMessage("\nСлой создан: " + Name + " !!!Не удаляйте данный слой!!");
                     }
                     else
                     {

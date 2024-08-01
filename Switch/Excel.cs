@@ -28,6 +28,7 @@ using SaveFileDialog = HostMgd.Windows.SaveFileDialog;
 #else
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.DatabaseServices;
 using Database = Autodesk.AutoCAD.DatabaseServices.Database;
 using OpenFileDialog = Autodesk.AutoCAD.Windows.OpenFileDialog;
 using SaveFileDialog = Autodesk.AutoCAD.Windows.SaveFileDialog;
@@ -46,11 +47,7 @@ namespace ElectroTools
 
         public static void creadFile(int[,] matrixSmej, int[,] matrixInc, List<Edge> listEdge)
         {
-            Editor ed = MyOpenDocument.ed;
-            Database dbCurrent = MyOpenDocument.dbCurrent;
-            Document doc = MyOpenDocument.doc;
-
-
+           
 
 
             //Первое создани
@@ -58,7 +55,7 @@ namespace ElectroTools
             Workbook workbook = excel.Workbooks.Add();
             try
             {
-                ed.WriteMessage("Работаю....");
+                MyOpenDocument.ed.WriteMessage("Работаю....");
 
                 Worksheet worksheetLenEdge = (Worksheet)workbook.Worksheets.Add();
                 worksheetLenEdge.Name = "Матрица Веса Ребер (Длина)";
@@ -104,14 +101,14 @@ namespace ElectroTools
                 excel.Quit();
 
                 OpenFileExcel(filePath);
-                ed.WriteMessage("Готово.");
+                MyOpenDocument.ed.WriteMessage("Готово.");
             }
 
             catch (Exception ex)
             {
                 // Обработка исключений
                 Console.WriteLine($"Ошибка при создании файла Excel: {ex.Message}");
-                ed.WriteMessage("Произошла какая-то ошибка.");
+                MyOpenDocument.ed.WriteMessage("Произошла какая-то ошибка.");
             }
 
             finally
@@ -509,11 +506,41 @@ namespace ElectroTools
             }
         }
 
-        public static void creatFileExcelCoodrinate(int startNumber, List<double> listX, List<double> listY)
+        public static void creatFileExcelCoodrinate(int startNumber, List<double> listX, List<double> listY, ObjectId plID)
         {
             Editor ed = MyOpenDocument.ed;
             Database dbCurrent = MyOpenDocument.dbCurrent;
             Document doc = MyOpenDocument.doc;
+
+            bool isAddArea = false;
+
+            PromptEntityResult perMtext = null;
+            PromptEntityResult perPl = null;
+
+            //нужна ли нумерация
+            PromptKeywordOptions options = new PromptKeywordOptions("\nБудем выводить площадь и КН участка? [Да/Нет] : ");
+            options.Keywords.Add("Да");
+            options.Keywords.Add("Нет");
+            PromptResult resultOptions = ed.GetKeywords(options);
+            if (resultOptions.Status != PromptStatus.OK) return;
+
+            if (resultOptions.StringResult == "Да")
+            {
+                isAddArea = true;
+                // Запрашиваем у пользователя Mexta
+                PromptEntityOptions peo = new PromptEntityOptions("\nВыберите Mtext с КН:");
+                peo.SetRejectMessage("\nМожно выбрать только Mtext.");
+                peo.AddAllowedClass(typeof(MText), true);
+                perMtext = ed.GetEntity(peo);
+
+                /*
+                // Запрашиваем у пользователя выбор полилинии
+                PromptEntityOptions peoPl = new PromptEntityOptions("\nВыберите полилинию для площади:");
+                peo.SetRejectMessage("\nМожно выбрать только полилинию.");
+                peo.AddAllowedClass(typeof(Polyline), true);
+                 perPl = ed.GetEntity(peoPl);*/
+            }
+
 
             Application excel = new Application();
             Workbook workbook = excel.Workbooks.Add();
@@ -529,6 +556,11 @@ namespace ElectroTools
                 number.Font.Bold = true;
                 number.Style.VerticalAlignment = Constants.xlCenter;
 
+                if (isAddArea)
+                {
+                    number.Offset[-1, 0].Value = Text.getMTextContent(perMtext.ObjectId);
+                }
+
                 for (int i = 0; i < listX.Count; i++)
                 {
                     number.Offset[i + 1, 0].Value = startNumber + i;
@@ -536,7 +568,11 @@ namespace ElectroTools
 
                 number.Offset[listX.Count + 1, 0].Value = startNumber;
 
-
+                if (isAddArea)
+                {
+                    //Площадь
+                    number.Offset[listX.Count + 1 + 1, 0].Value = "Всего: " + Math.Round(Draw.getPolylineArea(plID), UserData.roundCoordinateDistFileExcel) + " м²";
+                }
 
 
                 Range Y = (Range)workSheet.Cells[5, 3];
@@ -591,9 +627,47 @@ namespace ElectroTools
 
                 }
                 //Последняя/первая точка
-                dist.Offset[listX.Count + 1, 0].Value = ("'"+startNumber+" - "+ (startNumber+ listX.Count -1))+" ; " + Math.Round(((Vector<double>.Build.DenseOfArray(new double[] { listY[0], listX[0] })) - (Vector<double>.Build.DenseOfArray(new double[] { listY[listX.Count-1], listX[listX.Count - 1] }))).L2Norm(), UserData.roundCoordinateDistFileExcel); ;
+                dist.Offset[listX.Count + 1, 0].Value = ("'" + startNumber + " - " + (startNumber + listX.Count - 1)) + " ; " + Math.Round(((Vector<double>.Build.DenseOfArray(new double[] { listY[0], listX[0] })) - (Vector<double>.Build.DenseOfArray(new double[] { listY[listX.Count - 1], listX[listX.Count - 1] }))).L2Norm(), UserData.roundCoordinateDistFileExcel); ;
 
 
+
+                // Открываем диалог сохранения файла
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                (
+            "Сохранение координат в Excel файл",
+            "Координаты",
+            "xlsx",
+            "SaveExcelFileDialog",
+            SaveFileDialog.SaveFileDialogFlags.DoNotTransferRemoteFiles
+            );
+
+
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Путь к файлу, выбранный пользователем
+                    string filePath = saveFileDialog.Filename;
+
+                    // Сохраняем рабочую книгу
+                    workbook.SaveAs(filePath);
+                    // Закрываем рабочую книгу и приложение
+                    workbook.Close();
+                    excel.Quit();
+
+                    // Освобождаем COM-объекты
+                    Marshal.ReleaseComObject(workbook);
+                    Marshal.ReleaseComObject(excel);
+
+                    // Уведомляем пользователя
+                    Console.WriteLine("Файл сохранен: " + filePath);
+                }
+                else
+                {
+                    // Если пользователь отменил сохранение
+                    Console.WriteLine("Сохранение файла отменено.");
+                }
+
+                /*
                 //Путь на рабочий стол
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 //Клеим стрингу
@@ -601,9 +675,9 @@ namespace ElectroTools
 
                 workbook.SaveAs(filePath);
                 workbook.Close();
-                excel.Quit();
+                excel.Quit();*/
 
-                OpenFileExcel(filePath, false);
+                //OpenFileExcel(filePath, false);
                 ed.WriteMessage("Файл  создан.");
             }
 
@@ -612,6 +686,9 @@ namespace ElectroTools
                 // Обработка исключений
                 Console.WriteLine($"Ошибка при создании файла Excel: {ex.Message}");
                 ed.WriteMessage("Произошла какая-то ошибка.");
+                Marshal.ReleaseComObject(workbook);
+                Marshal.ReleaseComObject(excel);
+
             }
 
             finally

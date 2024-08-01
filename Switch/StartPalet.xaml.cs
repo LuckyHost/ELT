@@ -113,7 +113,10 @@ namespace ElectroTools
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            _data._tools.getPointLine();
+            if (_data._tools.listPoint != null)
+            {
+                _data._tools.getPointLine();
+            }
         }
 
 
@@ -121,7 +124,7 @@ namespace ElectroTools
 
         private void creatPathPoint(object sender, RoutedEventArgs e)
         {
-            if (_data._tools.listPoint != null)
+            if (_data._tools.matrixSmej != null)
             {
                 _data._tools.creatPathPoint();
             }

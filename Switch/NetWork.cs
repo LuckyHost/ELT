@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
@@ -106,7 +107,9 @@ namespace ElectroTools
                 //Проверка на доступ к Ya.ru
                 if (IsInternetAvailable())
                 {
+                   
                     string accessToken = "y0_AgAAAAAC82upAADLWwAAAADlltdLOtUDPw_5RoqBUKqEbmjZZScvdtg";
+                    //MessageBox.Show(accessToken.ToString());
               
 
                     using (var httpClient = new HttpClient())

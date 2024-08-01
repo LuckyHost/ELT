@@ -31,20 +31,18 @@ namespace ElectroTools
     public static class Draw
     {
 
-        static Editor ed = MyOpenDocument.ed;
-        static Database dbCurrent = MyOpenDocument.dbCurrent;
-        static Document doc = MyOpenDocument.doc;
+        
 
         public static ObjectId drawPolyline(List<PointLine> masterListPont, string nameLayer, short color, double ConstantWidth)
         {
 
 
 
-            using (DocumentLock doclock = doc.LockDocument())
+            using (DocumentLock doclock = MyOpenDocument.doc.LockDocument())
             {
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
-                    BlockTable bt = tr.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
+                    BlockTable bt = tr.GetObject(MyOpenDocument.dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
 
                     BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
 
@@ -75,13 +73,13 @@ namespace ElectroTools
         {
 
 
-            using (DocumentLock doclock = doc.LockDocument())
+            using (DocumentLock doclock = MyOpenDocument.doc.LockDocument())
             {
                 // Начало транзакции
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
                     // Открытие таблицы блоков для записи
-                    BlockTable bt = tr.GetObject(dbCurrent.BlockTableId, OpenMode.ForWrite) as BlockTable;
+                    BlockTable bt = tr.GetObject(MyOpenDocument.dbCurrent.BlockTableId, OpenMode.ForWrite) as BlockTable;
 
                     // Открытие записи таблицы блоков для записи
                     BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
@@ -106,10 +104,10 @@ namespace ElectroTools
 
         public static void ZoomToEntity(ObjectId entityId, double zoomPercent)
         {
-            using (DocumentLock doclock = doc.LockDocument())
+            using (DocumentLock doclock = MyOpenDocument.doc.LockDocument())
             {
 
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
                     Entity entity = tr.GetObject(entityId, OpenMode.ForRead) as Entity;
 
@@ -130,7 +128,7 @@ namespace ElectroTools
                             view.Width = (maxPoint.X - minPoint.X) * zoomPercent;
 
                             // Установка представления текущим
-                            ed.SetCurrentView(view);
+                            MyOpenDocument.ed.SetCurrentView(view);
                         }
                     }
 
@@ -142,11 +140,11 @@ namespace ElectroTools
         public static ObjectId drawCoordinatePolyline(List<double> listX, List<double> listY /*List<PointLine> masterListPont, string nameLayer, short color, double ConstantWidth*/)
         {
 
-            using (DocumentLock doclock = doc.LockDocument())
+            using (DocumentLock doclock = MyOpenDocument.doc.LockDocument())
             {
-                using (Transaction tr = dbCurrent.TransactionManager.StartTransaction())
+                using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
-                    BlockTable bt = tr.GetObject(dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
+                    BlockTable bt = tr.GetObject(MyOpenDocument.dbCurrent.BlockTableId, OpenMode.ForRead) as BlockTable;
 
                     BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
 
@@ -170,13 +168,64 @@ namespace ElectroTools
                     // Commit the transaction
                     tr.Commit();
                     ZoomToEntity(polyline.ObjectId, 4);
-                   // ed.SetImpliedSelection(new ObjectId[] { polyline.ObjectId });
+                    // ed.SetImpliedSelection(new ObjectId[] { polyline.ObjectId });
                     return polyline.ObjectId;
 
                 }
             }
 
 
+        }
+
+        public static double getPolylineArea(ObjectId plId)
+        {
+            
+            using (Transaction acTrans = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
+            {
+                DBObject obj = acTrans.GetObject(plId, OpenMode.ForRead);
+
+                double area = 0;
+
+                // Проверяем тип полилинии и вычисляем площадь
+                if (obj is Polyline)
+                {
+                    Polyline pl = obj as Polyline;
+                    if (pl.Closed) // Проверяем, замкнута ли полилиния
+                    {
+                        area = pl.Area;
+                    }
+                    else
+                    {
+                        MyOpenDocument.ed.WriteMessage("\nВыбранная полилиния не замкнута.");
+                    }
+                }
+                else if (obj is Polyline2d)
+                {
+                    Polyline2d pl2d = obj as Polyline2d;
+                    // Для Polyline2d и Polyline3d необходимо самостоятельно вычислить площадь,
+                    // так как свойство Area непосредственно не доступно.
+                    // Можно конвертировать их в Polyline с использованием методов AutoCAD.
+                    MyOpenDocument.ed.WriteMessage("\nВычисление площади для Polyline2d не поддерживается в данном примере.");
+                }
+                else if (obj is Polyline3d)
+                {
+                    Polyline3d pl3d = obj as Polyline3d;
+                    // Аналогично Polyline2d
+                    MyOpenDocument.ed.WriteMessage("\nВычисление площади для Polyline3d не поддерживается в данном примере.");
+                }
+                else
+                {
+                    MyOpenDocument.ed.WriteMessage("\nВыбранный объект не является полилинией.");
+                }
+
+                if (area > 0)
+                {
+                    MyOpenDocument.ed.WriteMessage($"\nПлощадь полилинии: {area}");
+                    return area;
+                }
+
+                return 0;
+            }
         }
     }
 }
