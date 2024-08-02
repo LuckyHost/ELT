@@ -16,5 +16,6 @@ namespace ElectroTools
        public static string defaultBlock= "Блок_Нумерации_Makarov.D";
        public static int roundCoordinateDistFileExcel= 2;
        public static int roundCoordinateXYFileExcel= 2;
+       public static bool isDrawZoneSearchPL = true;
     }
 }

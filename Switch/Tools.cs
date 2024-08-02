@@ -13,6 +13,8 @@ using System.ComponentModel;
 using System.Windows.Forms.Integration;
 using System.Windows;
 using ControlzEx.Standard;
+using Teigha.Colors;
+
 
 
 #if nanoCAD
@@ -1495,6 +1497,24 @@ namespace ElectroTools
             return considerPowerLine;
         }
 
+
+
+        private Point3dCollection CreateCirclePolygon(Point3d center, double radius, int segments)
+        {
+            Point3dCollection points = new Point3dCollection();
+            for (int i = 0; i < segments; i++)
+            {
+                double angle = 2 * Math.PI * i / segments;
+                double x = center.X + radius * Math.Cos(angle);
+                double y = center.Y + radius * Math.Sin(angle);
+                points.Add(new Point3d(x, y, 0));
+            }
+            points.Add(points[0]); // Замыкаем многоугольник, добавляя первую точку в конец
+            return points;
+        }
+
+
+
         PowerLine searchPlyline(Editor ed, PowerLine masterLine, Transaction trAdding, List<PointLine> listPoint, List<Point2d> listPointXY, int j)
         {
             Polyline polyline = trAdding.GetObject(masterLine.IDLine, OpenMode.ForRead) as Polyline;
@@ -1511,25 +1531,44 @@ namespace ElectroTools
                 {
                     // Поиск других полилиний вблизи текущей вершины
                     Point3d searchPoint = new Point3d(polyline.GetPoint2dAt(i).X, polyline.GetPoint2dAt(i).Y, 0);
+
+                    //Филтр полилиний
                     SelectionFilter acSF = new SelectionFilter(
                         new TypedValue[] { new TypedValue((int)DxfCode.Start, "LWPOLYLINE") }
                         );
+
+
                     //вектор это допусе поиска это поиск окружность
 
                     Point3d center = new Point3d(polyline.GetPoint2dAt(i).X, polyline.GetPoint2dAt(i).Y, 0);
                     double radius = UserData.searchDistancePL;
-                    /*
+
+
+                    // Определяем углы прямоугольника, описывающего круг
                     Point3d corner1 = new Point3d(center.X - radius, center.Y - radius, 0);
                     Point3d corner2 = new Point3d(center.X + radius, center.Y + radius, 0);
-                    PromptSelectionResult acPSR = ed.SelectCrossingWindow(corner1, corner2, acSF);
-                    */
+
                     //Тут рамка
-                    PromptSelectionResult acPSR = ed.SelectCrossingWindow
-                        (
-                            searchPoint + new Vector3d(-UserData.searchDistancePL, -UserData.searchDistancePL, 0), // Верхний левый угол
-                            searchPoint + new Vector3d(UserData.searchDistancePL, UserData.searchDistancePL, 0),   // Нижний правый угол
-                            acSF
-                        );
+                    //PromptSelectionResult acPSR = ed.SelectCrossingWindow(corner1, corner2, acSF);
+
+                    // Создаем многоугольник, приближающий окружность с центром в текущей вершине и радиусом searchDistance
+                    Point3dCollection polygonPoints = CreateCirclePolygon(searchPoint, UserData.searchDistancePL, 36);
+
+
+                    //Рисуем зону поиска
+                    if (UserData.isDrawZoneSearchPL)
+                    using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
+                    {
+                        //Draw.drawZoneSearchPLRactangel (corner1, corner2, MyOpenDocument.dbCurrent, tr);
+                        Draw.drawZoneSearchPLCircle (polygonPoints, MyOpenDocument.dbCurrent, tr);
+
+                            tr.Commit();
+                    }
+
+                    //Тут Полигон
+                    PromptSelectionResult acPSR = ed.SelectCrossingPolygon(polygonPoints, acSF);
+
+
                     //Создаем поинты
                     PointLine point = new PointLine();
                     point.positionPoint = new Point2d(polyline.GetPoint2dAt(i).X, polyline.GetPoint2dAt(i).Y);

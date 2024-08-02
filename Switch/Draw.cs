@@ -31,7 +31,7 @@ namespace ElectroTools
     public static class Draw
     {
 
-        
+
 
         public static ObjectId drawPolyline(List<PointLine> masterListPont, string nameLayer, short color, double ConstantWidth)
         {
@@ -179,7 +179,7 @@ namespace ElectroTools
 
         public static double getPolylineArea(ObjectId plId)
         {
-            
+
             using (Transaction acTrans = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
             {
                 DBObject obj = acTrans.GetObject(plId, OpenMode.ForRead);
@@ -227,5 +227,44 @@ namespace ElectroTools
                 return 0;
             }
         }
+
+            //Для отображение зоны поиска полилинии
+            public static void drawZoneSearchPLRactangel(Point3d corner1, Point3d corner2, Database db, Transaction tr)
+        {
+            BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
+            BlockTableRecord btr = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
+
+            // Создаем полилинию с 4 вершинами (прямоугольник)
+            Polyline rect = new Polyline();
+            rect.AddVertexAt(0, new Point2d(corner1.X, corner1.Y), 0, 0, 0);
+            rect.AddVertexAt(1, new Point2d(corner2.X, corner1.Y), 0, 0, 0);
+            rect.AddVertexAt(2, new Point2d(corner2.X, corner2.Y), 0, 0, 0);
+            rect.AddVertexAt(3, new Point2d(corner1.X, corner2.Y), 0, 0, 0);
+            rect.Closed = true;
+            rect.Color = Color.FromColorIndex(ColorMethod.ByAci, 1); // Красный цвет
+
+            btr.AppendEntity(rect);
+            tr.AddNewlyCreatedDBObject(rect, true);
+        }
+
+
+        public static void drawZoneSearchPLCircle(Point3dCollection points, Database db, Transaction tr)
+        {
+            BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
+            BlockTableRecord btr = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
+
+            // Создаем полилинию с вершинами из коллекции points
+            Polyline polygon = new Polyline();
+            for (int i = 0; i < points.Count; i++)
+            {
+                polygon.AddVertexAt(i, new Point2d(points[i].X, points[i].Y), 0, 0, 0);
+            }
+            polygon.Closed = true;
+            polygon.Color = Color.FromColorIndex(ColorMethod.ByAci, 1); // Красный цвет
+
+            btr.AppendEntity(polygon);
+            tr.AddNewlyCreatedDBObject(polygon, true);
+        }
     }
-}
+    }
+
