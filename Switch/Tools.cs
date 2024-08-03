@@ -93,9 +93,28 @@ namespace ElectroTools
                 Assembly.LoadFrom(Path.Combine(currentDir, assembly));
             }
 
+
+            //Получить Путь где лежит DLL
+            Assembly assemblyBD = Assembly.GetExecutingAssembly();
+            pathDLLFile = assemblyBD.Location;
+
+            //Получаем путь для BD
+            int lastDelimiterIndex = pathDLLFile.LastIndexOf("\\");
+            if (lastDelimiterIndex != -1)
+            {
+                dbFilePath = pathDLLFile.Substring(0, lastDelimiterIndex).Trim();
+            }
+            dbFilePath = @dbFilePath + "\\DataBD.db";
+
+
+            //Обновить пользовательские данные
+            UserData.updateUserData(dbFilePath);
         }
 
 
+
+
+       
 
 
         public List<PointLine> listPoint
@@ -188,18 +207,9 @@ namespace ElectroTools
 
             OnPropertyChanged(nameof(MyOpenDocument.ed));
 
-            //Получить Путь где лежит DLL
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            pathDLLFile = assembly.Location;
-
-            //Получаем путь для BD
-            int lastDelimiterIndex = pathDLLFile.LastIndexOf("\\");
-            if (lastDelimiterIndex != -1)
-            {
-                dbFilePath = pathDLLFile.Substring(0, lastDelimiterIndex).Trim();
-            }
-            dbFilePath = @dbFilePath + "\\DataBD.db";
-
+            
+            //Обновить пользовательские данные
+            UserData.updateUserData(dbFilePath);
 
             //Нужное
             listPoint.Clear();
@@ -585,10 +595,10 @@ namespace ElectroTools
             if (string.IsNullOrEmpty(strResistancetTransformers)) { return; }
 
             //берем сопротивление в BD по тексту
-            tkz.transformersR = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
-            tkz.transformersX = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
-            tkz.transformersR0 = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r0");
-            tkz.transformersX0 = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x0");
+            tkz.transformersR =  BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
+            tkz.transformersX = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
+            tkz.transformersR0 = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r0");
+            tkz.transformersX0 = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x0");
 
             //Фазное напряжение сети
             double Uline;
@@ -726,10 +736,10 @@ namespace ElectroTools
             TKZ tkz = сreatMyTKZ(int.Parse(pointKZ));
             string strResistancetTransformers = Text.creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 1);
             //берем сопротивление в BD по тексту
-            tkz.transformersR = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
-            tkz.transformersX = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
-            tkz.transformersR0 = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r0");
-            tkz.transformersX0 = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x0");
+            tkz.transformersR = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
+            tkz.transformersX = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
+            tkz.transformersR0 = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r0");
+            tkz.transformersX0 = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x0");
 
             //Фазное напряжение сети
             double Uline;
@@ -848,10 +858,10 @@ namespace ElectroTools
             string strResistancetTransformers = Text.creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 1);
 
             //берем сопротивление в BD по тексту
-            tkz.transformersR = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
-            tkz.transformersX = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
-            tkz.transformersR0 = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "r0");
-            tkz.transformersX0 = BDSQL.searchDataInBD(dbFilePath, "transformer", strResistancetTransformers, "name", "x0");
+            tkz.transformersR = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
+            tkz.transformersX = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
+            tkz.transformersR0 = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r0");
+            tkz.transformersX0 = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x0");
 
             //Фазное напряжение сети
             // double Uf = double.Parse(creatPromptKeywordOptions("Выберите Фазное напряжение сети.: ", searchAllDataInBD(dbFilePath, "voltage", "kV"), 1));
@@ -1486,7 +1496,7 @@ namespace ElectroTools
 
             considerPowerLine.cable = BDShowExtensionDictionaryContents<Conductor>(perMagistral.ObjectId, "ESMT_LEP_v1.0")?.Name
                 ?? Text.creatPromptKeywordOptions("\n\nВыберите марку провода магистрали: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
-            considerPowerLine.Icrict = BDSQL.searchDataInBD(dbFilePath, "cable", considerPowerLine.cable, "name", "Icrit");
+            considerPowerLine.Icrict = BDSQL.searchDataInBD<double>(dbFilePath, "cable", considerPowerLine.cable, "name", "Icrit");
             considerPowerLine.name = "Магистраль";
             considerPowerLine.IDLine = Plyline.ObjectId;
             considerPowerLine.parent = considerPowerLine;
@@ -1499,19 +1509,7 @@ namespace ElectroTools
 
 
 
-        private Point3dCollection CreateCirclePolygon(Point3d center, double radius, int segments)
-        {
-            Point3dCollection points = new Point3dCollection();
-            for (int i = 0; i < segments; i++)
-            {
-                double angle = 2 * Math.PI * i / segments;
-                double x = center.X + radius * Math.Cos(angle);
-                double y = center.Y + radius * Math.Sin(angle);
-                points.Add(new Point3d(x, y, 0));
-            }
-            points.Add(points[0]); // Замыкаем многоугольник, добавляя первую точку в конец
-            return points;
-        }
+       
 
 
 
@@ -1552,7 +1550,7 @@ namespace ElectroTools
                     //PromptSelectionResult acPSR = ed.SelectCrossingWindow(corner1, corner2, acSF);
 
                     // Создаем многоугольник, приближающий окружность с центром в текущей вершине и радиусом searchDistance
-                    Point3dCollection polygonPoints = CreateCirclePolygon(searchPoint, UserData.searchDistancePL, 36);
+                    Point3dCollection polygonPoints = Draw.createCirclePolygon(searchPoint, UserData.searchDistancePL, 36);
 
 
                     //Рисуем зону поиска
@@ -1648,7 +1646,7 @@ namespace ElectroTools
                                 ChilderLine.IDLine = acSObj.ObjectId;
                                 ChilderLine.parent = masterLine;
                                 ChilderLine.lengthLine = Math.Round(lengthPolyline.Length, 3);
-                                ChilderLine.Icrict = BDSQL.searchDataInBD(dbFilePath, "cable", ChilderLine.cable, "name", "Icrit");
+                                ChilderLine.Icrict = BDSQL.searchDataInBD<double>(dbFilePath, "cable", ChilderLine.cable, "name", "Icrit");
 
                                 if (masterLine.name != "Магистраль")
                                 {
@@ -1981,16 +1979,16 @@ namespace ElectroTools
                         endPoint = itemLine.points[i + 1],
                         length = Math.Round(itemLine.points[i].positionPoint.GetDistanceTo(itemLine.points[i + 1].positionPoint), 4),
                         cable = itemLine.cable,
-                        r = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "r"),
-                        x = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "x"),
-                        r0 = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "r0"),
-                        x0 = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "x0"),
-                        rN = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "rN"),
-                        xN = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "xN"),
-                        Ke = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "Ke"),
-                        Ce = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "Ce"),
+                        r = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "r"),
+                        x = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "x"),
+                        r0 = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "r0"),
+                        x0 = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "x0"),
+                        rN = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "rN"),
+                        xN = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "xN"),
+                        Ke = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "Ke"),
+                        Ce = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "Ce"),
 
-                        Icrict = BDSQL.searchDataInBD(dbFilePath, "cable", itemLine.cable, "name", "Icrit"),
+                        Icrict = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "Icrit"),
                         centerPoint = new PointLine
                         {
                             name = int.Parse((itemLine.points[i].name.ToString() + "0" + itemLine.points[i + 1].name.ToString())),

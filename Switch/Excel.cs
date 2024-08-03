@@ -24,7 +24,6 @@ using HostMgd.EditorInput;
 using Teigha.DatabaseServices;
 using Database = Teigha.DatabaseServices.Database;
 using OpenFileDialog = HostMgd.Windows.OpenFileDialog;
-using SaveFileDialog = HostMgd.Windows.SaveFileDialog;
 #else
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.EditorInput;
@@ -379,35 +378,10 @@ namespace ElectroTools
             }
         }
 
-        static public string SaveExcelFile()
-        {
+       
             
 
-            SaveFileDialog saveFileDialog = new SaveFileDialog(
-                "Сохранение координат в Excel файл", // Заголовок окна
-                "Координаты", // Имя файла по умолчанию
-                "xlsx;*.xls", // Фильтр файлов
-                "ExcelFileSave", // Имя диалога
-                SaveFileDialog.SaveFileDialogFlags.DefaultIsFolder);
-
-            // Показать диалоговое окно и обработать результат
-            DialogResult dialogResult = saveFileDialog.ShowDialog();
-
-            if (dialogResult == DialogResult.OK)
-            {
-                // Пользователь выбрал файл и нажал "Сохранить"
-                MyOpenDocument.ed.WriteMessage($"\nФайл будет сохранён: {saveFileDialog.Filename}");
-                return saveFileDialog.Filename;
-
-                // Здесь вы можете добавить код для сохранения данных в выбранный файл
-            }
-            else
-            {
-                // Пользователь отменил сохранение файла
-                MyOpenDocument.ed.WriteMessage("\nСохранение файла отменено.");
-                return null;
-            }
-        }
+           
 
 
         public static void openExceleFileForCreatPL(string filePath)
@@ -629,20 +603,43 @@ namespace ElectroTools
 
 
 
-                
 
-                
+
+                /*
                 //Путь на рабочий стол
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 //Клеим стрингу
-                string filePath = Path.Combine(desktopPath, "Координаты.xlsx");
+                string filePath = Path.Combine(desktopPath, "Координаты.xlsx");*/
 
-                workbook.SaveAs(filePath);
-                workbook.Close();
-                excel.Quit();
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                {
+                    saveFileDialog.Title = "Сохранение координат в Excel файл";
+                    saveFileDialog.Filter = "Excel Files (*.xlsx;*.xls)|*.xlsx;*.xls";
+                    // Устанавливаем имя файла по умолчанию
+                    saveFileDialog.FileName = "Координаты";
+                    saveFileDialog.DefaultExt = "xlsx";
+                    saveFileDialog.AddExtension = true;
 
-                OpenFileExcel(filePath, false);
-                MyOpenDocument.ed.WriteMessage("Файл  создан.");
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        string filePath = saveFileDialog.FileName; 
+
+                        workbook.SaveAs(filePath);
+                        workbook.Close();
+                        excel.Quit();
+
+                        OpenFileExcel(filePath, false);
+                        MyOpenDocument.ed.WriteMessage("Файл  создан.");
+
+                       
+                    }
+                    else
+                    {
+                        MyOpenDocument.ed.WriteMessage("Файл  не создан.");
+                    }
+                }
+
+ 
             }
 
             catch (Exception ex)

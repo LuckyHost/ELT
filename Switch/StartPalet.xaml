@@ -84,7 +84,7 @@
                                         <materialDesign:PackIcon
                            Width="25"
                            Height="25"
-                           Kind="CrosshairsGps" 
+                           Kind="CrosshairsQuestion" 
                        />
                     </Button>
 
@@ -133,7 +133,7 @@
                  <materialDesign:PackIcon
                        Width="25"
                        Height="25"
-                       Kind="Draw" 
+                       Kind="DeleteClock" 
                    />
             </Button>
 
@@ -142,7 +142,7 @@
                          IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
                          Style="{StaticResource MaterialDesignToolButton}"
                          ToolTip="Вывести матрицы в MS Excel"
-                        Click="creatExcel"
+                         Click="creatExcel"
  
                     >
 
@@ -153,18 +153,21 @@
                            />
                     </Button>
 
-                    <Button
-                  HorizontalAlignment="Center"
-                  IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
-                  Style="{StaticResource MaterialDesignToolButton}"
-                  ToolTip="MaterialDesignFloatingActionMiniButton"
+                 <Button
+                      HorizontalAlignment="Center"
+                      IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+                      Style="{StaticResource MaterialDesignToolButton}"
+                      ToolTip="Настройки"
+                      Click="settings"
                 >
                     <materialDesign:PackIcon
                         Width="25"
                         Height="25"
-                        Kind="InformationSlabBoxOutline" 
+                        Kind="Cog" 
                     />
              </Button>
+             
+             
                 </StackPanel>
 
 

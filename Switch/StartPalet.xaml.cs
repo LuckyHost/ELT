@@ -120,8 +120,6 @@ namespace ElectroTools
         }
 
 
-
-
         private void creatPathPoint(object sender, RoutedEventArgs e)
         {
             if (_data._tools.matrixSmej != null)
@@ -193,6 +191,19 @@ namespace ElectroTools
                 
                 
             }
+        }
+
+        private void settings(object sender, RoutedEventArgs e)
+        {
+            //Для Windows
+            // Сделать окно немодальным
+            //SettingWindows formSetting = new SettingWindows();
+           //  formSetting.Show();
+            // Сделать окно поверх других окон
+            // form.Topmost = true;
+            //Отдельное окно Windows
+            //Это блокирует окно NCada
+            //Application.ShowModalWindow(form);
         }
 
 

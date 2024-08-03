@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Windows;
 
@@ -75,9 +76,9 @@ namespace ElectroTools
             return tempList;
         }
 
-        static public double searchDataInBD(string dbFilePath, string nameTable, string searchItem, string searchColum, string gethColum)
+        static public T searchDataInBD <T> (string dbFilePath, string nameTable, string searchItem, string searchColum, string getColumn)
         {
-            double resultValue = 0;
+            T resultValue = default;
             // Строка подключения к базе данных SQLite
             string connectionString = "Data Source=" + dbFilePath;
             //string connectionString = $"Data Source={dbFilePath};Version=3;";
@@ -99,18 +100,19 @@ namespace ElectroTools
                             {
                                 while (reader.Read())
                                 {
-                                    if (double.TryParse(reader[gethColum].ToString(), out resultValue))
+                                    var value = reader[getColumn];
+
+                                    if (value != DBNull.Value)
                                     {
-                                        // Вернуть найденное значение из столбца "result"
-                                        //ed.WriteMessage(resultValue.ToString());
+                                        resultValue = (T)Convert.ChangeType(value, typeof(T));
                                     }
+
                                 }
-
+                                connection.Close();
                             }
-                            connection.Close();
-                        }
 
-                        return resultValue;
+                            return resultValue;
+                        }
                     }
                 }
             }
@@ -121,7 +123,7 @@ namespace ElectroTools
 
                 MessageBox.Show("В базе данных отсутствует такая позиция, добавьте ее и повторите снова попытку."); ;
 
-            return -1;
+                return default;
             }
         }
     }

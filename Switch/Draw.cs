@@ -3,6 +3,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System;
+
 
 
 #if nanoCAD
@@ -264,6 +266,21 @@ namespace ElectroTools
 
             btr.AppendEntity(polygon);
             tr.AddNewlyCreatedDBObject(polygon, true);
+        }
+
+
+        public static  Point3dCollection createCirclePolygon(Point3d center, double radius, int segments)
+        {
+            Point3dCollection points = new Point3dCollection();
+            for (int i = 0; i < segments; i++)
+            {
+                double angle = 2 * Math.PI * i / segments;
+                double x = center.X + radius * Math.Cos(angle);
+                double y = center.Y + radius * Math.Sin(angle);
+                points.Add(new Point3d(x, y, 0));
+            }
+            points.Add(points[0]); // Замыкаем многоугольник, добавляя первую точку в конец
+            return points;
         }
     }
     }
