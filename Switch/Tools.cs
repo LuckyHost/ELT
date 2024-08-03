@@ -161,7 +161,7 @@ namespace ElectroTools
 
         public List<PointLine> listLastPoint = new List<PointLine>();
         //public  string pathDLLFile = "";
-        private string dbFilePath = "";
+        public string dbFilePath = "";
 
         public string pathDLLFile
         {
@@ -1530,9 +1530,13 @@ namespace ElectroTools
                     // Поиск других полилиний вблизи текущей вершины
                     Point3d searchPoint = new Point3d(polyline.GetPoint2dAt(i).X, polyline.GetPoint2dAt(i).Y, 0);
 
-                    //Филтр полилиний
-                    SelectionFilter acSF = new SelectionFilter(
-                        new TypedValue[] { new TypedValue((int)DxfCode.Start, "LWPOLYLINE") }
+                    //Филтр полилиний и проверка на замкнутость
+                    SelectionFilter acSF = new SelectionFilter
+                        (
+                        new TypedValue[] 
+                            { new TypedValue((int)DxfCode.Start, "LWPOLYLINE")
+                             }
+
                         );
 
 
@@ -1558,7 +1562,7 @@ namespace ElectroTools
                     using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                     {
                         //Draw.drawZoneSearchPLRactangel (corner1, corner2, MyOpenDocument.dbCurrent, tr);
-                        Draw.drawZoneSearchPLCircle (polygonPoints, MyOpenDocument.dbCurrent, tr);
+                        Draw.drawZoneSearchPLCircle (polygonPoints, MyOpenDocument.dbCurrent, tr, "Узлы_Saidi_Saifi_Makarov.D");
 
                             tr.Commit();
                     }
@@ -1592,14 +1596,17 @@ namespace ElectroTools
                             creatPromptKeywordOptions("Заглушка",new List<string>() { "1"},1);
                            */
                             //Отсечь родителя 
-                            if (acSObj.ObjectId != masterLine.IDLine && acSObj.ObjectId != masterLine.parent.IDLine)
+                            if ( acSObj.ObjectId != masterLine.IDLine && acSObj.ObjectId != masterLine.parent.IDLine)
                             {
+
+                               //Вытянуть длинну и посмотреть на циклицность.
+                                Polyline lengthPolyline = trAdding.GetObject(acSObj.ObjectId, OpenMode.ForWrite) as Polyline;
+
+                                //Если замкнута, пропустить
+                                if (lengthPolyline.Closed) { continue; }
+                                
                                 //Приближаем
                                 Draw.ZoomToEntity(acSObj.ObjectId, 4);
-
-                               
-                                //Вытянуть длинну и посмотреть на циклицность.
-                                Polyline lengthPolyline = trAdding.GetObject(acSObj.ObjectId, OpenMode.ForWrite) as Polyline;
                                 
                                 //Расстояние между точками для проверки соединить их в одну точку  и 5 процентов запаса
                                 if (Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 4) != 0 && Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 0) <= UserData.searchDistancePL  )

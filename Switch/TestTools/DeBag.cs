@@ -21,9 +21,7 @@ namespace ElectroTools
 {
     public partial class  DeBag
     {
-        static Editor ed = MyOpenDocument.ed;
-        static Database dbCurrent = MyOpenDocument.dbCurrent;
-        static Document doc = MyOpenDocument.doc;
+        
 
         [CommandMethod("myDeBag", CommandFlags.UsePickSet |
               CommandFlags.Redraw | CommandFlags.Modal)]
@@ -35,18 +33,18 @@ namespace ElectroTools
 
         public void getInfo()
         {
-            using (Transaction trAdding = dbCurrent.TransactionManager.StartTransaction())
+            using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
             {
                 PromptEntityOptions magistral = new PromptEntityOptions("\nВыберите объект для получения ID : ");
-                PromptEntityResult perMagistral = ed.GetEntity(magistral);
+                PromptEntityResult perMagistral = MyOpenDocument.ed.GetEntity(magistral);
                 if (perMagistral.Status != PromptStatus.OK) { return; }
                 Entity Plyline = trAdding.GetObject(perMagistral.ObjectId, OpenMode.ForRead) as Entity;
 
-                ed.WriteMessage("\n  ");
-                ed.WriteMessage("!!!!!!!!!!!!!!!!!!!");
-                ed.WriteMessage("У выбранного объекта ID:  " + Plyline.ObjectId);
-                ed.WriteMessage("!!!!!!!!!!!!!!!!!!!");
-                ed.WriteMessage("\n  ");
+                MyOpenDocument.ed.WriteMessage("\n  ");
+                MyOpenDocument.ed.WriteMessage("!!!!!!!!!!!!!!!!!!!");
+                MyOpenDocument.ed.WriteMessage("У выбранного объекта ID:  " + Plyline.ObjectId);
+                MyOpenDocument.ed.WriteMessage("!!!!!!!!!!!!!!!!!!!");
+                MyOpenDocument.ed.WriteMessage("\n  ");
             }
 
         }
@@ -54,22 +52,22 @@ namespace ElectroTools
 
         {
             PromptEntityOptions item = new PromptEntityOptions("\nВыберите объект: ");
-            PromptEntityResult perItem = ed.GetEntity(item);
+            PromptEntityResult perItem = MyOpenDocument.ed.GetEntity(item);
         }
 
         public void ExportSelectedToDxf()
         {
 
             // Запрос на выбор объектов
-            PromptSelectionResult selRes = ed.GetSelection();
+            PromptSelectionResult selRes = MyOpenDocument.ed.GetSelection();
             if (selRes.Status != PromptStatus.OK)
             {
-                ed.WriteMessage("\nОтмена выбора.");
+                MyOpenDocument.ed.WriteMessage("\nОтмена выбора.");
                 return;
             }
             SelectionSet acSSet = selRes.Value;
 
-            using (Transaction acTrans = dbCurrent.TransactionManager.StartTransaction())
+            using (Transaction acTrans = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
             {
                 StringBuilder dxfString = new StringBuilder();
 
@@ -101,7 +99,7 @@ namespace ElectroTools
                 acTrans.Commit();
 
                 // Вывод информации DXF в окно редактора AutoCAD
-                ed.WriteMessage(dxfString.ToString());
+                MyOpenDocument.ed.WriteMessage(dxfString.ToString());
             }
         }
     }

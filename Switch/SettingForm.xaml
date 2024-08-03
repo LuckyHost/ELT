@@ -1,0 +1,122 @@
+﻿<Window x:Class="ElectroTools.SettingForm"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ElectroTools"
+             mc:Ignorable="d" 
+             
+            Title="Настройки" Height="300" Width="720" 
+   
+    
+    >
+    <StackPanel Orientation="Vertical" Height="260">
+      
+    
+       
+
+        <StackPanel Orientation="Horizontal">
+            <!-- Текстовый элемент -->
+        <TextBlock Text="Количество знаков после запятой у расстояние между вершинами :" 
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center" 
+                   Margin="10,10,0,0" 
+                   FontSize="16" />
+
+        <!-- Текстовое поле -->
+        <TextBox Name="tbDistCoord" 
+                 HorizontalAlignment="Center" 
+                 VerticalAlignment="Center" 
+                 Margin="10,5,0,0" 
+                 Width="40" 
+                 FontSize="16" 
+                 Text="{Binding Path= roundCoordinateDistFileExcel}"
+                 />
+            </StackPanel>
+
+        <StackPanel Orientation="Horizontal">
+            <!-- Текстовый элемент -->
+            <TextBlock Text="Количество знаков после запятой у координат :" 
+           HorizontalAlignment="Center" 
+           VerticalAlignment="Center" 
+           Margin="10,10,0,0" 
+           FontSize="16" />
+
+            <!-- Текстовое поле -->
+            <TextBox Name="tbCoord" 
+                 HorizontalAlignment="Center" 
+                 VerticalAlignment="Center" 
+                 Margin="10,5,0,0" 
+                 Width="40" 
+                 FontSize="16" 
+                Text="{Binding Path= roundCoordinateXYFileExcel}"
+            />
+        </StackPanel>
+
+
+        <StackPanel Orientation="Horizontal">
+            <!-- Текстовый элемент -->
+            <TextBlock Text="Имя блока по умолчанию :" 
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Center" 
+                Margin="10,10,0,0" 
+                FontSize="16" />
+
+            <!-- Текстовое поле -->
+            <TextBox Name="tbDefautNameBlock" 
+              HorizontalAlignment="Center" 
+              VerticalAlignment="Center" 
+              Margin="10,5,0,0" 
+              Width="300" 
+              FontSize="16" 
+                Text="{Binding Path= defaultBlock}"
+             
+            />
+        </StackPanel>
+        
+        <StackPanel Orientation="Horizontal">
+            <!-- Текстовый элемент -->
+            <TextBlock Text="Радиус поиска полиллиний :" 
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Center" 
+                Margin="10,10,0,0" 
+                FontSize="16" />
+
+            <!-- Текстовое поле -->
+            <TextBox Name="tbRadiusSearchPL" 
+              HorizontalAlignment="Center" 
+              VerticalAlignment="Center" 
+              Margin="10,5,0,0"
+              Width="40" 
+              FontSize="16" 
+             Text="{Binding Path= searchDistancePL}"
+            />
+
+            <CheckBox Content="Показывать зону поиска" 
+                IsChecked="{Binding Path= isDrawZoneSearchPL}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Margin="20,5,5,5"
+                Name="isActZone"
+            />
+            
+        </StackPanel>
+        
+        
+
+
+       
+        
+        
+        <Button Width="150" Height="50"
+            Content="Сохранить"
+            ToolTip="Сохранить"
+            Margin="10,40,10,10"
+            Click="sendDataInDB"
+        />
+
+
+
+    </StackPanel>
+</Window>

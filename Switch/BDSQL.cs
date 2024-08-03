@@ -126,5 +126,45 @@ namespace ElectroTools
                 return default;
             }
         }
+
+        static public bool updateDataInDB(string dbFilePath, string nameTable, string searchColumn, string searchValue, string updateColumn, string newValue)
+        {
+            // Строка подключения к базе данных SQLite
+            string connectionString = "Data Source=" + dbFilePath;
+
+            // SQL-запрос для обновления данных
+            string query = $"UPDATE {nameTable} SET {updateColumn} = @newValue WHERE {searchColumn} = @searchValue";
+
+            try
+            {
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    using (SQLiteCommand command = new SQLiteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@newValue", newValue);
+                        command.Parameters.AddWithValue("@searchValue", searchValue);
+
+                        int rowsAffected = command.ExecuteNonQuery();
+
+                        // Проверяем, были ли затронуты строки
+                        if (rowsAffected > 0)
+                        {
+                            return true; // Обновление прошло успешно
+                        }
+                        else
+                        {
+                            MessageBox.Show("Запись не найдена или значение не изменилось.");
+                            return false; // Обновление не удалось
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при обновлении базы данных: {ex.Message}");
+                return false; // Обновление не удалось
+            }
+        }
     }
 }

@@ -28,9 +28,18 @@ namespace ElectroTools
             }
         }
 
-    
+
+        //Для настроек
+        private int _searchDistancePL = UserData.searchDistancePL;
+        private string _defaultBlock = UserData.defaultBlock;
+        private int _roundCoordinateDistFileExcel = UserData.roundCoordinateDistFileExcel;
+        private int _roundCoordinateXYFileExcel = UserData.roundCoordinateXYFileExcel;
+        private bool _isDrawZoneSearchPL = UserData.isDrawZoneSearchPL;
 
 
+
+
+        //Для основной палитры
         private string _pathDLLFile;
         private string _pathDWGFile;
         private bool _isLock;
@@ -44,6 +53,56 @@ namespace ElectroTools
         //Версия модуля
         private string _version;
 
+        public int searchDistancePL
+        {
+            get { return _searchDistancePL; }
+            set
+            {
+
+                 _searchDistancePL = value; OnPropertyChanged(nameof(searchDistancePL));
+                
+            }
+        }
+        public string defaultBlock
+        {
+            get { return _defaultBlock; }
+            set
+            {
+                _defaultBlock = value;
+                OnPropertyChanged(nameof(defaultBlock));
+
+            }
+        }
+        public int roundCoordinateDistFileExcel
+        {
+            get { return _roundCoordinateDistFileExcel; }
+            set
+            {
+                _roundCoordinateDistFileExcel = value; OnPropertyChanged(nameof(roundCoordinateDistFileExcel));
+                
+
+            }
+        }
+        public int roundCoordinateXYFileExcel
+        {
+            get { return _roundCoordinateXYFileExcel; }
+            set
+            {
+               _roundCoordinateXYFileExcel = value; OnPropertyChanged(nameof(roundCoordinateXYFileExcel));
+
+                
+            }
+        }
+        public bool isDrawZoneSearchPL
+        {
+            get { return _isDrawZoneSearchPL; }
+            set
+            {
+                 _isDrawZoneSearchPL = value;
+                OnPropertyChanged(nameof(isDrawZoneSearchPL));
+                
+            }
+        }
         public string version
         {
             get { return _version; }
@@ -165,10 +224,12 @@ namespace ElectroTools
             isLock = !true;
             isOpenTableSS = false;
             isLoadProcessAnim = true;
-
             Assembly assembly = Assembly.GetExecutingAssembly();
             Version Version = assembly.GetName().Version;
             version= Version.ToString();
+
+
+
         }
 
 

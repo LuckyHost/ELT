@@ -5,10 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Animation;
+using System.Xml;
 
 namespace ElectroTools
 {
-    static class UserData
+    static class UserData 
     {
        
        public static int coefficientMultiplicity=3;
@@ -30,6 +31,7 @@ namespace ElectroTools
          }
 
 
+    
     }
 }
     

@@ -166,6 +166,9 @@
       <DependentUpon>DataForm.xaml</DependentUpon>
     </Compile>
     <Compile Include="Excel.cs" />
+    <Compile Include="SettingForm.xaml.cs">
+      <DependentUpon>SettingForm.xaml</DependentUpon>
+    </Compile>
     <Compile Include="TestTools\DeBag.cs" />
     <Compile Include="Draw.cs" />
     <Compile Include="Edge.cs" />
@@ -189,6 +192,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="DataForm.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingForm.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

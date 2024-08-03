@@ -250,7 +250,7 @@ namespace ElectroTools
         }
 
 
-        public static void drawZoneSearchPLCircle(Point3dCollection points, Database db, Transaction tr)
+        public static void drawZoneSearchPLCircle(Point3dCollection points, Database db, Transaction tr, string nameLayer)
         {
             BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
             BlockTableRecord btr = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
@@ -263,6 +263,8 @@ namespace ElectroTools
             }
             polygon.Closed = true;
             polygon.Color = Color.FromColorIndex(ColorMethod.ByAci, 1); // Красный цвет
+            polygon.Layer = nameLayer;
+            polygon.Closed = true;
 
             btr.AppendEntity(polygon);
             tr.AddNewlyCreatedDBObject(polygon, true);

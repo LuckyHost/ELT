@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using HostMgd.Windows.ToolPalette;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,6 +14,8 @@ namespace ElectroTools
     {
         private MyData _data;
         private DataForm _formData;
+
+      
         public StartPalet(MyData data)
         {
             InitializeComponent();
@@ -195,16 +199,22 @@ namespace ElectroTools
 
         private void settings(object sender, RoutedEventArgs e)
         {
+
+           ;
+
             //Для Windows
             // Сделать окно немодальным
-            //SettingWindows formSetting = new SettingWindows();
-           //  formSetting.Show();
+            var settingFormWindow = new SettingForm(_data);
+            settingFormWindow.Show();
             // Сделать окно поверх других окон
-            // form.Topmost = true;
+            settingFormWindow.Topmost = true;
             //Отдельное окно Windows
             //Это блокирует окно NCada
             //Application.ShowModalWindow(form);
         }
+
+       
+
 
 
     }
