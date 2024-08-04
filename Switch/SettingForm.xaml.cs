@@ -24,7 +24,6 @@ namespace ElectroTools
     {
         private MyData _data;
 
-       
 
         public SettingForm(MyData data)
         {
@@ -32,29 +31,29 @@ namespace ElectroTools
             InitializeComponent();
             _data = data;
             this.DataContext = _data;
-           
+
         }
 
 
         //Обновить пользовательские данные в BD
         private void sendDataInDB(object sender, RoutedEventArgs e)
         {
-           
+
 
             if (   //Обновить данные блока по умолчанию
-                        BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "defaultBlock", "valve",this.tbDefautNameBlock.Text) &&
+                        BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "defaultBlock", "valve", this.tbDefautNameBlock.Text) &&
                     //Обновить данные округ координат
-                    BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "roundCoordinateXYFileExcel", "valve", this.tbCoord.Text)&&
+                    BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "roundCoordinateXYFileExcel", "valve", this.tbCoord.Text) &&
                     //Обновить данные окргу расстояние
-                    BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "roundCoordinateDistFileExcel", "valve", this.tbDistCoord.Text)&&
+                    BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "roundCoordinateDistFileExcel", "valve", this.tbDistCoord.Text) &&
                     //Обновить данные радиус поиска
-                    BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "searchDistancePL", "valve", this.tbRadiusSearchPL.Text)&&
-                    //Обновить данные границы поиска
-                     BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "isDrawZoneSearchPL", "valve", (bool)this.isActZone.IsChecked ? 1.ToString():0.ToString())
-
+                    BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "searchDistancePL", "valve", this.tbRadiusSearchPL.Text) &&
+                     //Обновить данные границы поиска
+                     BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "isDrawZoneSearchPL", "valve", (bool)this.isActZone.IsChecked ? 1.ToString() : 0.ToString())
                 )
-            { 
-            MessageBox.Show("Запись успешно обновлена.Перезапустите приложение");
+            {
+                MessageBox.Show("Запись успешно обновлена");
+                UserData.updateUserData(_data._tools.dbFilePath);
             }
             else
             {
@@ -65,7 +64,7 @@ namespace ElectroTools
 
         }
 
-   
+
 
 
     }

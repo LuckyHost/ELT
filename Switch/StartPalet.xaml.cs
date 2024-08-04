@@ -199,8 +199,7 @@ namespace ElectroTools
 
         private void settings(object sender, RoutedEventArgs e)
         {
-
-           ;
+            UserData.updateUserData(_data._tools.dbFilePath);
 
             //Для Windows
             // Сделать окно немодальным

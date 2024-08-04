@@ -14,6 +14,8 @@ using System.Windows.Forms.Integration;
 using System.Windows;
 using ControlzEx.Standard;
 using Teigha.Colors;
+using System.Threading;
+
 
 
 
@@ -1515,6 +1517,7 @@ namespace ElectroTools
 
         PowerLine searchPlyline(Editor ed, PowerLine masterLine, Transaction trAdding, List<PointLine> listPoint, List<Point2d> listPointXY, int j)
         {
+                
             Polyline polyline = trAdding.GetObject(masterLine.IDLine, OpenMode.ForRead) as Polyline;
 
             if (polyline != null)
@@ -1527,6 +1530,7 @@ namespace ElectroTools
                 // i=1 ; что бы не исать в первой вершине, когда выходит много из одной i=0 -дефолт j
                 for (int i = j; i < polyline.NumberOfVertices; i++)
                 {
+                   
                     // Поиск других полилиний вблизи текущей вершины
                     Point3d searchPoint = new Point3d(polyline.GetPoint2dAt(i).X, polyline.GetPoint2dAt(i).Y, 0);
 
@@ -1535,7 +1539,7 @@ namespace ElectroTools
                         (
                         new TypedValue[] 
                             { new TypedValue((int)DxfCode.Start, "LWPOLYLINE")
-                             }
+                            }
 
                         );
 
@@ -1595,6 +1599,8 @@ namespace ElectroTools
                             ed.SetImpliedSelection(new ObjectId[] { acSObj.ObjectId });
                             creatPromptKeywordOptions("Заглушка",new List<string>() { "1"},1);
                            */
+
+                          
                             //Отсечь родителя 
                             if ( acSObj.ObjectId != masterLine.IDLine && acSObj.ObjectId != masterLine.parent.IDLine)
                             {
@@ -1702,6 +1708,8 @@ namespace ElectroTools
                     searchPlyline(MyOpenDocument.ed, line, trAdding, listPoint, listPointXY, j);
                 }
             }
+            // Ожидание завершения потока отслеживания нажатия клавиши ESC
+           
             return masterLine;
         }
 

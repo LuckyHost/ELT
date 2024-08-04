@@ -16,8 +16,8 @@ namespace ElectroTools
     public class MyData : INotifyPropertyChanged
     {
         //Анимация
-        private  bool _isLoadProcessAnim;
-        public  bool isLoadProcessAnim
+        private bool _isLoadProcessAnim;
+        public bool isLoadProcessAnim
         {
             get { return _isLoadProcessAnim; }
             set
@@ -58,9 +58,7 @@ namespace ElectroTools
             get { return _searchDistancePL; }
             set
             {
-
-                 _searchDistancePL = value; OnPropertyChanged(nameof(searchDistancePL));
-                
+                _searchDistancePL = value; OnPropertyChanged(nameof(searchDistancePL));
             }
         }
         public string defaultBlock
@@ -70,7 +68,6 @@ namespace ElectroTools
             {
                 _defaultBlock = value;
                 OnPropertyChanged(nameof(defaultBlock));
-
             }
         }
         public int roundCoordinateDistFileExcel
@@ -79,8 +76,6 @@ namespace ElectroTools
             set
             {
                 _roundCoordinateDistFileExcel = value; OnPropertyChanged(nameof(roundCoordinateDistFileExcel));
-                
-
             }
         }
         public int roundCoordinateXYFileExcel
@@ -88,9 +83,7 @@ namespace ElectroTools
             get { return _roundCoordinateXYFileExcel; }
             set
             {
-               _roundCoordinateXYFileExcel = value; OnPropertyChanged(nameof(roundCoordinateXYFileExcel));
-
-                
+                _roundCoordinateXYFileExcel = value; OnPropertyChanged(nameof(roundCoordinateXYFileExcel));
             }
         }
         public bool isDrawZoneSearchPL
@@ -98,9 +91,8 @@ namespace ElectroTools
             get { return _isDrawZoneSearchPL; }
             set
             {
-                 _isDrawZoneSearchPL = value;
+                _isDrawZoneSearchPL = value;
                 OnPropertyChanged(nameof(isDrawZoneSearchPL));
-                
             }
         }
         public string version
@@ -110,7 +102,6 @@ namespace ElectroTools
             {
                 _version = value;
                 OnPropertyChanged(nameof(version));
-
             }
         }
 
@@ -125,7 +116,6 @@ namespace ElectroTools
             {
                 _listpoint = value;
                 OnPropertyChanged(nameof(listpoint));
-
             }
         }
 
@@ -182,7 +172,7 @@ namespace ElectroTools
             }
         }
 
-  
+
 
         public bool isOpenTableSS
         {
@@ -214,7 +204,8 @@ namespace ElectroTools
         public MyData(Tools tools)
         {
             _tools = tools;
-            _tools.PropertyChanged += Tools_PropertyChanged;
+            _tools.PropertyChanged += tools_PropertyChanged;
+            UserData.StaticPropertyChanged += userData_PropertyChangedStatick;
 
             pathDLLFile = _tools.pathDLLFile;
             listpoint = new ObservableCollection<PointLine>(_tools.listPoint);
@@ -226,15 +217,27 @@ namespace ElectroTools
             isLoadProcessAnim = true;
             Assembly assembly = Assembly.GetExecutingAssembly();
             Version Version = assembly.GetName().Version;
-            version= Version.ToString();
+            version = Version.ToString();
+
 
 
 
         }
 
+        //Уведомление из UserData
+        private void userData_PropertyChangedStatick(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(UserData.searchDistancePL))
+            {
+                searchDistancePL = UserData.searchDistancePL;
+                defaultBlock = UserData.defaultBlock;
+                roundCoordinateDistFileExcel = UserData.roundCoordinateDistFileExcel;
+                roundCoordinateXYFileExcel = UserData.roundCoordinateXYFileExcel;
+                isDrawZoneSearchPL = UserData.isDrawZoneSearchPL;
+            }
+        }
 
-
-        private void Tools_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void tools_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(Tools.pathDLLFile))
             {
@@ -261,8 +264,6 @@ namespace ElectroTools
                 listPowerLine = new ObservableCollection<PowerLine>(_tools.listPowerLine);
             }
 
-
-
             //получаю имя файла
             if (e.PropertyName == nameof(MyOpenDocument.ed))
             {
@@ -271,6 +272,8 @@ namespace ElectroTools
             }
 
         }
+
+
 
 
 

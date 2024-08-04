@@ -7,7 +7,8 @@
              xmlns:local="clr-namespace:ElectroTools"
              mc:Ignorable="d" 
              
-            Title="Настройки" Height="300" Width="720" 
+            Title="Настройки" Height="300" Width="720" HorizontalAlignment="Center" VerticalAlignment="Center" WindowStartupLocation="CenterScreen"
+        
    
     
     >
