@@ -58,7 +58,7 @@ namespace ElectroTools
         private List<PointLine> _listPoint = new List<PointLine>();
         private List<Edge> _listEdge = new List<Edge>();
         private List<PowerLine> _listPowerLine = new List<PowerLine>();
-
+        private PaletteSet _paletteSet;
 
         public Tools()
         {
@@ -1421,21 +1421,32 @@ namespace ElectroTools
 
         public void nextFormAsync()
         {
-            _myData = new MyData(this);
-            //Создает боковое меню
-            StartPalet myUserControl = new StartPalet(_myData);
-            PaletteSet paletteSet = new PaletteSet("ElectroTools", new Guid("5020f2bc-42b1-4d65-aa80-df455f4bed60"));
-            paletteSet.Style = PaletteSetStyles.ShowAutoHideButton | PaletteSetStyles.ShowCloseButton;
-            paletteSet.Add("MyPalette", new ElementHost() { Child = myUserControl });
-            paletteSet.Visible = true;
-            // End. Создает боковое меню
 
+            // Проверяем, открыт ли уже PaletteSet
+            if (_paletteSet == null)
+            {
+                _myData = new MyData(this);
+                //Создает боковое меню
+                StartPalet myUserControl = new StartPalet(_myData);
+                PaletteSet _paletteSet = new PaletteSet("ElectroTools", new Guid("5020f2bc-42b1-4d65-aa80-df455f4bed60"));
+                _paletteSet.Style = PaletteSetStyles.ShowAutoHideButton | PaletteSetStyles.ShowCloseButton;
+                _paletteSet.Add("MyPalette", new ElementHost() { Child = myUserControl });
+                _paletteSet.Visible = true;
+                // End. Создает боковое меню
+            }
+
+            else
+            {
+                // PaletteSet уже открыт, активируем его
+                _paletteSet.Visible = true;
+                MyOpenDocument.ed.WriteMessage("Модуль уже запущен!");
+            }
 
             //Для Windows
             // Сделать окно немодальным
             // FirstForm form = new FirstForm(new MyData(this));
             // form.Show();
-            // Сделать окно поверх других окон
+            // Сделать окно поверх других окон  
             // form.Topmost = true;
             //Отдельное окно Windows
             //Это блокирует окно NCada

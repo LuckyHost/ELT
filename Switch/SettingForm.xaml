@@ -6,93 +6,78 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ElectroTools"
              mc:Ignorable="d" 
-             
-            Title="Настройки" Height="300" Width="720" HorizontalAlignment="Center" VerticalAlignment="Center" WindowStartupLocation="CenterScreen"
+             Title="Настройки" HorizontalAlignment="Center" VerticalAlignment="Center" WindowStartupLocation="CenterScreen"
+            ResizeMode="NoResize"
+             SizeToContent="WidthAndHeight"
         
-   
-    
-    >
-    <StackPanel Orientation="Vertical" Height="260">
-      
-    
-       
+             TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+             TextElement.FontWeight="Regular"
+             TextElement.FontSize="13"
+             TextOptions.TextFormattingMode="Ideal"
+             TextOptions.TextRenderingMode="Auto"
+             Background="{DynamicResource MaterialDesignPaper}"
+             FontFamily="{DynamicResource MaterialDesignFont}"
+        >
 
-        <StackPanel Orientation="Horizontal">
-            <!-- Текстовый элемент -->
-        <TextBlock Text="Количество знаков после запятой у расстояние между вершинами :" 
-                   HorizontalAlignment="Center" 
-                   VerticalAlignment="Center" 
-                   Margin="10,10,0,0" 
-                   FontSize="16" />
+    <!-- Ресурсы для material 3 -->
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.DeepPurple.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Lime.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <!-- End.B Ресурсы для material 3 -->
 
-        <!-- Текстовое поле -->
-        <TextBox Name="tbDistCoord" 
-                 HorizontalAlignment="Center" 
-                 VerticalAlignment="Center" 
-                 Margin="10,5,0,0" 
-                 Width="40" 
-                 FontSize="16" 
-                 Text="{Binding Path= roundCoordinateDistFileExcel}"
-                 />
-            </StackPanel>
 
-        <StackPanel Orientation="Horizontal">
-            <!-- Текстовый элемент -->
-            <TextBlock Text="Количество знаков после запятой у координат :" 
-           HorizontalAlignment="Center" 
-           VerticalAlignment="Center" 
-           Margin="10,10,0,0" 
-           FontSize="16" />
+    <StackPanel Orientation="Vertical" Height="260" Margin="10,10,10,20" Width="410" >
 
-            <!-- Текстовое поле -->
-            <TextBox Name="tbCoord" 
-                 HorizontalAlignment="Center" 
-                 VerticalAlignment="Center" 
-                 Margin="10,5,0,0" 
-                 Width="40" 
-                 FontSize="16" 
-                Text="{Binding Path= roundCoordinateXYFileExcel}"
+        <!-- Кол знаков -->
+        <TextBox
+              VerticalAlignment="Center"
+              materialDesign:HintAssist.Hint="Количество знаков после запятой у расстояние между вершинами: "
+              Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
+                Text="{Binding Path= roundCoordinateDistFileExcel}"
+                Margin="10,10,10,5"
+                Name="tbDistCoord"
             />
-        </StackPanel>
 
+        <!-- Кол знаков -->
+        <TextBox
+      VerticalAlignment="Center"
+      materialDesign:HintAssist.Hint="Количество знаков после запятой у координат: "
+      Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
+        Text="{Binding Path= roundCoordinateXYFileExcel}"
+        Margin="10,5,10,5"
+        Name="tbCoord"
+        />
+
+
+        <!-- Имя Блока -->
+        <TextBox
+      VerticalAlignment="Center"
+      materialDesign:HintAssist.Hint="Имя блока по умолчанию: "
+      Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
+        Text="{Binding Path= defaultBlock}"
+        Margin="10,5,5,10"
+        Name="tbDefautNameBlock"
+        />
+
+        <!-- Радиус поиска -->
 
         <StackPanel Orientation="Horizontal">
-            <!-- Текстовый элемент -->
-            <TextBlock Text="Имя блока по умолчанию :" 
-                HorizontalAlignment="Center" 
-                VerticalAlignment="Center" 
-                Margin="10,10,0,0" 
-                FontSize="16" />
-
-            <!-- Текстовое поле -->
-            <TextBox Name="tbDefautNameBlock" 
-              HorizontalAlignment="Center" 
-              VerticalAlignment="Center" 
-              Margin="10,5,0,0" 
-              Width="300" 
-              FontSize="16" 
-                Text="{Binding Path= defaultBlock}"
-             
-            />
-        </StackPanel>
-        
-        <StackPanel Orientation="Horizontal">
-            <!-- Текстовый элемент -->
-            <TextBlock Text="Радиус поиска полиллиний :" 
-                HorizontalAlignment="Center" 
-                VerticalAlignment="Center" 
-                Margin="10,10,0,0" 
-                FontSize="16" />
-
-            <!-- Текстовое поле -->
-            <TextBox Name="tbRadiusSearchPL" 
-              HorizontalAlignment="Center" 
-              VerticalAlignment="Center" 
-              Margin="10,5,0,0"
-              Width="40" 
-              FontSize="16" 
-             Text="{Binding Path= searchDistancePL}"
-            />
+            
+            <TextBox
+            VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="Радиус поиска полиллиний: "
+            Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
+              Text="{Binding Path= searchDistancePL}"
+              Margin="10,5,5,10"
+              Name="tbRadiusSearchPL"
+              />
 
             <CheckBox Content="Показывать зону поиска" 
                 IsChecked="{Binding Path= isDrawZoneSearchPL}"
@@ -101,19 +86,13 @@
                 Margin="20,5,5,5"
                 Name="isActZone"
             />
-            
+
         </StackPanel>
-        
-        
 
-
-       
-        
-        
         <Button Width="150" Height="50"
             Content="Сохранить"
             ToolTip="Сохранить"
-            Margin="10,40,10,10"
+            Margin="10,10,10,10"
             Click="sendDataInDB"
         />
 
