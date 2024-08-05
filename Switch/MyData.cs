@@ -35,6 +35,7 @@ namespace ElectroTools
         private int _roundCoordinateDistFileExcel = UserData.roundCoordinateDistFileExcel;
         private int _roundCoordinateXYFileExcel = UserData.roundCoordinateXYFileExcel;
         private bool _isDrawZoneSearchPL = UserData.isDrawZoneSearchPL;
+        private double _searchLengthPL = UserData.searchLengthPL;
 
 
 
@@ -95,6 +96,16 @@ namespace ElectroTools
                 OnPropertyChanged(nameof(isDrawZoneSearchPL));
             }
         }
+
+        public double searchLengthPL
+        {
+            get { return _searchLengthPL; }
+            set
+            {
+                _searchLengthPL = value; OnPropertyChanged(nameof(searchLengthPL));
+            }
+        }
+
         public string version
         {
             get { return _version; }
@@ -233,6 +244,7 @@ namespace ElectroTools
                 defaultBlock = UserData.defaultBlock;
                 roundCoordinateDistFileExcel = UserData.roundCoordinateDistFileExcel;
                 roundCoordinateXYFileExcel = UserData.roundCoordinateXYFileExcel;
+                searchLengthPL = UserData.searchLengthPL;
                 isDrawZoneSearchPL = UserData.isDrawZoneSearchPL;
             }
         }

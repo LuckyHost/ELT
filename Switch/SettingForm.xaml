@@ -33,7 +33,7 @@
     <!-- End.B Ресурсы для material 3 -->
 
 
-    <StackPanel Orientation="Vertical" Height="260" Margin="10,10,10,20" Width="410" >
+    <StackPanel Orientation="Vertical" Margin="10,10,10,20" >
 
         <!-- Кол знаков -->
         <TextBox
@@ -66,6 +66,16 @@
         Name="tbDefautNameBlock"
         />
 
+
+        <TextBox
+         VerticalAlignment="Center"
+         materialDesign:HintAssist.Hint="Искать полиллинии длинее : "
+         Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
+           Text="{Binding Path= searchLengthPL}"
+           Margin="10,5,5,10"
+           Name="tbsearchLengthPL"
+           />
+        
         <!-- Радиус поиска -->
 
         <StackPanel Orientation="Horizontal">

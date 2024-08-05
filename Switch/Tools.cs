@@ -19,6 +19,8 @@ using System.Threading;
 
 
 
+
+
 #if nanoCAD
 using Application = HostMgd.ApplicationServices.Application;
 using HostMgd.ApplicationServices;
@@ -1620,13 +1622,31 @@ namespace ElectroTools
                                 Polyline lengthPolyline = trAdding.GetObject(acSObj.ObjectId, OpenMode.ForWrite) as Polyline;
 
                                 //Если замкнута, пропустить
-                                if (lengthPolyline.Closed) { continue; }
-                                
+                                if (lengthPolyline.Closed | lengthPolyline.Length<UserData.searchLengthPL) { continue; }
+
+
+                                //Проверка на цикличность есть Point Perent = last point, то разворачиваем полилинию 
+                                int lastVertexIndex = lengthPolyline.NumberOfVertices - 1;
+                                Point3d lastPoint = lengthPolyline.GetPoint3dAt(lastVertexIndex);
+                              
+                                if (IsPointInsidePolygon(lastPoint, polygonPoints))
+                                //if (lastPoint == searchPoint)
+                                {
+                                    using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
+                                    {
+                                        lengthPolyline.ReverseCurve();
+                                        tr.Commit();
+                                    }
+                                    ed.WriteMessage("Линия была построена не от \"Питания\" к \"Нагрузки\", я ее развернул ");
+                                }
+
+
+
                                 //Приближаем
                                 Draw.ZoomToEntity(acSObj.ObjectId, 4);
                                 
                                 //Расстояние между точками для проверки соединить их в одну точку  и 5 процентов запаса
-                                if (Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 4) != 0 && Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 0) <= UserData.searchDistancePL  )
+                                if (Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 4) > 0 && Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 0) <= UserData.searchDistancePL  )
                                 {
 
                                     //Тогда переносим вершину в нужную нам
@@ -1640,19 +1660,9 @@ namespace ElectroTools
 
                                 }
 
-                                //Проверка на цикличность есть Point Perent = last point, то разворачиваем полилинию 
-                                int lastVertexIndex = lengthPolyline.NumberOfVertices - 1;
-                                Point3d lastPoint = lengthPolyline.GetPoint3dAt(lastVertexIndex);
+                               
 
-                                if (lastPoint == searchPoint)
-                                {
-                                    using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
-                                    {
-                                        lengthPolyline.ReverseCurve();
-                                        tr.Commit();
-                                    }
-                                    ed.WriteMessage("Линия была построена не от \"Питания\" к \"Нагрузки\", я ее развернул ");
-                                }
+                               
 
 
                                 //Подсветка что выделилось
@@ -2798,7 +2808,7 @@ namespace ElectroTools
                 _myData.isLoadProcessAnim = false;
             }
 
-
+                
 
         }
 
@@ -2807,6 +2817,36 @@ namespace ElectroTools
 
 
 
+        public bool IsPointInsidePolygon(Point3d point, Point3dCollection polygon)
+        {
+            // Преобразуем координаты точки в 2D
+            Point2d point2d = new Point2d(point.X, point.Y);
+
+            // Преобразуем полигон в список 2D точек
+            List<Point2d> polygon2d = new List<Point2d>();
+            foreach (Point3d pt in polygon)
+            {
+                polygon2d.Add(new Point2d(pt.X, pt.Y));
+            }
+
+            // Проверяем, находится ли точка внутри полигона
+            return IsPointInsidePolygon(point2d, polygon2d);
+        }
+
+        private bool IsPointInsidePolygon(Point2d point, List<Point2d> polygon)
+        {
+            int n = polygon.Count;
+            bool result = false;
+            for (int i = 0, j = n - 1; i < n; j = i++)
+            {
+                if ((polygon[i].Y > point.Y) != (polygon[j].Y > point.Y) &&
+                    (point.X < (polygon[j].X - polygon[i].X) * (point.Y - polygon[i].Y) / (polygon[j].Y - polygon[i].Y) + polygon[i].X))
+                {
+                    result = !result;
+                }
+            }
+            return result;
+        }
 
 
     }

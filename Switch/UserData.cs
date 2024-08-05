@@ -23,6 +23,7 @@ namespace ElectroTools
         public static int roundCoordinateDistFileExcel = 2;
         public static int roundCoordinateXYFileExcel = 2;
         public static bool isDrawZoneSearchPL = false;
+        public static double searchLengthPL = 1;
 
 
 
@@ -34,6 +35,7 @@ namespace ElectroTools
             roundCoordinateDistFileExcel = Convert.ToInt32(BDSQL.searchDataInBD<string>(dbFilePath, "userData", "roundCoordinateDistFileExcel", "name", "valve"));
             roundCoordinateXYFileExcel = Convert.ToInt32(BDSQL.searchDataInBD<string>(dbFilePath, "userData", "roundCoordinateXYFileExcel", "name", "valve"));
             isDrawZoneSearchPL = Convert.ToBoolean(Convert.ToInt32(BDSQL.searchDataInBD<string>(dbFilePath, "userData", "isDrawZoneSearchPL", "name", "valve")));
+            searchLengthPL = (Convert.ToDouble( BDSQL.searchDataInBD<string>(dbFilePath, "userData", "searchLengthPL", "name", "valve").Replace(".",",")));
             OnStaticPropertyChanged(nameof(searchDistancePL));
         }
 
