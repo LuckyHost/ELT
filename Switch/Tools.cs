@@ -15,6 +15,14 @@ using System.Windows;
 using ControlzEx.Standard;
 using Teigha.Colors;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Newtonsoft.Json.Linq;
+using AttributeCollection = Teigha.DatabaseServices.AttributeCollection;
+
+
+
+
 
 
 
@@ -52,7 +60,7 @@ namespace ElectroTools
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-         Editor oldEd;
+        Editor oldEd;
         //Для передачи Lock состояния
         private MyData _myData;
         private NetWork _netWork = new NetWork();
@@ -64,10 +72,11 @@ namespace ElectroTools
 
         public Tools()
         {
-            
+
             MyOpenDocument.ed = Application.DocumentManager.MdiActiveDocument.Editor;
             MyOpenDocument.doc = Application.DocumentManager.MdiActiveDocument;
             MyOpenDocument.dbCurrent = Application.DocumentManager.MdiActiveDocument.Database;
+
 
 
             List<string> assemblies = new List<string>
@@ -114,11 +123,6 @@ namespace ElectroTools
             //Обновить пользовательские данные
             UserData.updateUserData(dbFilePath);
         }
-
-
-
-
-       
 
 
         public List<PointLine> listPoint
@@ -191,27 +195,22 @@ namespace ElectroTools
         [CommandMethod("фв", CommandFlags.UsePickSet |
                        CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad */
 
-        
+
 
         public void addInfo()
         {
-
             //подписывается на обновление чертежа
             Application.DocumentManager.DocumentActivated += DocumentActivatedEventHandler;
 
             oldEd = Application.DocumentManager.MdiActiveDocument.Editor;
-
 
             //Обновляем при запуске анализа
             MyOpenDocument.ed = Application.DocumentManager.MdiActiveDocument.Editor;
             MyOpenDocument.doc = Application.DocumentManager.MdiActiveDocument;
             MyOpenDocument.dbCurrent = Application.DocumentManager.MdiActiveDocument.Database;
 
-
-
             OnPropertyChanged(nameof(MyOpenDocument.ed));
 
-            
             //Обновить пользовательские данные
             UserData.updateUserData(dbFilePath);
 
@@ -233,7 +232,6 @@ namespace ElectroTools
             if (string.IsNullOrEmpty(sizeTextLine)) { return; }
 
 
-
             //Создание слоев
             Layer.creatLayer("Узлы_Saidi_Saifi_Makarov.D", 0, 127, 0);
             Layer.creatLayer("Граф_Saidi_Saifi_Makarov.D", 76, 153, 133);
@@ -242,26 +240,39 @@ namespace ElectroTools
             Layer.creatLayer("TKZ_Makarov.D", 255, 0, 0);
             Layer.creatLayer("Напряжение_Makarov.D", 0, 255, 63);
 
-
             //Удалить все объекты со слоев
-            Layer.deleteObjectsOnLayer("Узлы_Saidi_Saifi_Makarov.D");
-            Layer.deleteObjectsOnLayer("Граф_Saidi_Saifi_Makarov.D");
-            Layer.deleteObjectsOnLayer("НазванияЛиний_Saidi_Saifi_Makarov.D");
-            Layer.deleteObjectsOnLayer("Ребра_Saidi_Saifi_Makarov.D");
-            Layer.deleteObjectsOnLayer("TKZ_Makarov.D");
-            Layer.deleteObjectsOnLayer("Напряжение_Makarov.D");
+            Layer.deleteObjectsOnLayer("Узлы_Saidi_Saifi_Makarov.D", false);
+            Layer.deleteObjectsOnLayer("Граф_Saidi_Saifi_Makarov.D", false);
+            Layer.deleteObjectsOnLayer("НазванияЛиний_Saidi_Saifi_Makarov.D", false);
+            Layer.deleteObjectsOnLayer("Ребра_Saidi_Saifi_Makarov.D", false);
+            Layer.deleteObjectsOnLayer("TKZ_Makarov.D", false);
+            Layer.deleteObjectsOnLayer("Напряжение_Makarov.D", false);
 
 
             using (DocumentLock docloc = MyOpenDocument.doc.LockDocument())
             {
                 using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
                 {
+
+                    //Создаем токен
+                    MyOpenDocument.cts = new CancellationTokenSource();
+
                     //Создаем магистраль
                     PowerLine magistralLine = creatMagistral(MyOpenDocument.ed, trAdding, listPoint, listPointXY, listPowerLine);
 
                     //Ищем все отпайки у магистрали и у их детей и делает листпоинт
                     searchPlyline(MyOpenDocument.ed, magistralLine, trAdding, listPoint, listPointXY, j);
 
+
+
+                    //Проверка отмена токена
+                    if (MyOpenDocument.cts.Token.IsCancellationRequested)
+                    {
+                        MyOpenDocument.ed.WriteMessage("Анализ сети отменен");
+                        _myData.isLock = false;
+                        _myData.isLoadProcessAnim = true;
+                        return;
+                    };
 
                     //Собрать весь список PowerLine
                     listPowerLine = creatListPowerLine(magistralLine);
@@ -315,6 +326,20 @@ namespace ElectroTools
                     trAdding.Commit();
 
                 }
+
+
+
+                if (UserData.isSelectSearchPL)
+                {
+                    List<ObjectId> selectListPL = new List<ObjectId>();
+
+                    foreach (PowerLine powerLine in listPowerLine)
+                    {
+                        selectListPL.Add(powerLine.IDLine);
+                    };
+                    MyOpenDocument.ed.SetImpliedSelection(selectListPL.ToArray());
+                }
+
             }
 
             OnPropertyChanged(nameof(listPoint));
@@ -599,7 +624,7 @@ namespace ElectroTools
             if (string.IsNullOrEmpty(strResistancetTransformers)) { return; }
 
             //берем сопротивление в BD по тексту
-            tkz.transformersR =  BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
+            tkz.transformersR = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r");
             tkz.transformersX = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x");
             tkz.transformersR0 = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r0");
             tkz.transformersX0 = BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x0");
@@ -1524,14 +1549,18 @@ namespace ElectroTools
 
 
 
-       
+
 
 
 
         PowerLine searchPlyline(Editor ed, PowerLine masterLine, Transaction trAdding, List<PointLine> listPoint, List<Point2d> listPointXY, int j)
         {
-                
+
+
+            if (MyOpenDocument.cts.Token.IsCancellationRequested) { return null; }
+
             Polyline polyline = trAdding.GetObject(masterLine.IDLine, OpenMode.ForRead) as Polyline;
+            List<ObjectId> selectPL = new List<ObjectId>();
 
             if (polyline != null)
             {
@@ -1541,16 +1570,18 @@ namespace ElectroTools
 
                 // для себя i можно использовать как узел, от которого произошла отпайка
                 // i=1 ; что бы не исать в первой вершине, когда выходит много из одной i=0 -дефолт j
+
                 for (int i = j; i < polyline.NumberOfVertices; i++)
                 {
-                   
+
+
                     // Поиск других полилиний вблизи текущей вершины
                     Point3d searchPoint = new Point3d(polyline.GetPoint2dAt(i).X, polyline.GetPoint2dAt(i).Y, 0);
 
                     //Филтр полилиний и проверка на замкнутость
                     SelectionFilter acSF = new SelectionFilter
                         (
-                        new TypedValue[] 
+                        new TypedValue[]
                             { new TypedValue((int)DxfCode.Start, "LWPOLYLINE")
                             }
 
@@ -1576,13 +1607,13 @@ namespace ElectroTools
 
                     //Рисуем зону поиска
                     if (UserData.isDrawZoneSearchPL)
-                    using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
-                    {
-                        //Draw.drawZoneSearchPLRactangel (corner1, corner2, MyOpenDocument.dbCurrent, tr);
-                        Draw.drawZoneSearchPLCircle (polygonPoints, MyOpenDocument.dbCurrent, tr, "Узлы_Saidi_Saifi_Makarov.D");
+                        using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
+                        {
+                            //Draw.drawZoneSearchPLRactangel (corner1, corner2, MyOpenDocument.dbCurrent, tr);
+                            Draw.drawZoneSearchPLCircle(polygonPoints, MyOpenDocument.dbCurrent, tr, "Узлы_Saidi_Saifi_Makarov.D");
 
                             tr.Commit();
-                    }
+                        }
 
                     //Тут Полигон
                     PromptSelectionResult acPSR = ed.SelectCrossingPolygon(polygonPoints, acSF);
@@ -1613,22 +1644,22 @@ namespace ElectroTools
                             creatPromptKeywordOptions("Заглушка",new List<string>() { "1"},1);
                            */
 
-                          
+
                             //Отсечь родителя 
-                            if ( acSObj.ObjectId != masterLine.IDLine && acSObj.ObjectId != masterLine.parent.IDLine)
+                            if (acSObj.ObjectId != masterLine.IDLine && acSObj.ObjectId != masterLine.parent.IDLine)
                             {
 
-                               //Вытянуть длинну и посмотреть на циклицность.
+                                //Вытянуть длинну и посмотреть на циклицность.
                                 Polyline lengthPolyline = trAdding.GetObject(acSObj.ObjectId, OpenMode.ForWrite) as Polyline;
 
                                 //Если замкнута, пропустить
-                                if (lengthPolyline.Closed | lengthPolyline.Length<UserData.searchLengthPL) { continue; }
+                                if (lengthPolyline.Closed | lengthPolyline.Length < UserData.searchLengthPL) { continue; }
 
 
                                 //Проверка на цикличность есть Point Perent = last point, то разворачиваем полилинию 
                                 int lastVertexIndex = lengthPolyline.NumberOfVertices - 1;
                                 Point3d lastPoint = lengthPolyline.GetPoint3dAt(lastVertexIndex);
-                              
+
                                 if (IsPointInsidePolygon(lastPoint, polygonPoints))
                                 //if (lastPoint == searchPoint)
                                 {
@@ -1644,9 +1675,9 @@ namespace ElectroTools
 
                                 //Приближаем
                                 Draw.ZoomToEntity(acSObj.ObjectId, 4);
-                                
+
                                 //Расстояние между точками для проверки соединить их в одну точку  и 5 процентов запаса
-                                if (Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 4) > 0 && Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 0) <= UserData.searchDistancePL  )
+                                if (Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 4) > 0 && Math.Round(lengthPolyline.GetPoint3dAt(0).DistanceTo(searchPoint), 0) <= UserData.searchDistancePL)
                                 {
 
                                     //Тогда переносим вершину в нужную нам
@@ -1660,11 +1691,11 @@ namespace ElectroTools
 
                                 }
 
-                               
-
-                               
 
 
+
+                                //Добавляем в лист для выбора
+                                selectPL.Add(acSObj.ObjectId);
                                 //Подсветка что выделилось
                                 ed.SetImpliedSelection(new ObjectId[] { acSObj.ObjectId });
                                 //ed.CurrentUserCoordinateSystem = Matrix3d.Identity; // Сброс координатной системы, если необходимо
@@ -1675,6 +1706,10 @@ namespace ElectroTools
 
                                 ChilderLine.cable = BDShowExtensionDictionaryContents<Conductor>(acSObj.ObjectId, "ESMT_LEP_v1.0")?.Name
                                  ?? Text.creatPromptKeywordOptions("\n\nВыберите мару провода: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
+
+
+                                //Проверяте токен на отмену
+                                if (MyOpenDocument.cts.Token.IsCancellationRequested) { return null; };
 
 
                                 ChilderLine.IDLine = acSObj.ObjectId;
@@ -1704,6 +1739,8 @@ namespace ElectroTools
                     }
                 }
 
+
+
                 //Нужно только для 1ого раза,что б не циклило, когда много отпаек из одной точки				
                 j = 1;
 
@@ -1729,8 +1766,7 @@ namespace ElectroTools
                     searchPlyline(MyOpenDocument.ed, line, trAdding, listPoint, listPointXY, j);
                 }
             }
-            // Ожидание завершения потока отслеживания нажатия клавиши ESC
-           
+
             return masterLine;
         }
 
@@ -2798,8 +2834,8 @@ namespace ElectroTools
                 _myData.isLoadProcessAnim = true;
 
 
-                
-             
+
+
 
             }
             else
@@ -2808,7 +2844,7 @@ namespace ElectroTools
                 _myData.isLoadProcessAnim = false;
             }
 
-                
+
 
         }
 
@@ -2849,7 +2885,116 @@ namespace ElectroTools
         }
 
 
+
+        public void creatPoint()
+        {
+
+            // Запрашиваем выделенные объекты
+            PromptSelectionResult selectionResult = MyOpenDocument.ed.SelectImplied();
+            List <ObjectId> ids = new List<ObjectId>();
+           
+            // Если пользователь выбрал что-то
+            if (selectionResult.Status == PromptStatus.OK)
+            {
+                // Создаем новый слой для точек
+                Layer.creatLayer("!Points", 0, 255, 63);
+
+
+                SelectionSet selectedObjects = selectionResult.Value;
+                List<Point3d> points = new List<Point3d>();
+
+                using (Transaction tr = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
+                {
+                    foreach (SelectedObject obj in selectedObjects)
+                    {
+                        if (obj != null)
+                        {
+                            Entity ent = tr.GetObject(obj.ObjectId, OpenMode.ForRead) as Entity;
+
+                            if (ent != null)
+                            {
+                                // Если это текст (DBText)
+                                if (ent is DBText text)
+                                {
+                                    // Попробуем преобразовать текст в число
+                                    if (double.TryParse(text.TextString.Replace(".", ","), out double zValue))
+                                    {
+                                        points.Add(new Point3d(text.Position.X, text.Position.Y, zValue)); // Получаем позицию текста
+                                    }
+                                    else
+                                    {
+                                        MyOpenDocument.ed.WriteMessage($"\nНе удалось преобразовать текст в число: {text.TextString}");
+                                    }
+                                }
+                                // Если это многострочный текст (MText)
+                                else if (ent is MText mtext)
+                                {
+                                    // Попробуем преобразовать содержимое в число
+                                    if (double.TryParse(mtext.Contents.Replace(".", ","), out double zValue))
+                                    {
+                                        points.Add(new Point3d(mtext.Location.X, mtext.Location.Y, zValue)); // Получаем позицию текста
+                                    }
+                                    else
+                                    {
+                                        MyOpenDocument.ed.WriteMessage($"\nНе удалось преобразовать содержимое в число: {mtext.Contents}");
+                                    }
+                                }
+                                // Если это блок (BlockReference)
+                                else if (ent is BlockReference blockRef)
+                                {
+                                    if (blockRef != null)
+                                    {
+                                        // Получаем атрибуты блока
+                                        AttributeCollection attCollection = blockRef.AttributeCollection;
+
+                                        if (attCollection.Count > 0)
+                                        {
+                                            // Получаем первый атрибут
+                                            foreach (ObjectId attId in attCollection)
+                                            {
+                                                AttributeReference attRef = tr.GetObject(attId, OpenMode.ForRead) as AttributeReference;
+
+                                                if (attRef != null)
+                                                {
+                                                    // Попробуем преобразовать значение атрибута в число
+                                                    if (double.TryParse(attRef.TextString.Replace(".", ","), out double zValue))
+                                                    {
+                                                        points.Add(new Point3d(blockRef.Position.X, blockRef.Position.Y, zValue)); // Получаем позицию блока
+                                                                                                                                   // Выводим значение и координаты блока в командное окно
+                                                        break; // Прерываем цикл после получения первого атрибута
+                                                    }
+                                                    else
+                                                    {
+                                                        MyOpenDocument.ed.WriteMessage($"\nНе удалось преобразовать значение атрибута в число: {attRef.TextString}");
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Создаем точки на основе координат
+                    foreach (Point3d point in points)
+                    {
+                       ids.Add( Draw.сreatePoint(point, MyOpenDocument.dbCurrent, tr, "!Points"));
+                    }
+
+                    // Завершаем транзакцию
+                    tr.Commit();
+                }
+            }
+            if (ids.Count>0) { MyOpenDocument.ed.SetImpliedSelection(ids.ToArray()); }
+
+
+        }
     }
+
+
+
+
 
 
 

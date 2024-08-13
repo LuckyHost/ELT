@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace ElectroTools
 {
@@ -15,12 +16,15 @@ namespace ElectroTools
         private MyData _data;
         private DataForm _formData;
 
-      
+
         public StartPalet(MyData data)
         {
             InitializeComponent();
             _data = data;
             this.DataContext = _data;
+
+            //Подписка на нажатие
+            //this.KeyDown += MainWindow_KeyDown;
 
         }
 
@@ -212,7 +216,26 @@ namespace ElectroTools
             //Application.ShowModalWindow(form);
         }
 
-       
+        private void creatPoints(object sender, RoutedEventArgs e)
+        {
+            //Это что бы когда чисто используешь функционал координат
+            MyOpenDocument.ed = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor;
+            MyOpenDocument.doc = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+            MyOpenDocument.dbCurrent = HostMgd.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Database;
+            _data._tools.creatPoint();
+        }
+
+        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                // Действие при нажатии Esc
+                MessageBox.Show("Вы нажали Esc");
+                // Вы можете также вызвать функцию отмены здесь
+            }
+        }
+
+
 
 
 

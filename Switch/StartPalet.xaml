@@ -32,14 +32,14 @@
     <!-- End.B Ресурсы для material 3 -->
 
     <ScrollViewer >
-    
 
-    <StackPanel ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" >
-<!-- О чертеже -->
-        <StackPanel Orientation="Vertical">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-             
-            
+
+        <StackPanel ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" >
+            <!-- О чертеже -->
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+
+
                     <materialDesign:PackIcon  
                     Width="20"
                     Height="20" 
@@ -48,29 +48,29 @@
                     Margin="10,10,0,10" 
                     VerticalAlignment="Center"
                     >
-                </materialDesign:PackIcon>
+                    </materialDesign:PackIcon>
 
-                <materialDesign:Card 
+                    <materialDesign:Card 
                     Padding="4" 
                     Margin="10,10,5,10" 
                     HorizontalAlignment="Center"
                     >
-                    <TextBlock 
+                        <TextBlock 
                         Style="{DynamicResource MaterialDesignTitleTextBlock}">Работаю с:
-                    </TextBlock>
-                
-                </materialDesign:Card>
+                        </TextBlock>
 
-                <materialDesign:Card Padding="4" Margin="0,10,0,10" HorizontalAlignment="Center">
-                    <TextBlock x:Name="tbNameDwg" Style="{DynamicResource MaterialDesignTitleTextBlock}"  Text="{Binding Path= pathDWGFile}" Background="{Binding Path= pathDWGFile}"></TextBlock>
+                    </materialDesign:Card>
 
-                </materialDesign:Card>
-            
-            
-            
-            </StackPanel>
+                    <materialDesign:Card Padding="4" Margin="0,10,0,10" HorizontalAlignment="Center">
+                        <TextBlock x:Name="tbNameDwg" Style="{DynamicResource MaterialDesignTitleTextBlock}"  Text="{Binding Path= pathDWGFile}" Background="{Binding Path= pathDWGFile}"></TextBlock>
 
-         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    </materialDesign:Card>
+
+
+
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 
                     <Button
                      HorizontalAlignment="Center"
@@ -81,7 +81,7 @@
  
                     >
 
-                                        <materialDesign:PackIcon
+                        <materialDesign:PackIcon
                            Width="25"
                            Height="25"
                            Kind="CrosshairsQuestion" 
@@ -97,13 +97,13 @@
  
                     >
 
-                                            <materialDesign:PackIcon
+                        <materialDesign:PackIcon
                                Width="25"
                                Height="25"
                                Kind="ElectricSwitchClosed" 
                            />
                     </Button>
-             
+
                     <Button
                          HorizontalAlignment="Center"
                          IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
@@ -113,14 +113,14 @@
  
                     >
 
-                         <materialDesign:PackIcon
+                        <materialDesign:PackIcon
                                Width="25"
                                Height="25"
                                Kind="MapMarkerPath" 
                            />
                     </Button>
-             
-             
+
+
                     <Button
                  HorizontalAlignment="Center"
                  IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
@@ -130,14 +130,14 @@
              
             >
 
-                 <materialDesign:PackIcon
+                        <materialDesign:PackIcon
                        Width="25"
                        Height="25"
                        Kind="DeleteClock" 
                    />
-            </Button>
+                    </Button>
 
-            <Button
+                    <Button
                          HorizontalAlignment="Center"
                          IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
                          Style="{StaticResource MaterialDesignToolButton}"
@@ -153,35 +153,51 @@
                            />
                     </Button>
 
-                 <Button
+                    <Button
+                     HorizontalAlignment="Center"
+                     IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+                     Style="{StaticResource MaterialDesignToolButton}"
+                     ToolTip="Создать точки в пространстве по Тексту или Блокам"
+                     Click="creatPoints"
+                       >
+                        <materialDesign:PackIcon
+                           Width="25"
+                           Height="25"
+                           Kind="StarFourPointsBoxOutline" 
+                       />
+                    </Button>
+
+
+
+                    <Button
                       HorizontalAlignment="Center"
                       IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
                       Style="{StaticResource MaterialDesignToolButton}"
                       ToolTip="Настройки"
                       Click="settings"
                 >
-                    <materialDesign:PackIcon
+                        <materialDesign:PackIcon
                         Width="25"
                         Height="25"
                         Kind="Cog" 
                     />
-             </Button>
-             
-             
+                    </Button>
+
+
                 </StackPanel>
 
 
 
 
-        </StackPanel>
+            </StackPanel>
 
-        <!-- Разделитель -->
-        <Separator VerticalAlignment="Center" Margin="80,0" />
+            <!-- Разделитель -->
+            <Separator VerticalAlignment="Center" Margin="80,0" />
 
 
-        <!-- Кнопка анализа Сети -->
-        <Grid>
-                
+            <!-- Кнопка анализа Сети -->
+            <Grid>
+
 
                 <Button
                     Margin="20,10,20,0"
@@ -193,22 +209,22 @@
                     IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
                     Style="{StaticResource MaterialDesignOutlinedButton}" 
             >
-                <!-- Кнопка анализа Сети. Контейнер-->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                    <materialDesign:PackIcon
+                    <!-- Кнопка анализа Сети. Контейнер-->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                        <materialDesign:PackIcon
                         Width="27"
                         Height="25"
                         Kind="SourceBranch"
                         Margin="0,0,10,0"
                         >
-                    </materialDesign:PackIcon>
-                    <TextBlock VerticalAlignment="Center">Анализ сети</TextBlock>
-                </StackPanel>
-            </Button>
-        </Grid>
+                        </materialDesign:PackIcon>
+                        <TextBlock VerticalAlignment="Center">Анализ сети</TextBlock>
+                    </StackPanel>
+                </Button>
+            </Grid>
 
 
-            
+
             <!-- Запись вершин
         <Button
           IsEnabled="{Binding Path=isLock}"
@@ -236,29 +252,29 @@
 
 
             <!-- ТКЗ  -->
-        <Button
+            <Button
             IsEnabled="{Binding Path=isLock}"
             Style="{StaticResource MaterialDesignOutlinedButton}"
             ToolTip="Для расчетов в сети 0,4 кВ!!!. ТКЗ. Однофазное КЗ. Выбор автоматического выключателя" 
             Click="bt_TKZ" 
             Margin="20,10,20,0">
 
-            <!-- Кнопка ТКЗ. Поиск нечувствительной точки. Выбор автоматического выключателя. Контейнер-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                <materialDesign:PackIcon
+                <!-- Кнопка ТКЗ. Поиск нечувствительной точки. Выбор автоматического выключателя. Контейнер-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <materialDesign:PackIcon
                     Width="27"
                     Height="25"
                     Kind="UmbrellaClosedVariant"
                     Margin="0,0,10,0"
                     >
-                </materialDesign:PackIcon>
-                <TextBlock VerticalAlignment="Center">ТКЗ. Однофазное КЗ. Выбор автоматического выключателя</TextBlock>
-            </StackPanel>
+                    </materialDesign:PackIcon>
+                    <TextBlock VerticalAlignment="Center">ТКЗ. Однофазное КЗ. Выбор автоматического выключателя</TextBlock>
+                </StackPanel>
 
-        </Button>
+            </Button>
 
-        <!-- ТКЗ Узел -->
-        <Button
+            <!-- ТКЗ Узел -->
+            <Button
             IsEnabled="{Binding Path=isLock}"
             Style="{StaticResource MaterialDesignOutlinedButton}"
             ToolTip="Для расчетов в сети 0,4 кВ!!!. ТКЗ. Замыкание в заданном узле" 
@@ -266,269 +282,269 @@
             Margin="20,10,20,0"
             >
 
-            <!-- Кнопка ТКЗ. Поиск нечувствительной точки. Выбор автоматического выключателя. Контейнер-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                <materialDesign:PackIcon
+                <!-- Кнопка ТКЗ. Поиск нечувствительной точки. Выбор автоматического выключателя. Контейнер-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <materialDesign:PackIcon
                     Width="27"
                     Height="25"
                     Kind="UmbrellaClosedOutline"
                     Margin="0,0,10,0"
                     >
-                </materialDesign:PackIcon>
+                    </materialDesign:PackIcon>
                     <TextBlock VerticalAlignment="Center"> ТКЗ. Однофазное КЗ в заданном узле</TextBlock>
-            </StackPanel>
+                </StackPanel>
 
 
-        </Button>
+            </Button>
 
-        <!-- ТКЗ АВ -->
-        
-        <Button
+            <!-- ТКЗ АВ -->
+
+            <Button
         IsEnabled="{Binding Path=isLock}"
         Style="{StaticResource MaterialDesignOutlinedButton}"
         ToolTip="Для расчетов в сети 0,4 кВ!!!. ТКЗ. Зона чувствительности выбранного автоматического выключателя" 
         Click="bt_TKZ_AV" 
         Margin="20,10,20,0">
 
-            <!-- Кнопка ТКЗ. Зона чувствительности выбранного автоматического выключателя. Контейнер-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                <materialDesign:PackIcon
+                <!-- Кнопка ТКЗ. Зона чувствительности выбранного автоматического выключателя. Контейнер-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <materialDesign:PackIcon
                 Width="27"
                 Height="25"
                 Kind="UmbrellaClosed"
                 Margin="0,0,10,0"
                 >
-                </materialDesign:PackIcon>
+                    </materialDesign:PackIcon>
                     <TextBlock VerticalAlignment="Center">ТКЗ. Однофазное КЗ. Зона чувствительности выбранного автоматического выключателя</TextBlock>
-            </StackPanel>
-        </Button>
+                </StackPanel>
+            </Button>
 
-        <!-- ТКЗ Ток прямой последовательности -->
-        <Button
+            <!-- ТКЗ Ток прямой последовательности -->
+            <Button
            IsEnabled="{Binding Path=isLock}"
            Style="{StaticResource MaterialDesignOutlinedButton}"
            ToolTip="ТКЗ. Ток прямой последовательности I(3). Поиск удаленной точки" 
            Click="bt_TKZ_i3" 
            Margin="20,10,20,0">
 
-            <!-- Кнопка ТКЗ. Ток прямой, удаленная точка. Контейнер-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                <materialDesign:PackIcon
+                <!-- Кнопка ТКЗ. Ток прямой, удаленная точка. Контейнер-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <materialDesign:PackIcon
            Width="27"
            Height="25"
            Kind="AxisLock"
            Margin="0,0,10,0"
            >
-                </materialDesign:PackIcon>
-                <TextBlock VerticalAlignment="Center">ТКЗ. Трехфазное КЗ. Поиск удаленной точки </TextBlock>
-            </StackPanel>
-        </Button>
+                    </materialDesign:PackIcon>
+                    <TextBlock VerticalAlignment="Center">ТКЗ. Трехфазное КЗ. Поиск удаленной точки</TextBlock>
+                </StackPanel>
+            </Button>
 
-        <!-- ТКЗ Ток прямой последовательности,выбранное -->
-        <Button
+            <!-- ТКЗ Ток прямой последовательности,выбранное -->
+            <Button
            IsEnabled="{Binding Path=isLock}"
            Style="{StaticResource MaterialDesignOutlinedButton}"
            ToolTip="ТКЗ. Ток прямой последовательности I(3).В заданном узле" 
            Click="bt_myTKZ_i3" 
            Margin="20,10,20,0">
 
-            <!-- Кнопка ТКЗ. Ток прямой, удаленная точка. Контейнер-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                <materialDesign:PackIcon
+                <!-- Кнопка ТКЗ. Ток прямой, удаленная точка. Контейнер-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <materialDesign:PackIcon
            Width="27"
            Height="25"
            Kind="AxisXArrow"
            Margin="0,0,10,0"
            >
-                </materialDesign:PackIcon>
+                    </materialDesign:PackIcon>
                     <TextBlock VerticalAlignment="Center">ТКЗ. Трехфазное КЗ в заданном узле</TextBlock>
-            </StackPanel>
-        </Button>
+                </StackPanel>
+            </Button>
 
 
-        <!-- Середина -->
-        <Button
+            <!-- Середина -->
+            <Button
              IsEnabled="{Binding Path=isLock}"
              Style="{StaticResource MaterialDesignOutlinedButton}"
              ToolTip="Точка середины отключаемых и оставшехся потребителей. Saidi Saifi" 
              Click="bt_SS" 
              Margin="20,10,20,0">
 
-            <!-- Кнопка Точка середины отключаемых и оставшехся потребителей. Saidi Saifi. Контейнер-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                <materialDesign:PackIcon
+                <!-- Кнопка Точка середины отключаемых и оставшехся потребителей. Saidi Saifi. Контейнер-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <materialDesign:PackIcon
                  Width="27"
                  Height="25"
                  Kind="MiddlewareOutline"
                  Margin="0,0,10,0"
                  >
-                </materialDesign:PackIcon>
-                <TextBlock VerticalAlignment="Center">Точка середины отключаемых и оставшехся потребителей. Saidi Saifi</TextBlock>
-            </StackPanel>
-        </Button>
+                    </materialDesign:PackIcon>
+                    <TextBlock VerticalAlignment="Center">Точка середины отключаемых и оставшехся потребителей. Saidi Saifi</TextBlock>
+                </StackPanel>
+            </Button>
 
-        <!-- Падение напряжения-->
-        <Button
+            <!-- Падение напряжения-->
+            <Button
              IsEnabled="{Binding Path=isLock}"
              Style="{StaticResource MaterialDesignOutlinedButton}"
              ToolTip="Падение напряжения в сети" 
              Click="bt_voltage" 
              Margin="20,10,20,0">
 
-            <!-- Кнопка Падение напряжения в сети. Контейнер-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                <materialDesign:PackIcon
+                <!-- Кнопка Падение напряжения в сети. Контейнер-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <materialDesign:PackIcon
                   Width="27"
                   Height="25"
                   Kind="FlashTriangleOutline"
                   Margin="0,0,10,0"
                   >
-                </materialDesign:PackIcon>
-                <TextBlock VerticalAlignment="Center">Падение напряжения в сети</TextBlock>
-            </StackPanel>
+                    </materialDesign:PackIcon>
+                    <TextBlock VerticalAlignment="Center">Падение напряжения в сети</TextBlock>
+                </StackPanel>
 
-        </Button>
+            </Button>
 
-        <!-- О линии-->
-        <Button
+            <!-- О линии-->
+            <Button
        IsEnabled="{Binding Path=isLock}"
        Style="{StaticResource MaterialDesignOutlinedButton}"
        ToolTip="Подробнее о линии" 
        Click="Button_Click" 
        Margin="20,10,20,0">
 
-            <!-- Кнопка Подробнее о линии. Контейнер-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                <materialDesign:PackIcon
+                <!-- Кнопка Подробнее о линии. Контейнер-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <materialDesign:PackIcon
                    Width="27"
                    Height="25"
                    Kind="InformationVariantBoxOutline"
                    Margin="0,0,10,0"
                    >
-                </materialDesign:PackIcon>
-                <TextBlock VerticalAlignment="Center">Подробнее о линии</TextBlock>
-            </StackPanel>
+                    </materialDesign:PackIcon>
+                    <TextBlock VerticalAlignment="Center">Подробнее о линии</TextBlock>
+                </StackPanel>
 
 
-        </Button>
+            </Button>
 
-        <!-- Cписок линий-->
-        <Button
+            <!-- Cписок линий-->
+            <Button
         IsEnabled="{Binding Path=isLock}"
         Style="{StaticResource MaterialDesignOutlinedButton}"
         ToolTip="Список линий" 
         Click="getDataAllPowerLine" 
         Margin="20,10,20,0">
 
-            <!-- Кнопка ПодСписок линий. Контейнер-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                <materialDesign:PackIcon
+                <!-- Кнопка ПодСписок линий. Контейнер-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <materialDesign:PackIcon
                    Width="27"
                    Height="25"
                    Kind="FormatListBulletedType"
                    Margin="0,0,10,0"
                    >
-                </materialDesign:PackIcon>
-                <TextBlock VerticalAlignment="Center">Список линий</TextBlock>
-            </StackPanel>
+                    </materialDesign:PackIcon>
+                    <TextBlock VerticalAlignment="Center">Список линий</TextBlock>
+                </StackPanel>
 
-        </Button>
+            </Button>
 
-        <!-- Список ребер-->
-        <Button
+            <!-- Список ребер-->
+            <Button
          IsEnabled="{Binding Path=isLock}"
          Style="{StaticResource MaterialDesignOutlinedButton}"
          ToolTip="Список ребер" 
          Click="getDataAllEdge" 
          Margin="20,10,20,0">
 
-            <!-- Кнопка Список ребер. Контейнер-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                <materialDesign:PackIcon
+                <!-- Кнопка Список ребер. Контейнер-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <materialDesign:PackIcon
                    Width="27"
                    Height="25"
                    Kind="FormatListBulletedTriangle"
                    Margin="0,0,10,0"
                    >
-                </materialDesign:PackIcon>
-                <TextBlock VerticalAlignment="Center">Список ребер</TextBlock>
-            </StackPanel>
-        </Button>
+                    </materialDesign:PackIcon>
+                    <TextBlock VerticalAlignment="Center">Список ребер</TextBlock>
+                </StackPanel>
+            </Button>
 
-        <!-- Список вершин-->
-        <Button
+            <!-- Список вершин-->
+            <Button
          IsEnabled="{Binding Path=isLock}"
          Style="{StaticResource MaterialDesignOutlinedButton}"
          ToolTip="Список вершин" 
          Click="getKnot" 
          Margin="20,10,20,0">
 
-            <!-- Кнопка Список вершин Контейнер-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                <materialDesign:PackIcon
+                <!-- Кнопка Список вершин Контейнер-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <materialDesign:PackIcon
                  Width="27"
                  Height="25"
                  Kind="FormatListBulletedSquare"
                  Margin="0,0,10,0"
                  >
-                </materialDesign:PackIcon>
-                <TextBlock VerticalAlignment="Center">Список вершин</TextBlock>
-            </StackPanel>
-        </Button>
+                    </materialDesign:PackIcon>
+                    <TextBlock VerticalAlignment="Center">Список вершин</TextBlock>
+                </StackPanel>
+            </Button>
 
-        <!-- Разделитель -->
-        <Separator VerticalAlignment="Center" Margin="80,10" />
+            <!-- Разделитель -->
+            <Separator VerticalAlignment="Center" Margin="80,10" />
 
-        <!-- Сохранение данных узлов в файл-->
-        <Button
+            <!-- Сохранение данных узлов в файл-->
+            <Button
            IsEnabled="{Binding Path=isLock}"
            Style="{StaticResource MaterialDesignOutlinedButton}"
            ToolTip="Сохранение данных узлов в файл" 
            Click="bt_saveBD" 
            Margin="20,10,20,0">
 
-            <!-- Кнопка Сохранение данных узлов в файл. Контейнер-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                <materialDesign:PackIcon
+                <!-- Кнопка Сохранение данных узлов в файл. Контейнер-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <materialDesign:PackIcon
                 Width="27"
                 Height="25"
                 Kind="FileDownloadOutline"
                 Margin="0,0,10,0"
                 >
-                </materialDesign:PackIcon>
-                <TextBlock VerticalAlignment="Center">Сохранение данных вершин в файл</TextBlock>
-            </StackPanel>
+                    </materialDesign:PackIcon>
+                    <TextBlock VerticalAlignment="Center">Сохранение данных вершин в файл</TextBlock>
+                </StackPanel>
 
-        </Button>
+            </Button>
 
-        <!-- Загрузка данных узлов из файла-->
-        <Button
+            <!-- Загрузка данных узлов из файла-->
+            <Button
         IsEnabled="{Binding Path=isLock}"
         Style="{StaticResource MaterialDesignOutlinedButton}"
         ToolTip="Загрузка данных узлов из файла" 
         Click="bt_getBD" 
         Margin="20,10,20,0">
-            <!-- Кнопка Загрузка данных узлов из файла. Контейнер-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                <materialDesign:PackIcon
+                <!-- Кнопка Загрузка данных узлов из файла. Контейнер-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <materialDesign:PackIcon
                 Width="27"
                 Height="25"
                 Kind="FileUploadOutline"
                 Margin="0,0,10,0"
                 >
-                </materialDesign:PackIcon>
-                <TextBlock VerticalAlignment="Center">Загрузка данных вершин из файла</TextBlock>
-            </StackPanel>
+                    </materialDesign:PackIcon>
+                    <TextBlock VerticalAlignment="Center">Загрузка данных вершин из файла</TextBlock>
+                </StackPanel>
 
 
-        </Button>
+            </Button>
 
 
 
-        <!-- Версия плагина  и разработчик-->
-        <StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-                <materialDesign:PackIcon  
+            <!-- Версия плагина  и разработчик-->
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                    <materialDesign:PackIcon  
                     Width="20"
                     Height="20" 
                     Kind="CloverOutline"
@@ -536,26 +552,26 @@
                     Margin="10,10,0,10" 
                     VerticalAlignment="Center"
                     >
-                </materialDesign:PackIcon>
+                    </materialDesign:PackIcon>
 
-                <materialDesign:Card 
+                    <materialDesign:Card 
                     Padding="4" 
                     Margin="10,10,5,10" 
                     HorizontalAlignment="Center"
                     >
-                    <TextBlock 
+                        <TextBlock 
                         Style="{DynamicResource MaterialDesignTitleTextBlock}">ver:
-                    </TextBlock>
-                </materialDesign:Card>
+                        </TextBlock>
+                    </materialDesign:Card>
 
-                <materialDesign:Card Padding="4" Margin="0,10,0,10" HorizontalAlignment="Center">
-                    <TextBlock  Style="{DynamicResource MaterialDesignTitleTextBlock}"  Text="{Binding Path= version}" Background="{Binding Path= pathDWGFile}"></TextBlock>
+                    <materialDesign:Card Padding="4" Margin="0,10,0,10" HorizontalAlignment="Center">
+                        <TextBlock  Style="{DynamicResource MaterialDesignTitleTextBlock}"  Text="{Binding Path= version}" Background="{Binding Path= pathDWGFile}"></TextBlock>
 
-                </materialDesign:Card>
-            </StackPanel>
-            
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-                <materialDesign:PackIcon  
+                    </materialDesign:Card>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                    <materialDesign:PackIcon  
              Width="20"
              Height="20" 
              Kind="HumanHandsup"
@@ -563,26 +579,26 @@
              Margin="10,10,0,10" 
              VerticalAlignment="Center"
              >
-                </materialDesign:PackIcon>
+                    </materialDesign:PackIcon>
 
-                <materialDesign:Card 
+                    <materialDesign:Card 
              Padding="4" 
              Margin="10,10,5,10" 
              HorizontalAlignment="Center"
              >
-                    <TextBlock 
+                        <TextBlock 
              Style="{DynamicResource MaterialDesignTitleTextBlock}">by AeroHost©
-                    </TextBlock>
-                </materialDesign:Card>
+                        </TextBlock>
+                    </materialDesign:Card>
+                </StackPanel>
             </StackPanel>
+
+
+            <TextBox HorizontalAlignment="Center" Margin="10" FontWeight="Medium" Text="{Binding Path=pathDLLFile}" IsEnabled="False" />
+
+
+
         </StackPanel>
-
-
-        <TextBox HorizontalAlignment="Center" Margin="10" FontWeight="Medium" Text="{Binding Path=pathDLLFile}" IsEnabled="False" />
-
-
-
-    </StackPanel>
     </ScrollViewer>
 
 </UserControl   >

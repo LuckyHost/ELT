@@ -49,7 +49,9 @@ namespace ElectroTools
                     //Обновить данные радиус поиска
                     BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "searchDistancePL", "valve", this.tbRadiusSearchPL.Text) &&
                      //Обновить данные границы поиска
-                     BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "isDrawZoneSearchPL", "valve", (bool)this.isActZone.IsChecked ? 1.ToString() : 0.ToString())
+                     BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "isDrawZoneSearchPL", "valve", (bool)this.isActZone.IsChecked ? 1.ToString() : 0.ToString()) &&
+                     //Обновить данные выборки
+                     BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "isSelectSearchPL", "valve", (bool)this.isSelectSearchPL.IsChecked ? 1.ToString() : 0.ToString())
                 )
             {
                 MessageBox.Show("Запись успешно обновлена");

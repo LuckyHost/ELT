@@ -230,8 +230,8 @@ namespace ElectroTools
             }
         }
 
-            //Для отображение зоны поиска полилинии
-            public static void drawZoneSearchPLRactangel(Point3d corner1, Point3d corner2, Database db, Transaction tr)
+        //Для отображение зоны поиска полилинии
+        public static void drawZoneSearchPLRactangel(Point3d corner1, Point3d corner2, Database db, Transaction tr)
         {
             BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
             BlockTableRecord btr = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
@@ -271,7 +271,7 @@ namespace ElectroTools
         }
 
 
-        public static  Point3dCollection createCirclePolygon(Point3d center, double radius, int segments)
+        public static Point3dCollection createCirclePolygon(Point3d center, double radius, int segments)
         {
             Point3dCollection points = new Point3dCollection();
             for (int i = 0; i < segments; i++)
@@ -284,6 +284,20 @@ namespace ElectroTools
             points.Add(points[0]); // Замыкаем многоугольник, добавляя первую точку в конец
             return points;
         }
+
+        public static ObjectId сreatePoint(Point3d position, Database db, Transaction tr,  string nameLayer)
+        {
+            BlockTable bt = tr.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
+            BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
+
+            using (DBPoint dbPoint = new DBPoint(position))
+            {
+                btr.AppendEntity(dbPoint);
+                dbPoint.Layer = nameLayer;
+                tr.AddNewlyCreatedDBObject(dbPoint, true);
+                return dbPoint.ObjectId;
+            }
+        }
     }
-    }
+}
 

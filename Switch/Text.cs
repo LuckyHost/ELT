@@ -379,6 +379,13 @@ namespace ElectroTools
                 MyOpenDocument.ed.WriteMessage("\n\nВы выбрали : " + selectedKeyword + "\n\n");
                 return selectedKeyword;
             }
+
+            if(result.Status == PromptStatus.Cancel) 
+            {
+                //Токен отмены
+                MyOpenDocument.cts.Cancel();    
+                MyOpenDocument.ed.WriteMessage("ОТМЕНЕНО");
+            }
             return null;
         }
 

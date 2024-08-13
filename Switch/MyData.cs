@@ -36,6 +36,7 @@ namespace ElectroTools
         private int _roundCoordinateXYFileExcel = UserData.roundCoordinateXYFileExcel;
         private bool _isDrawZoneSearchPL = UserData.isDrawZoneSearchPL;
         private double _searchLengthPL = UserData.searchLengthPL;
+        private bool _isSelectSearchPL = UserData.isSelectSearchPL;
 
 
 
@@ -53,6 +54,9 @@ namespace ElectroTools
         public Tools _tools;
         //Версия модуля
         private string _version;
+        // Тут переменные 
+        #region Variable
+
 
         public int searchDistancePL
         {
@@ -207,10 +211,21 @@ namespace ElectroTools
             {
                 _pathDWGFile = value;
                 OnPropertyChanged(nameof(pathDWGFile));
-            }
 
+            }
         }
 
+
+             public bool isSelectSearchPL
+        {
+            get { return _isSelectSearchPL; }
+            set
+            {
+                _isSelectSearchPL = value;
+                OnPropertyChanged(nameof(isSelectSearchPL));
+            }
+        }
+        #endregion Variable
 
         public MyData(Tools tools)
         {
@@ -246,6 +261,7 @@ namespace ElectroTools
                 roundCoordinateXYFileExcel = UserData.roundCoordinateXYFileExcel;
                 searchLengthPL = UserData.searchLengthPL;
                 isDrawZoneSearchPL = UserData.isDrawZoneSearchPL;
+                isSelectSearchPL = UserData.isSelectSearchPL;
             }
         }
 

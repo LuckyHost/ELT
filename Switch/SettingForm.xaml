@@ -96,6 +96,13 @@
                 Margin="20,5,5,5"
                 Name="isActZone"
             />
+            <CheckBox Content="Выделять линии после анализа " 
+            IsChecked="{Binding Path= isSelectSearchPL}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Margin="20,5,5,5"
+            Name="isSelectSearchPL"
+             />
 
         </StackPanel>
 
