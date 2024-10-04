@@ -159,6 +159,13 @@
   <ItemGroup>
     <Compile Include="BD.cs" />
     <Compile Include="BDSQL.cs" />
+    <Compile Include="Const.cs" />
+    <Compile Include="Component1.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Component1.Designer.cs">
+      <DependentUpon>Component1.cs</DependentUpon>
+    </Compile>
     <Compile Include="Convertors\EdgeConverter.cs" />
     <Compile Include="Convertors\PointLineConverter.cs" />
     <Compile Include="Convertors\PointLinePhaseСurrent.cs" />

@@ -138,7 +138,12 @@ namespace ElectroTools
         {
             // Очистите существующие столбцы
             tableData.Columns.Clear();
-            tableData.ItemsSource = _data.listpoint;
+
+            if (_data.listpoint != null)
+            {
+                tableData.ItemsSource = _data.listpoint;
+            }
+          
 
             // Добавьте столбец с настройками для номера вершины
             AddDataGridTextColumn("№ вершины", "name", true, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(0, 127, 0)), TextAlignment.Center, true);

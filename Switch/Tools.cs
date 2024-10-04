@@ -2105,9 +2105,9 @@ namespace ElectroTools
         //Функция обхода вершин
         List<int> findPath(int[,] adjacencyMatrix, int tempStartPoint, int tempEndPoint)
         {
-            bool isRevers = false;
-
             // Обмен начальной и конечной точек, если начальная больше конечной
+
+            bool isRevers = false;
             if (tempStartPoint < tempEndPoint)
             {
                 int dif = tempStartPoint;
@@ -2115,50 +2115,51 @@ namespace ElectroTools
                 tempEndPoint = dif;
                 isRevers = true;
             }
-
             // Если начальная и конечная точки совпадают, возвращаем путь с одной точкой
             if (tempStartPoint == tempEndPoint)
             {
                 return new List<int> { tempStartPoint };
+
             }
 
             bool[] visited = new bool[adjacencyMatrix.GetLength(0)];
-            List<int> path = findPathRecursive(adjacencyMatrix, tempStartPoint, tempEndPoint, visited);
 
-            // Если путь найден и нужно вернуть его в обратном порядке
-            if (path != null && isRevers)
+
+            List<int> path = new List<int>();
+            visited[tempStartPoint] = true;
+            if (tempStartPoint == tempEndPoint)
             {
-                path.Reverse();
+
+                return new List<int>() { tempStartPoint };
+
             }
 
-            return path ?? new List<int> { 0 }; // Если путь не найден, возвращаем заглушку
-        }
 
-        List<int> findPathRecursive(int[,] adjacencyMatrix, int current, int target, bool[] visited)
-        {
-            visited[current] = true;
-
-            if (current == target)
+            for (int i = 0; i < visited.Length; i++)
             {
-                return new List<int> { current };
-            }
 
-            for (int i = 0; i < adjacencyMatrix.GetLength(1); i++)
-            {
-                if (adjacencyMatrix[current, i] == 1 && !visited[i])
+                if (adjacencyMatrix[tempStartPoint, i] == 1 && !visited[i])
                 {
-                    List<int> path = findPathRecursive(adjacencyMatrix, i, target, visited);
+                    path = findPath(adjacencyMatrix, i, tempEndPoint);
 
                     if (path != null)
                     {
-                        path.Insert(0, current);
+                        path.Insert(0, tempStartPoint);
+
+                        if (isRevers)
+                        {
+                            path.Reverse();
+                        }
                         return path;
                     }
                 }
-            }
 
-            return null; // Возвращаем null, если путь не найден
+            }
+            //Заглушка
+            return new List<int> { 0 };
         }
+
+    
 
         List<PointLine> ListPathIntToPoint(List<int> masterList)
         {
