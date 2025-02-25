@@ -189,6 +189,7 @@ namespace ElectroTools
         public int[,] matrixSmej;
         public int[,] matrixVertexWeight;
         public double[,] matrixEdjeWeight;
+        public double[] matrixResistance;
 
 
         /**
@@ -220,7 +221,7 @@ namespace ElectroTools
             listPointXY.Clear();
             listEdge.Clear();
             listLastPoint.Clear();
-            matrixInc = null; matrixSmej = null; matrixVertexWeight = null; matrixEdjeWeight = null;
+            matrixInc = null; matrixSmej = null; matrixVertexWeight = null; matrixEdjeWeight = null; matrixResistance = null;
 
 
             int j = 0;
@@ -308,10 +309,17 @@ namespace ElectroTools
                     creatListLastPoint();
 
                     //Создание матрици инкрименции
-                    matrixInc = CreatMatrixInc(listPoint, listEdge);
+
+                    // matrixInc = CreatMatrixInc(listPoint, listEdge);  //Старый вариант
+                    matrixInc = CreateIncidenceMatrix(listPoint, listEdge); //Новый
 
                     //Создание матрици смежности
-                    matrixSmej = сreatMatrixSmej(listPoint, listEdge);
+                    //matrixSmej = сreatMatrixSmej(listPoint, listEdge); //старый
+                    matrixSmej = CreateAdjacencyMatrix(listPoint, listEdge);
+
+
+                    //Создание матрици
+                    matrixResistance = CreateResistance(listEdge);
 
                     //Создает наименования у каждого узла
                     Text.creatTextFromKnot("Узлы_Saidi_Saifi_Makarov.D", listPoint, sizeTextPoint);
@@ -350,6 +358,29 @@ namespace ElectroTools
             listPoint.ForEach(it => it.PropertyChanged += Tools_PropertyChanged);
 
 
+        }
+
+         double[] CreateResistance(List<Edge> listEdge)
+        {
+
+            int numberOfEdges = listEdge.Count;
+            double[] resistanceMatrix = new double[numberOfEdges];
+           int  i = 0;
+
+            foreach (var itemEdge in listEdge)
+
+            {
+                double result = Math.Round(itemEdge.length * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))), 5) ;
+                resistanceMatrix[i] = result;
+                i = i + 1;
+
+                MyOpenDocument.ed.WriteMessage(itemEdge.name + " "+itemEdge.length + " "+ itemEdge.r+" "+ itemEdge.x +" " + result);
+
+            }
+
+          
+
+            return resistanceMatrix;
         }
 
 
@@ -2103,6 +2134,8 @@ namespace ElectroTools
 
 
         //Функция обхода вершин
+
+        /* СТАРЫЙ
         List<int> findPath(int[,] adjacencyMatrix, int tempStartPoint, int tempEndPoint)
         {
             // Обмен начальной и конечной точек, если начальная больше конечной
@@ -2157,9 +2190,48 @@ namespace ElectroTools
             }
             //Заглушка
             return new List<int> { 0 };
+        } */
+
+        List<int> findPath(int[,] adjacencyMatrix, int start, int end)
+        {
+            if (start == end)
+            {
+                return new List<int> { start };
+            }
+
+            bool[] visited = new bool[adjacencyMatrix.GetLength(0)];
+            return findPathHelper(adjacencyMatrix, start, end, visited);
         }
 
-    
+        List<int> findPathHelper(int[,] adjacencyMatrix, int current, int end, bool[] visited)
+        {
+            visited[current] = true;
+            List<int> path = new List<int> { current };
+
+            if (current == end)
+            {
+                return path;
+            }
+
+            for (int i = 0; i < adjacencyMatrix.GetLength(0); i++)
+            {
+                if (adjacencyMatrix[current, i] == 1 && !visited[i])
+                {
+                    List<int> subPath = findPathHelper(adjacencyMatrix, i, end, visited);
+                    if (subPath != null)
+                    {
+                        subPath.Insert(0, current);
+                        return subPath;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+
+
+
 
         List<PointLine> ListPathIntToPoint(List<int> masterList)
         {
@@ -2182,7 +2254,7 @@ namespace ElectroTools
 
 
 
-        //Создание матрицы инцинденций Узел Ветвь 
+        //Создание матрицы инцинденций Узел Ветвь  СТАРЫЙ ВАРИАНТ
         int[,] CreatMatrixInc(List<PointLine> masterListPoint, List<Edge> masterListEdge)
         {
             int rows = masterListPoint.Count();
@@ -2207,6 +2279,41 @@ namespace ElectroTools
             return matrix;
         }
 
+        public static int[,] CreateIncidenceMatrix(List<PointLine> nodes, List<Edge> edges)
+        {
+            // Проверка входных данных
+            if (nodes == null || edges == null)
+                throw new ArgumentNullException("Список узлов или рёбер не может быть null.");
+
+            if (nodes.Count == 0 || edges.Count == 0)
+                throw new ArgumentException("Список узлов или рёбер не может быть пустым.");
+
+            // Создаём словарь для быстрого поиска индексов узлов
+            var nodeIndices = nodes
+                .Select((node, index) => new { Node = node, Index = index })
+                .ToDictionary(x => x.Node, x => x.Index);
+
+            // Инициализация матрицы инцидентности
+            int rows = nodes.Count;
+            int cols = edges.Count;
+            int[,] matrix = new int[rows, cols];
+
+            // Заполнение матрицы
+            for (int edgeIndex = 0; edgeIndex < edges.Count; edgeIndex++)
+            {
+                Edge edge = edges[edgeIndex];
+
+                // Находим индексы начальной и конечной точек ребра
+                if (nodeIndices.TryGetValue(edge.startPoint, out int startIndex))
+                    matrix[startIndex, edgeIndex] = -1; // Начало ребра
+
+                if (nodeIndices.TryGetValue(edge.endPoint, out int endIndex))
+                    matrix[endIndex, edgeIndex] = 1; // Конец ребра
+            }
+
+            return matrix;
+        }
+    
 
 
 
@@ -2214,8 +2321,11 @@ namespace ElectroTools
 
 
 
-        //Создание матрицы смежности узел узел
-        int[,] сreatMatrixSmej(List<PointLine> masterListPoint, List<Edge> masterListEdge)
+
+
+
+    //Создание матрицы смежности узел узел СТАРЫЙ
+    int[,] сreatMatrixSmej(List<PointLine> masterListPoint, List<Edge> masterListEdge)
         {
             int size = masterListPoint.Count;
             int[,] matrix = new int[size, size];
@@ -2244,6 +2354,39 @@ namespace ElectroTools
                 }
 
             }
+            return matrix;
+        }
+
+        public static int[,] CreateAdjacencyMatrix(List<PointLine> nodes, List<Edge> edges)
+        {
+            if (nodes == null || edges == null)
+                throw new System.ArgumentException("Списки не могут быть null.");
+            if (nodes.Count == 0)
+                throw new System.ArgumentException("Список узлов не может быть пустым.");
+
+            var nodeToIndex = nodes
+                .Select((node, index) => new { Node = node, Index = index })
+                .ToDictionary(x => x.Node, x => x.Index);
+
+            int size = nodes.Count;
+            int[,] matrix = new int[size, size];
+
+            foreach (Edge edge in edges)
+            {
+                if (nodeToIndex.ContainsKey(edge.startPoint) && nodeToIndex.ContainsKey(edge.endPoint))
+                {
+                    int startIndex = nodeToIndex[edge.startPoint];
+                    int endIndex = nodeToIndex[edge.endPoint];
+
+                    matrix[startIndex, endIndex] = 1;
+                    matrix[endIndex, startIndex] = 1;
+                }
+                else
+                {
+                    throw new System.ArgumentException("Ребро ссылается на узел, отсутствующий в списке узлов.");
+                }
+            }
+
             return matrix;
         }
 

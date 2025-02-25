@@ -46,7 +46,7 @@ namespace ElectroTools
 
     [Serializable]
 
-    public class PointLine : INotifyPropertyChanged
+    public class PointLine : INotifyPropertyChanged, IEquatable<PointLine>
     {
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -275,9 +275,21 @@ namespace ElectroTools
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        public bool Equals(PointLine other)
+        {
+            {
+                if (other is null) return false;
+                return Math.Abs(positionPoint.X - other.positionPoint.X) < 1e-6 && Math.Abs(positionPoint.Y - other.positionPoint.Y) < 1e-6;
+            }
+        }
 
+        public override bool Equals(object obj) => Equals(obj as PointLine);
 
+        public override int GetHashCode() => HashCode.Combine(positionPoint.X, positionPoint.Y);
 
+        public static bool operator ==(PointLine left, PointLine right) => Equals(left, right);
+
+        public static bool operator !=(PointLine left, PointLine right) => !Equals(left, right);
     }
 
 
