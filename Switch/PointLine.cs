@@ -94,7 +94,7 @@ namespace ElectroTools
 
         }
 
-        [XmlIgnore]
+        [XmlIgnore] 
         public double weightB
         {
             get { return _weightB; }
