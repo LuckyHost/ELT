@@ -19,6 +19,8 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Newtonsoft.Json.Linq;
 using AttributeCollection = Teigha.DatabaseServices.AttributeCollection;
+using QuikGraph;
+
 
 
 
@@ -308,7 +310,20 @@ namespace ElectroTools
                     //Создает list bool последних поинтов
                     creatListLastPoint();
 
-                    //Создание матрици инкрименции
+
+
+                    //Создание графа
+                    var graph = new UndirectedGraph<PointLine, Edge>();
+                    //Добавляем СРАЗУ ВСЕ вершины из вашего списка
+                    graph.AddVertexRange(listPoint);
+
+                    //Добавляем СРАЗУ ВСЕ ребра из вашего списка
+                    graph.AddEdgeRange(listEdge); ;
+
+
+
+
+
 
                     // matrixInc = CreatMatrixInc(listPoint, listEdge);  //Старый вариант
                     matrixInc = CreateIncidenceMatrix(listPoint, listEdge); //Новый

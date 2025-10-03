@@ -4,6 +4,8 @@
 
 using System;
 using System.Xml.Serialization;
+using QuikGraph;
+
 
 
 
@@ -35,7 +37,7 @@ namespace ElectroTools
 
 
     [Serializable]
-    public class Edge
+    public class Edge : IEdge<PointLine>
     {
         [XmlAttribute("name")]
         public int name { get; set; }
@@ -103,6 +105,11 @@ namespace ElectroTools
             }
         }
 
+        //Начальная вершина ребра.QuikGraph будет использовать это свойство.
+        public PointLine Source => this.startPoint;
+
+        // Конечная вершина ребра. QuikGraph будет использовать это свойство.
+        public PointLine Target => this.endPoint;
 
         public Edge()
         {
