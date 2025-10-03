@@ -11,6 +11,8 @@ using Application = Microsoft.Office.Interop.Excel.Application;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using MathNet.Numerics.LinearAlgebra;
+using System.Numerics;
+
 
 
 
@@ -85,7 +87,7 @@ namespace ElectroTools
                 fillDataListEdgeWorkSheet("Матрица Веса Ребер (Длина)", "Ветви", Color.FromArgb(255, 191, 0), listEdge, worksheetLenEdge);
 
                 //Матрица Z ребер 
-                fillDataZListEdgeWorkSheet("Матрица Веса Ребер (Полное сопротивление)", "Ветви", Color.FromArgb(255, 191, 0), listEdge, worksheetZEdge);
+                fillComplexImpedanceWorkSheet("Матрица Веса Ребер (Полное сопротивление)", "Ветви", Color.FromArgb(255, 191, 0), listEdge, worksheetZEdge);
 
 
 
@@ -217,43 +219,67 @@ namespace ElectroTools
 
         }
 
-        static void fillDataZListEdgeWorkSheet(string nameTable, string NameLeft, Color colorLeft, List<Edge> listEdge, Worksheet worksheetMatrix)
+        static void fillComplexImpedanceWorkSheet(string nameTable,string nameLeft,Color colorLeft,List<Edge> listEdge,Worksheet worksheetMatrix)
         {
-
-
-            Range rangeNameTop = (Range)worksheetMatrix.Cells[7, 1];
-            rangeNameTop.Value = NameLeft;
+            // --- Часть с заголовками (остается без изменений) ---
+            Range rangeNameTop = worksheetMatrix.Cells[7, 1];
+            rangeNameTop.Value = nameLeft;
             rangeNameTop.Font.Color = ColorTranslator.ToOle(colorLeft);
             rangeNameTop.Font.Bold = true;
 
-            Range rangeNameTable = (Range)worksheetMatrix.Cells[1, 7];
+            Range rangeNameTable = worksheetMatrix.Cells[1, 7];
             rangeNameTable.Value = nameTable;
             rangeNameTable.Font.Color = ColorTranslator.ToOle(Color.Black);
             rangeNameTable.Font.Bold = true;
             rangeNameTable.Font.Size = 20;
 
+            // --- Подготовка данных (НОВАЯ ЧАСТЬ) ---
 
+            int startRow = 8; // Начальная строка для данных
+            int startCol = 2; // Начальная колонка для данных
 
-            int up = 2;
-            int left = 1;
+            // 1. Добавляем заголовки для наших колонок
+            worksheetMatrix.Cells[startRow, startCol] = "№ п/п";
+            worksheetMatrix.Cells[startRow, startCol + 1] = "R (Ом)";
+            worksheetMatrix.Cells[startRow, startCol + 2] = "X (Ом)";
+            worksheetMatrix.Cells[startRow, startCol + 3] = "|Z| (Ом)"; // Добавим и модуль для наглядности
 
-            for (int row = 1; row <= listEdge.Count; row++)
+            // Форматируем заголовки
+            Range headerRange = worksheetMatrix.Range[
+                worksheetMatrix.Cells[startRow, startCol],
+                worksheetMatrix.Cells[startRow, startCol + 3]
+            ];
+            headerRange.Font.Bold = true;
+            headerRange.HorizontalAlignment = XlHAlign.xlHAlignCenter;
+
+            // 2. Создаем двумерный массив для хранения ВСЕХ данных.
+            // Это ключ к высокой производительности.
+            // Размер: количество ребер x 4 колонки (№, R, X, |Z|)
+            object[,] dataArray = new object[listEdge.Count, 4];
+
+            for (int i = 0; i < listEdge.Count; i++)
             {
+                // Используем ваш готовый метод для получения комплексного импеданса
+                Complex impedance = listEdge[i].GetPositiveSequenceImpedance();
 
-                Range range3 = (Range)worksheetMatrix.Cells[up + 1 + row, left + 1];
-                range3.Value = row;
-                range3.Font.Bold = true;
-                range3.HorizontalAlignment = Constants.xlCenter;
+                // Заполняем i-ю строку массива
+                dataArray[i, 0] = i + 1; // Порядковый номер
+                dataArray[i, 1] = impedance.Real; // Действительная часть R
+                dataArray[i, 2] = impedance.Imaginary; // Мнимая часть X
+                dataArray[i, 3] = impedance.Magnitude; // Модуль |Z|
             }
 
+            // 3. Определяем диапазон в Excel, куда нужно вставить данные
+            Range dataRange = worksheetMatrix.Range[
+                worksheetMatrix.Cells[startRow + 1, startCol],
+                worksheetMatrix.Cells[startRow + listEdge.Count, startCol + 3]
+            ];
 
+            // 4. ВЫГРУЖАЕМ ВЕСЬ МАССИВ В EXCEL ОДНОЙ КОМАНДОЙ!
+            // Это в сотни раз быстрее, чем запись по ячейкам.
+            dataRange.Value2 = dataArray;
 
-            for (int j = 0; j < listEdge.Count; j++)
-            {
-                Range range5 = worksheetMatrix.Cells[up + 2 + j, left + 2] as Range;
-                range5.Value = Math.Round(listEdge[j].length * (Math.Sqrt(Math.Pow(listEdge[j].r, 2) + Math.Pow(listEdge[j].x, 2))), 5);
-            }
-
+            
         }
 
 

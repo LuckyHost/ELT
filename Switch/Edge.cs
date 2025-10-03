@@ -5,7 +5,7 @@
 using System;
 using System.Xml.Serialization;
 using QuikGraph;
-
+using System.Numerics;
 
 
 
@@ -110,6 +110,35 @@ namespace ElectroTools
 
         // Конечная вершина ребра. QuikGraph будет использовать это свойство.
         public PointLine Target => this.endPoint;
+
+        //Возвращает полное комплексное сопротивление ПРЯМОЙ последовательности(Z1).
+        public Complex GetPositiveSequenceImpedance()
+        {
+            // Умножаем удельное сопротивление на длину
+            return new Complex(this.r * this.length, this.x * this.length);
+        }
+
+        /// Возвращает полное комплексное сопротивление НУЛЕВОЙ последовательности (Z0).
+        
+        public Complex GetZeroSequenceImpedance()
+        {
+            // Умножаем удельное сопротивление на длину
+            return new Complex(this.r0 * this.length, this.x0 * this.length);
+        }
+
+        // Возвращает полное комплексное сопротивление ОБРАТНОЙ последовательности (Z2).
+        // Для кабелей оно равно сопротивлению прямой последовательности.
+        public Complex GetNegativeSequenceImpedance()
+        {
+            return GetPositiveSequenceImpedance();
+        }
+
+        //Возвращает полное комплексное сопротивление ПРЯМОЙ последовательности нулевого проводника (Zn1).
+        public Complex GetPositiveSequenceImpedanceNeutral()
+        {
+            // Умножаем удельное сопротивление на длину
+            return new Complex(this.rN * this.length, this.xN * this.length);
+        }
 
         public Edge()
         {

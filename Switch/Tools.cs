@@ -20,6 +20,8 @@ using System.Windows.Input;
 using Newtonsoft.Json.Linq;
 using AttributeCollection = Teigha.DatabaseServices.AttributeCollection;
 using QuikGraph;
+using System.Numerics;
+
 
 
 
@@ -191,15 +193,10 @@ namespace ElectroTools
         public int[,] matrixSmej;
         public int[,] matrixVertexWeight;
         public double[,] matrixEdjeWeight;
-        public double[] matrixResistance;
+        public List<Complex> matrixResistance;
 
 
-        /**
-        [CommandMethod("фв", CommandFlags.UsePickSet |
-                       CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad */
-
-
-
+        
         public void addInfo()
         {
             //подписывается на обновление чертежа
@@ -266,8 +263,6 @@ namespace ElectroTools
                     //Ищем все отпайки у магистрали и у их детей и делает листпоинт
                     searchPlyline(MyOpenDocument.ed, magistralLine, trAdding, listPoint, listPointXY, j);
 
-
-
                     //Проверка отмена токена
                     if (MyOpenDocument.cts.Token.IsCancellationRequested)
                     {
@@ -275,7 +270,8 @@ namespace ElectroTools
                         _myData.isLock = false;
                         _myData.isLoadProcessAnim = true;
                         return;
-                    };
+                    }
+                    ;
 
                     //Собрать весь список PowerLine
                     listPowerLine = creatListPowerLine(magistralLine);
@@ -292,7 +288,8 @@ namespace ElectroTools
                             MessageBox.Show("Элемент отсутствует в базе данных, добавьте его и повторите попытку.");
                             return;
 
-                        };
+                        }
+                        ;
                     }
 
                     //Добавление родителя точки и обновление списка
@@ -310,8 +307,6 @@ namespace ElectroTools
                     //Создает list bool последних поинтов
                     creatListLastPoint();
 
-
-
                     //Создание графа
                     var graph = new UndirectedGraph<PointLine, Edge>();
                     //Добавляем СРАЗУ ВСЕ вершины из вашего списка
@@ -320,18 +315,19 @@ namespace ElectroTools
                     //Добавляем СРАЗУ ВСЕ ребра из вашего списка
                     graph.AddEdgeRange(listEdge); ;
 
+                    // Создаем карту "Вершина -> Индекс"
+                    var vertexMap = new Dictionary<PointLine, int>();
+                    int index = 0;
+                    foreach (PointLine vertex in graph.Vertices)
+                    {
+                        vertexMap[vertex] = index++;
+                    }
 
-
-
-
-
-                    // matrixInc = CreatMatrixInc(listPoint, listEdge);  //Старый вариант
-                    matrixInc = CreateIncidenceMatrix(listPoint, listEdge); //Новый
+                    //Создание матрици инцинденций 
+                    matrixInc = CreateIncidenceMatrix(graph, vertexMap); //Новый
 
                     //Создание матрици смежности
-                    //matrixSmej = сreatMatrixSmej(listPoint, listEdge); //старый
-                    matrixSmej = CreateAdjacencyMatrix(listPoint, listEdge);
-
+                    matrixSmej = CreateAdjacencyMatrix(graph, vertexMap);
 
                     //Создание матрици
                     matrixResistance = CreateResistance(listEdge);
@@ -359,7 +355,8 @@ namespace ElectroTools
                     foreach (PowerLine powerLine in listPowerLine)
                     {
                         selectListPL.Add(powerLine.IDLine);
-                    };
+                    }
+                    ;
                     MyOpenDocument.ed.SetImpliedSelection(selectListPL.ToArray());
                 }
 
@@ -375,27 +372,29 @@ namespace ElectroTools
 
         }
 
-         double[] CreateResistance(List<Edge> listEdge)
+        List<Complex> CreateResistance(List<Edge> listEdge)
         {
 
-            int numberOfEdges = listEdge.Count;
-            double[] resistanceMatrix = new double[numberOfEdges];
-           int  i = 0;
+            // Создаем список для хранения комплексных чисел
+            List<Complex> impedanceList = new List<Complex>();
 
+            // Проходим по каждому ребру в вашем списке
             foreach (var itemEdge in listEdge)
-
             {
-                double result = Math.Round(itemEdge.length * (Math.Sqrt(Math.Pow(itemEdge.r, 2) + Math.Pow(itemEdge.x, 2))), 5) ;
-                resistanceMatrix[i] = result;
-                i = i + 1;
+                // 1. ВЫЗЫВАЕМ ВАШ СУЩЕСТВУЮЩИЙ МЕТОД
+                // Никаких ручных вычислений! Просто используем то, что уже есть.
+                Complex impedanceZ1 = itemEdge.GetPositiveSequenceImpedance();
 
-                MyOpenDocument.ed.WriteMessage(itemEdge.name + " "+itemEdge.length + " "+ itemEdge.r+" "+ itemEdge.x +" " + result);
+                // 2. Добавляем полученный комплексный импеданс в список
+                impedanceList.Add(impedanceZ1);
 
+                // 3. Отладочное сообщение для проверки
+                MyOpenDocument.ed.WriteMessage(
+                    $"Ребро '{itemEdge.name}': Z1 = {impedanceZ1.Real:F5} + j{impedanceZ1.Imaginary:F5} Ом"
+                );
             }
 
-          
-
-            return resistanceMatrix;
+            return impedanceList;
         }
 
 
@@ -786,7 +785,8 @@ namespace ElectroTools
             tempListPoint.Insert(0, "Выбрать самостоятельно узел");
 
             string pointKZ = Text.creatPromptKeywordOptions("Введите номер узла КЗ:", tempListPoint, 1);
-            if (string.IsNullOrEmpty(pointKZ)) { return; };
+            if (string.IsNullOrEmpty(pointKZ)) { return; }
+            ;
 
 
             if (pointKZ == "Выбрать_самостоятельно_узел" | pointKZ == "самостоятельно узел" | pointKZ == "Выбрать самостоятельно узел")
@@ -1157,7 +1157,8 @@ namespace ElectroTools
         {
             //Фазное напряжение сети
             string tempUgen = Text.creatPromptKeywordOptions("Выберите напряжение точки генерации сети.: ", BDSQL.searchAllDataInBD(dbFilePath, "voltage", "kV"), 1);
-            if (string.IsNullOrEmpty(tempUgen)) { return; };
+            if (string.IsNullOrEmpty(tempUgen)) { return; }
+            ;
             double Ugen = double.Parse(tempUgen);
 
             double Ufashze = Math.Round(Ugen / Math.Sqrt(3), 2);
@@ -1168,7 +1169,7 @@ namespace ElectroTools
 
             using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
             {
-                Layer.deleteObjectsOnLayer("Напряжение_Makarov.D",false);
+                Layer.deleteObjectsOnLayer("Напряжение_Makarov.D", false);
                 trAdding.Commit();
             }
 
@@ -1755,7 +1756,8 @@ namespace ElectroTools
 
 
                                 //Проверяте токен на отмену
-                                if (MyOpenDocument.cts.Token.IsCancellationRequested) { return null; };
+                                if (MyOpenDocument.cts.Token.IsCancellationRequested) { return null; }
+                                ;
 
 
                                 ChilderLine.IDLine = acSObj.ObjectId;
@@ -2266,140 +2268,50 @@ namespace ElectroTools
             return tempList;
         }
 
-
-
-
-        //Создание матрицы инцинденций Узел Ветвь  СТАРЫЙ ВАРИАНТ
-        int[,] CreatMatrixInc(List<PointLine> masterListPoint, List<Edge> masterListEdge)
+        
+        public static int[,] CreateIncidenceMatrix(UndirectedGraph<PointLine, Edge> graph, Dictionary<PointLine, int> vertexMap)
         {
-            int rows = masterListPoint.Count();
-            int columns = masterListEdge.Count();
-            int[,] matrix = new int[rows, columns];
+            int vertexCount = graph.VertexCount;
+            int edgeCount = graph.EdgeCount;
+            var matrix = new int[vertexCount, edgeCount];
 
-            for (int j = 0; j < rows; j++)
+            int edgeIndex = 0;
+            // Проходим по каждому ребру в графе
+            foreach (var edge in graph.Edges)
             {
-                for (int i = 0; i < columns; i++)
-                {
-                    if (masterListPoint[j] == masterListEdge[i].startPoint)
-                    {
-                        matrix[j, i] = -1;
-                    }
+                // Получаем индексы вершин
+                int sourceIndex = vertexMap[edge.Source];
+                int targetIndex = vertexMap[edge.Target];
 
-                    if (masterListPoint[j] == masterListEdge[i].endPoint)
-                    {
-                        matrix[j, i] = 1;
-                    }
-                }
-            }
-            return matrix;
-        }
+                // Устанавливаем +1 для исходящей вершины
+                matrix[sourceIndex, edgeIndex] = -1;
 
-        public static int[,] CreateIncidenceMatrix(List<PointLine> nodes, List<Edge> edges)
-        {
-            // Проверка входных данных
-            if (nodes == null || edges == null)
-                throw new ArgumentNullException("Список узлов или рёбер не может быть null.");
+                // Устанавливаем -1 для входящей вершины
+                matrix[targetIndex, edgeIndex] = 1;
 
-            if (nodes.Count == 0 || edges.Count == 0)
-                throw new ArgumentException("Список узлов или рёбер не может быть пустым.");
-
-            // Создаём словарь для быстрого поиска индексов узлов
-            var nodeIndices = nodes
-                .Select((node, index) => new { Node = node, Index = index })
-                .ToDictionary(x => x.Node, x => x.Index);
-
-            // Инициализация матрицы инцидентности
-            int rows = nodes.Count;
-            int cols = edges.Count;
-            int[,] matrix = new int[rows, cols];
-
-            // Заполнение матрицы
-            for (int edgeIndex = 0; edgeIndex < edges.Count; edgeIndex++)
-            {
-                Edge edge = edges[edgeIndex];
-
-                // Находим индексы начальной и конечной точек ребра
-                if (nodeIndices.TryGetValue(edge.startPoint, out int startIndex))
-                    matrix[startIndex, edgeIndex] = -1; // Начало ребра
-
-                if (nodeIndices.TryGetValue(edge.endPoint, out int endIndex))
-                    matrix[endIndex, edgeIndex] = 1; // Конец ребра
+                edgeIndex++;
             }
 
             return matrix;
         }
-    
 
 
 
-
-
-
-
-
-
-
-    //Создание матрицы смежности узел узел СТАРЫЙ
-    int[,] сreatMatrixSmej(List<PointLine> masterListPoint, List<Edge> masterListEdge)
+        public static int[,] CreateAdjacencyMatrix(UndirectedGraph<PointLine, Edge> graph, Dictionary<PointLine, int> vertexMap)
         {
-            int size = masterListPoint.Count;
-            int[,] matrix = new int[size, size];
+            int vertexCount = graph.VertexCount;
+            var matrix = new int[vertexCount, vertexCount];
 
-            for (int j = 0; j < size; j++)
+            // Проходим по каждому ребру в графе
+            foreach (var edge in graph.Edges)
             {
-                for (int i = 0; i < size; i++)
-                {
-                    if (i != j)
-                    {
-                        foreach (Edge itemEdge in masterListEdge)
-                        {
-                            if ((masterListPoint[j] == itemEdge.startPoint) && (masterListPoint[i] == itemEdge.endPoint))
-                            {
-                                matrix[j, i] = 1;
-                            }
+                // Получаем индексы начальной и конечной вершин ребра
+                int sourceIndex = vertexMap[edge.Source];
+                int targetIndex = vertexMap[edge.Target];
 
-                            if ((masterListPoint[j] == itemEdge.endPoint) && (masterListPoint[i] == itemEdge.startPoint))
-                            {
-                                matrix[j, i] = 1;
-                            }
-
-                        }
-                    }
-
-                }
-
-            }
-            return matrix;
-        }
-
-        public static int[,] CreateAdjacencyMatrix(List<PointLine> nodes, List<Edge> edges)
-        {
-            if (nodes == null || edges == null)
-                throw new System.ArgumentException("Списки не могут быть null.");
-            if (nodes.Count == 0)
-                throw new System.ArgumentException("Список узлов не может быть пустым.");
-
-            var nodeToIndex = nodes
-                .Select((node, index) => new { Node = node, Index = index })
-                .ToDictionary(x => x.Node, x => x.Index);
-
-            int size = nodes.Count;
-            int[,] matrix = new int[size, size];
-
-            foreach (Edge edge in edges)
-            {
-                if (nodeToIndex.ContainsKey(edge.startPoint) && nodeToIndex.ContainsKey(edge.endPoint))
-                {
-                    int startIndex = nodeToIndex[edge.startPoint];
-                    int endIndex = nodeToIndex[edge.endPoint];
-
-                    matrix[startIndex, endIndex] = 1;
-                    matrix[endIndex, startIndex] = 1;
-                }
-                else
-                {
-                    throw new System.ArgumentException("Ребро ссылается на узел, отсутствующий в списке узлов.");
-                }
+                // Так как граф неориентированный, ставим '1' в обеих ячейках
+                matrix[sourceIndex, targetIndex] = 1;
+                matrix[targetIndex, sourceIndex] = 1;
             }
 
             return matrix;
@@ -3055,8 +2967,8 @@ namespace ElectroTools
 
             // Запрашиваем выделенные объекты
             PromptSelectionResult selectionResult = MyOpenDocument.ed.SelectImplied();
-            List <ObjectId> ids = new List<ObjectId>();
-           
+            List<ObjectId> ids = new List<ObjectId>();
+
             // Если пользователь выбрал что-то
             if (selectionResult.Status == PromptStatus.OK)
             {
@@ -3143,14 +3055,14 @@ namespace ElectroTools
                     // Создаем точки на основе координат
                     foreach (Point3d point in points)
                     {
-                       ids.Add( Draw.сreatePoint(point, MyOpenDocument.dbCurrent, tr, "!Points"));
+                        ids.Add(Draw.сreatePoint(point, MyOpenDocument.dbCurrent, tr, "!Points"));
                     }
 
                     // Завершаем транзакцию
                     tr.Commit();
                 }
             }
-            if (ids.Count>0) { MyOpenDocument.ed.SetImpliedSelection(ids.ToArray()); }
+            if (ids.Count > 0) { MyOpenDocument.ed.SetImpliedSelection(ids.ToArray()); }
 
 
         }
