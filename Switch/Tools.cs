@@ -747,13 +747,7 @@ namespace ElectroTools
                 tkz.resultTKZ = Uline / (zTotalLoop * Math.Sqrt(3));
             }
 
-            StringBuilder textPathTKZ = new StringBuilder();
-
-            foreach (PointLine item in tkz.pathPointTKZ)
-            {
-                textPathTKZ.Append(item.name + " ");
-
-            }
+            string textPathTKZ = string.Join(" ", tkz.pathPointTKZ.Select(item => item.name));
 
             //Создает PL
             Draw.drawPolyline(tkz.pathPointTKZ, "TKZ_Makarov.D", 256, 2);
@@ -838,7 +832,7 @@ namespace ElectroTools
                             BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x")
                 );
 
-            //Z0 Сопротивление линии
+            //Z0 Сопротивление трансфомратора
             tkz.transformerZeroImpedance = new Complex
                 (BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r0"),
                             BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x0")
@@ -884,7 +878,7 @@ namespace ElectroTools
                 //Сумма трех последовательностей по факту тут не петля
                 tkz.resultTKZ = Uline / ((tkz.transformerImpedance + tkz.lineImpedance) * Math.Sqrt(3));
             }
-           
+
             else
             {
                 Uline = 400;
@@ -898,13 +892,8 @@ namespace ElectroTools
                 tkz.resultTKZ = Uline / (zTotalLoop * Math.Sqrt(3));
             }
 
-            StringBuilder textPathTKZ = new StringBuilder();
 
-            foreach (PointLine item in tkz.pathPointTKZ)
-            {
-                textPathTKZ.Append(item.name + " ");
-
-            }
+            string textPathTKZ = string.Join(" ", tkz.pathPointTKZ.Select(item => item.name));
 
             //Создает PL
             Draw.drawPolyline(tkz.pathPointTKZ, "TKZ_Makarov.D", 256, 2);
@@ -939,13 +928,13 @@ namespace ElectroTools
 
         }
 
-            
+
         /*
         //Для проверки АВ, до куда чувсвителен, по самой удаленной точки
         */
         public void getMyPathKZFromAV()
         {
-            int nomivalAV = 0;
+            double nomivalAV = 0;
             PromptIntegerOptions options = new PromptIntegerOptions("Введите номинал автоматического выключателя, для проверки зоны чувствительности: ");
             options.AllowNegative = false;
             options.AllowZero = false;
@@ -965,13 +954,13 @@ namespace ElectroTools
             //Z1 Сопротивление трансфомратора
             tkz.transformerImpedance = new Complex
                 (BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r"),
-                            BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x")
+                 BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x")
                 );
 
             //Z0 Сопротивление линии
             tkz.transformerZeroImpedance = new Complex
                 (BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r0"),
-                            BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x0")
+                 BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x0")
                 );
 
             //Фазное напряжение сети
@@ -985,12 +974,13 @@ namespace ElectroTools
             zTransformerLoop = tkz.transformerImpedance * 2 + tkz.transformerZeroImpedance;
             zLineLoop = tkz.lineImpedance * 2 + tkz.lineZeroImpedance;
             Complex zTotalLoop = zTransformerLoop / 3 + zLineLoop + zContact;
-            tkz.resultTKZ = Uline / (zTotalLoop) * Math.Sqrt(3);
+            tkz.resultTKZ = Uline / (zTotalLoop * Math.Sqrt(3));
 
 
 
-            // /3-это почти эквивалент 5сек
-            if (nomivalAV <= tkz.resultTKZ.Magnitude / UserData.coefficientMultiplicity)
+            // /3-это почти эквивалент 5сек UserData.coefficientMultiplicity
+
+            if (nomivalAV <= (tkz.resultTKZ.Magnitude / 3))
             {
                 MyOpenDocument.ed.WriteMessage("Ваш автоматический выключатель на " + nomivalAV + " А, защищает всю линую до точки максимальной нечувствительности.");
             }
@@ -999,35 +989,27 @@ namespace ElectroTools
             {
 
                 TKZ resultTkzDist = new TKZ();
-                //Получает данные TKZ
-                tkz.pathPointTKZ.Reverse();
 
                 foreach (PointLine itemPointTKZ in tkz.pathPointTKZ)
-                {/*
+                {
                     if (itemPointTKZ.name != 1)
                     {
                         TKZ tempTKZ = сreatMyTKZ(itemPointTKZ.name);
-
+                        zLineLoop = tempTKZ.lineImpedance * 2 + tempTKZ.lineZeroImpedance;
+                        
                         tempTKZ.resultTKZ = Uline / ((zTransformerLoop / 3 + zLineLoop + zContact) * Math.Sqrt(3));
 
                         if (tempTKZ.resultTKZ.Magnitude / UserData.coefficientMultiplicity >= nomivalAV)
                         {
                             resultTkzDist = tempTKZ;
+
                         }
-                    }*/
+                    }
                 }
 
 
-                //Реверс
-                resultTkzDist.pathPointTKZ.Reverse();
 
-                StringBuilder text = new StringBuilder();
-                foreach (PointLine item in resultTkzDist.pathPointTKZ)
-                {
-                    text.Append(item.name + " ");
-
-                }
-
+                string textPathTKZ = string.Join(" ", resultTkzDist.pathPointTKZ.Select(item => item.name));
 
                 //Создает PL
                 Draw.drawPolyline(resultTkzDist.pathPointTKZ, "TKZ_Makarov.D", 256, 2);
@@ -1035,13 +1017,13 @@ namespace ElectroTools
 
                 MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
                 MyOpenDocument.ed.WriteMessage("| Самая нечувствительная точка КЗ: " + resultTkzDist.pointTKZ.name + " ");
-                MyOpenDocument.ed.WriteMessage("| Путь ТКЗ: " + text + " ");
+                MyOpenDocument.ed.WriteMessage("| Путь ТКЗ: " + textPathTKZ + " ");
                 MyOpenDocument.ed.WriteMessage("| Длинна ТКЗ: " + resultTkzDist.length + " м.");
                 MyOpenDocument.ed.WriteMessage("| Линейное напряжение сети: " + Uline + " В.");
                 MyOpenDocument.ed.WriteMessage("| Добавил дополнительно: Z= " + zContact + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
-                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " | " + "R0+jX0: " + tkz.transformerZeroImpedance.Real + " +j " + tkz.transformerZeroImpedance.Imaginary + " (Zпетля= " + zTransformerLoop + ")" + " Ом.");
-                MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + resultTkzDist.lineImpedance.Real + " +j " + resultTkzDist.lineImpedance.Imaginary + " | " + "R0+jX0: " + resultTkzDist.lineZeroImpedance.Real + " +j " + resultTkzDist.lineZeroImpedance.Imaginary + " (Zпетля= " + resultTkzDist.totalLoopImpedance + ")" + " Ом.");
-                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + resultTkzDist.resultTKZ + " А.");
+                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " | " + "R0+jX0: " + tkz.transformerZeroImpedance.Real + " +j " + tkz.transformerZeroImpedance.Imaginary + " (Zпетля= " + zTransformerLoop.Magnitude+ zTransformerLoop + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + resultTkzDist.lineImpedance.Real + " +j " + resultTkzDist.lineImpedance.Imaginary + " | " + "R0+jX0: " + resultTkzDist.lineZeroImpedance.Real + " +j " + resultTkzDist.lineZeroImpedance.Imaginary  + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + resultTkzDist.resultTKZ.Magnitude + resultTkzDist.resultTKZ + " А.");
                 MyOpenDocument.ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(resultTkzDist.resultTKZ.Magnitude / UserData.coefficientMultiplicity) + " А.");
                 MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
                 MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.");
@@ -2309,8 +2291,7 @@ namespace ElectroTools
             double maxImpedanceMagnitude = -1.0;
 
             // Создаем экземпляр алгоритма для поиска путей (Дейкстра)
-            // Вес ребра - просто его длина, чтобы найти геометрически кратчайший путь
-            var paths = ElectricalNetwork.ShortestPathsDijkstra(edge => edge.length, sourceNode);
+            var paths = ElectricalNetwork.ShortestPathsDijkstra((Edge edge) => edge.GetPositiveSequenceImpedance().Magnitude, sourceNode);
 
 
             // 2. ОСНОВНОЙ ЦИКЛ: ПЕРЕБИРАЕМ ВСЕ КОНЕЧНЫЕ ТОЧКИ
@@ -2360,7 +2341,7 @@ namespace ElectroTools
             return worstCase;
         }
 
-        TKZ сreatMyTKZ( int namePointToFind)
+        TKZ сreatMyTKZ(int namePointToFind)
         {
             if (ElectricalNetwork == null || ElectricalNetwork.VertexCount == 0)
             {
@@ -2369,57 +2350,28 @@ namespace ElectroTools
 
             // Находим узел-источник (предполагаем, что это узел с ID = 1 или именем "0")
             var sourceNode = ElectricalNetwork.Vertices.FirstOrDefault(v => v.name == 1);
-            if (sourceNode == null) return null;
+            var endPoint = ElectricalNetwork.Vertices.FirstOrDefault(v => v.name == namePointToFind);
 
             // Переменные для хранения "победителя"
             TKZ worstCase = new TKZ();
             double maxImpedanceMagnitude = -1.0;
 
-            // Создаем экземпляр алгоритма для поиска путей (Дейкстра)
-            var endPoint = ElectricalNetwork.Vertices.FirstOrDefault(v => v.name == namePointToFind);
-            if (endPoint == null) ;
+            var paths = ElectricalNetwork.ShortestPathsDijkstra((Edge edge) => edge.GetPositiveSequenceImpedance().Magnitude, sourceNode);
 
-            var paths = ElectricalNetwork.ShortestPathsDijkstra(edge => edge.length, sourceNode);
-            if (!paths(endPoint, out IEnumerable<Edge> pathEdges))
+            if (!paths(endPoint, out IEnumerable<Edge> currentPathEdges))
             {
-                MyOpenDocument.ed.WriteMessage($"\nОшибка: Не удалось построить путь от источника до узла {endPoint.name}.");
                 return null;
             }
 
+            Complex currentTotalImpedance;
 
-            // 2. ОСНОВНОЙ ЦИКЛ: ПЕРЕБИРАЕМ ВСЕ КОНЕЧНЫЕ ТОЧКИ
-            foreach ( endPoint in listLastPoint)
-            {
-                // 3. ПОИСК ПУТИ С ПОМОЩЬЮ QUIKGRAPH
-                if (!paths(endPoint, out IEnumerable<Edge> currentPathEdges))
-                {
-                    // Путь до этой точки не найден, пропускаем
-                    continue;
-                }
+            worstCase.pointTKZ = endPoint;
+            worstCase.pathEdgeTKZ = currentPathEdges.ToList();
+            worstCase.length = currentPathEdges.Sum(e => e.length);
+            // Рассчитаем и сохраним составляющие Z1 и Z0 для этого пути
+            worstCase.lineImpedance = SumImpedance(currentPathEdges, SequenceType.Positive);
+            worstCase.lineZeroImpedance = SumImpedance(currentPathEdges, SequenceType.Zero);
 
-                // 4. РАСЧЕТ ПОЛНОГО ИМПЕДАНСА ПУТИ С ПОМОЩЬЮ COMPLEX
-                Complex currentTotalImpedance;
-
-                currentTotalImpedance = SumImpedance(currentPathEdges, SequenceType.Positive);
-
-                // 5. СРАВНЕНИЕ И ВЫБОР ХУДШЕГО СЛУЧАЯ
-                // Худший случай - тот, у которого модуль полного сопротивления МАКСИМАЛЬНЫЙ
-                if (currentTotalImpedance.Magnitude > maxImpedanceMagnitude)
-                {
-                    maxImpedanceMagnitude = currentTotalImpedance.Magnitude;
-
-                    // Сохраняем информацию о "победителе"
-                    worstCase.totalLoopImpedance = currentTotalImpedance;
-                    worstCase.pointTKZ = endPoint;
-                    worstCase.pathEdgeTKZ = currentPathEdges.ToList();
-                    worstCase.length = currentPathEdges.Sum(e => e.length);
-                    // Рассчитаем и сохраним составляющие Z1 и Z0 для этого пути
-                    worstCase.lineImpedance = SumImpedance(currentPathEdges, SequenceType.Positive);
-                    worstCase.lineZeroImpedance = SumImpedance(currentPathEdges, SequenceType.Zero);
-                }
-            }
-
-            // 6. ФОРМИРОВАНИЕ ИТОГОВОГО РЕЗУЛЬТАТА
             if (worstCase.pathEdgeTKZ != null)
             {
                 // Восстанавливаем путь из узлов
