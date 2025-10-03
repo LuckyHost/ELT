@@ -165,6 +165,7 @@
   <ItemGroup>
     <Compile Include="BD.cs" />
     <Compile Include="BDSQL.cs" />
+    <Compile Include="Class1.cs" />
     <Compile Include="Const.cs" />
     <Compile Include="Convertors\EdgeConverter.cs" />
     <Compile Include="Convertors\PointLineConverter.cs" />

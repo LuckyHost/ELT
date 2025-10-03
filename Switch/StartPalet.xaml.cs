@@ -56,7 +56,7 @@ namespace ElectroTools
         //ТКЗ до точки
         private void bt_TKZ_Knot(object sender, RoutedEventArgs e)
         {
-            _data._tools.getMyPathKZ();
+           // _data._tools.getMyPathKZ();
         }
         //ТКЗ АВ
         private void bt_TKZ_AV(object sender, RoutedEventArgs e)
@@ -70,7 +70,7 @@ namespace ElectroTools
         }
         private void bt_myTKZ_i3(object sender, RoutedEventArgs e)
         {
-            _data._tools.getMyPathKZ(false);
+           //_data._tools.getMyPathKZ(false);
 
         }
         //SS
