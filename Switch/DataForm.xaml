@@ -21,7 +21,7 @@
 
     <!-- Ресурсы для material 3 -->
     <Window.Resources>
-        <ResourceDictionary>
+              <ResourceDictionary>
             <!-- Список конверторов -->
             <local:ResistanceConverter x:Key="ResistanceConverter" />
             <local:PointLineConverter x:Key="PointLineConverter" />
@@ -29,10 +29,9 @@
             <local:PointLinePhaseСurrent x:Key="PointLinePhaseСurrent" />
             <!-- End.Список конверторов-->
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.DeepPurple.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Lime.xaml" />
+                <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="DeepPurple" SecondaryColor="Lime" />
+
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>

@@ -399,9 +399,7 @@ namespace ElectroTools
                 impedanceList.Add(impedanceZ1);
 
                 // 3. Отладочное сообщение для проверки
-                MyOpenDocument.ed.WriteMessage(
-                    $"Ребро '{itemEdge.name}': Z1 = {impedanceZ1.Real:F5} + j{impedanceZ1.Imaginary:F5} Ом"
-                );
+               // MyOpenDocument.ed.WriteMessage($"Ребро '{itemEdge.name}': Z1 = {impedanceZ1.Real:F5} + j{impedanceZ1.Imaginary:F5} Ом");
             }
 
             return impedanceList;
