@@ -12,30 +12,12 @@ using System.Xml.Serialization;
 using System.ComponentModel;
 using System.Windows.Forms.Integration;
 using System.Windows;
-using ControlzEx.Standard;
-using Teigha.Colors;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Newtonsoft.Json.Linq;
 using AttributeCollection = Teigha.DatabaseServices.AttributeCollection;
 using QuikGraph;
 using System.Numerics;
-using System.Diagnostics.Contracts;
-using QuikGraph.Algorithms.ShortestPath;
 using QuikGraph.Algorithms;
-
-
-
-
-
-
-
-
-
-
-
-
+using QuikGraph.Algorithms.Search;
 
 
 
@@ -79,7 +61,7 @@ namespace ElectroTools
         private List<Edge> _listEdge = new List<Edge>();
         private List<PowerLine> _listPowerLine = new List<PowerLine>();
         private PaletteSet _paletteSet;
-        public UndirectedGraph<PointLine, Edge> ElectricalNetwork { get; private set; }
+        public BidirectionalGraph<PointLine, Edge> ElectricalNetwork { get; private set; }
 
 
         public Tools()
@@ -316,7 +298,7 @@ namespace ElectroTools
                     creatListLastPoint();
 
                     //Создание графа
-                    var graph = new UndirectedGraph<PointLine, Edge>();
+                    var graph = new BidirectionalGraph<PointLine, Edge>();
                     //Добавляем СРАЗУ ВСЕ вершины из вашего списка
                     graph.AddVertexRange(listPoint);
 
@@ -325,19 +307,12 @@ namespace ElectroTools
                     //Что бы прокидыватьхоть куда
                     this.ElectricalNetwork = graph;
 
-                    // Создаем карту "Вершина -> Индекс"
-                    var vertexMap = new Dictionary<PointLine, int>();
-                    int index = 0;
-                    foreach (PointLine vertex in graph.Vertices)
-                    {
-                        vertexMap[vertex] = index++;
-                    }
 
                     //Создание матрици инцинденций 
-                    matrixInc = CreateIncidenceMatrix(graph, vertexMap); //Новый
+                    matrixInc = CreateIncidenceMatrix(graph); //Новый
 
                     //Создание матрици смежности
-                    matrixSmej = CreateAdjacencyMatrix(graph, vertexMap);
+                    matrixSmej = CreateAdjacencyMatrix(graph);
 
                     //Создание матрици
                     matrixResistance = CreateResistance(listEdge);
@@ -1199,6 +1174,112 @@ namespace ElectroTools
                 node.UpdatePhaseCurrents(Ugen);
             }
 
+            // --- 3. РАСЧЕТ ТОКОВ В ВЕТВЯХ (от потребителей к источнику) ---
+
+            // Создаем словари для хранения пофазных токов в каждом ребре (кабеле)
+            var edgeCurrentsA = new Dictionary<Edge, Complex>();
+            var edgeCurrentsB = new Dictionary<Edge, Complex>();
+            var edgeCurrentsC = new Dictionary<Edge, Complex>();
+
+            // Используем обход в глубину (DFS). Его событие FinishVertex идеально подходит
+            // для обхода "снизу вверх" - от листьев дерева к корню.
+            var dfs = new DepthFirstSearchAlgorithm<PointLine, Edge>(ElectricalNetwork);
+
+            // Подписываемся на событие "завершение обработки вершины".
+            // Оно срабатывает, когда все "дочерние" узлы для данной вершины уже обработаны.
+            dfs.FinishVertex += (vertex) =>
+            {
+                // Суммарный ток узла = его собственный ток нагрузки + токи, приходящие от "дочерних" ветвей
+                Complex totalA = vertex.Ia;
+                Complex totalB = vertex.Ib;
+                Complex totalC = vertex.Ic;
+
+                // Находим все ветви, идущие "вниз" (от текущей вершины к потребителям)
+                foreach (var edge in ElectricalNetwork.OutEdges(vertex))
+                {
+                    // Прибавляем ток из дочерней ветви, если он уже был рассчитан
+                    totalA += edgeCurrentsA.ContainsKey(edge) ? edgeCurrentsA[edge] : Complex.Zero;
+                    totalB += edgeCurrentsB.ContainsKey(edge) ? edgeCurrentsB[edge] : Complex.Zero;
+                    totalC += edgeCurrentsC.ContainsKey(edge) ? edgeCurrentsC[edge] : Complex.Zero;
+                }
+
+                // Записываем этот суммарный ток в "родительскую" ветвь, ведущую К ИСТОЧНИКУ
+                // (В радиальной сети у узла только одна входящая ветвь)
+                if (ElectricalNetwork.TryGetInEdges(vertex, out var inEdges) && inEdges.Any())
+                {
+                    var parentEdge = inEdges.First();
+                    edgeCurrentsA[parentEdge] = totalA;
+                    edgeCurrentsB[parentEdge] = totalB;
+                    edgeCurrentsC[parentEdge] = totalC;
+                }
+            };
+
+            dfs.Compute(); // Запускаем обход и расчет токов в ветвях
+
+            // --- 4. РАСЧЕТ НАПРЯЖЕНИЙ В УЗЛАХ (от источника к потребителям) ---
+
+            // Создаем словари для хранения пофазных напряжений в каждом узле
+            var nodeVoltagesA = new Dictionary<PointLine, Complex>();
+            var nodeVoltagesB = new Dictionary<PointLine, Complex>();
+            var nodeVoltagesC = new Dictionary<PointLine, Complex>();
+
+            double angleB_rad = -120 * (Math.PI / 180.0); // -120 градусов
+            double angleC_rad = 120 * (Math.PI / 180.0);  // +120 градусов
+
+            // Задаем начальные напряжения в источнике со сдвигом фаз
+            double phaseVoltage = Ugen / Math.Sqrt(3);
+            nodeVoltagesA[sourceNode] = Complex.FromPolarCoordinates(phaseVoltage, 0);
+            nodeVoltagesB[sourceNode] = Complex.FromPolarCoordinates(phaseVoltage, angleB_rad);
+            nodeVoltagesC[sourceNode] = Complex.FromPolarCoordinates(phaseVoltage, angleC_rad);
+
+            // Используем обход в ширину (BFS) для движения "сверху вниз".
+            var bfs = new BreadthFirstSearchAlgorithm<PointLine, Edge>(ElectricalNetwork);
+
+            // Подписываемся на событие при переходе по ребру от известного узла к новому
+            bfs.ExamineEdge += (edge) =>
+            {
+                // Напряжение в конце ветви = Напряжение в начале - Падение на ветви
+                // U_end = U_start - I_edge * Z_edge
+                Complex z1 = edge.GetPositiveSequenceImpedance(); // Импеданс ветви
+
+                // Рассчитываем напряжение для каждой фазы в конечном узле
+                // Убеждаемся, что ток для ребра был рассчитан
+                Complex currentA = edgeCurrentsA.ContainsKey(edge) ? edgeCurrentsA[edge] : Complex.Zero;
+                Complex currentB = edgeCurrentsB.ContainsKey(edge) ? edgeCurrentsB[edge] : Complex.Zero;
+                Complex currentC = edgeCurrentsC.ContainsKey(edge) ? edgeCurrentsC[edge] : Complex.Zero;
+
+                nodeVoltagesA[edge.Target] = nodeVoltagesA[edge.Source] - currentA * z1;
+                nodeVoltagesB[edge.Target] = nodeVoltagesB[edge.Source] - currentB * z1;
+                nodeVoltagesC[edge.Target] = nodeVoltagesC[edge.Source] - currentC * z1;
+            };
+
+            bfs.Compute(sourceNode); // Запускаем обход от источника для расчета напряжений
+
+            // --- 5. ВЫВОД РЕЗУЛЬТАТОВ ---
+            // (Здесь вы можете добавить вашу логику отрисовки в nanoCAD)
+            MyOpenDocument.ed.WriteMessage("\n--- Расчет режима сети завершен ---");
+            foreach (var node in ElectricalNetwork.Vertices.OrderBy(v => v.name))
+            {
+                // Получаем напряжения, проверяя их наличие в словаре
+                Complex voltageA = nodeVoltagesA.ContainsKey(node) ? nodeVoltagesA[node] : Complex.Zero;
+                Complex voltageB = nodeVoltagesB.ContainsKey(node) ? nodeVoltagesB[node] : Complex.Zero;
+                Complex voltageC = nodeVoltagesC.ContainsKey(node) ? nodeVoltagesC[node] : Complex.Zero;
+
+                double Ua = voltageA.Magnitude;
+                double Ub = voltageB.Magnitude;
+                double Uc = voltageC.Magnitude;
+
+                double dropPercentageA = (phaseVoltage - Ua) / phaseVoltage * 100;
+
+                MyOpenDocument.ed.WriteMessage(
+                    $"Узел: {node.name} | Ua={Ua:F2}В ({dropPercentageA:F2}%), Ub={Ub:F2}В, Uc={Uc:F2}В"
+                );
+
+                // Сохраняем рассчитанные напряжения обратно в объекты PointLine для дальнейшего использования
+                node.Ua = Ua;
+                node.Ub = Ub;
+                node.Uc = Uc;
+            }
 
             /*
             
@@ -2058,53 +2139,89 @@ namespace ElectroTools
         }
 
 
-        public static int[,] CreateIncidenceMatrix(UndirectedGraph<PointLine, Edge> graph, Dictionary<PointLine, int> vertexMap)
+        public static int[,] CreateIncidenceMatrix(IVertexAndEdgeListGraph<PointLine, Edge> graph )
         {
-            int vertexCount = graph.VertexCount;
-            int edgeCount = graph.EdgeCount;
-            var matrix = new int[vertexCount, edgeCount];
-
-            int edgeIndex = 0;
-            // Проходим по каждому ребру в графе
-            foreach (var edge in graph.Edges)
+            // Сортируем вершины по имени, чтобы порядок строк был предсказуем
+            var sortedVertices = graph.Vertices.OrderBy(v => v.name).ToList();
+            var vertexMap = new Dictionary<PointLine, int>();
+            for (int i = 0; i < sortedVertices.Count; i++)
             {
-                // Получаем индексы вершин
+                vertexMap[sortedVertices[i]] = i;
+            }
+
+            // Сортируем ребра по имени, чтобы порядок столбцов был предсказуем
+            var sortedEdges = graph.Edges.OrderBy(e => e.name).ToList();
+
+            var matrix = new int[graph.VertexCount, graph.EdgeCount];
+            for (int j = 0; j < sortedEdges.Count; j++)
+            {
+                var edge = sortedEdges[j];
                 int sourceIndex = vertexMap[edge.Source];
                 int targetIndex = vertexMap[edge.Target];
 
-                // Устанавливаем +1 для исходящей вершины
-                matrix[sourceIndex, edgeIndex] = -1;
-
-                // Устанавливаем -1 для входящей вершины
-                matrix[targetIndex, edgeIndex] = 1;
-
-                edgeIndex++;
+                matrix[sourceIndex, j] = -1; // Ребро выходит
+                matrix[targetIndex, j] = 1;  // Ребро входит
             }
 
+            // Опционально: выводим для отладки
+            // PrintMatrixWithHeaders(matrix, graph, vertexMap, sortedEdges);
             return matrix;
+        }
+        public static void PrintMatrixToConsole(int[,] matrix, string title)
+        {
+            if (matrix == null)
+            {
+                MyOpenDocument.ed.WriteMessage($"\n{title}: Матрица пуста (null).");
+                return;
+            }
+
+            var rows = matrix.GetLength(0);
+            var cols = matrix.GetLength(1);
+            var sb = new StringBuilder();
+
+            sb.AppendLine($"\n--- {title} (Размер: {rows}x{cols}) ---");
+
+            for (int i = 0; i < rows; i++)
+            {
+                sb.Append("| ");
+                for (int j = 0; j < cols; j++)
+                {
+                    // Форматируем число: выделяем 4 символа, выравниваем по центру.
+                    sb.Append($"{matrix[i, j],4}");
+                }
+                sb.AppendLine(" |");
+            }
+            sb.AppendLine("------------------------------------");
+
+            // Выводим всю собранную строку в консоль за один раз
+            MyOpenDocument.ed.WriteMessage(sb.ToString());
         }
 
 
-
-        public static int[,] CreateAdjacencyMatrix(UndirectedGraph<PointLine, Edge> graph, Dictionary<PointLine, int> vertexMap)
+        public static int[,] CreateAdjacencyMatrix(IVertexAndEdgeListGraph<PointLine, Edge> graph)
         {
-            int vertexCount = graph.VertexCount;
-            var matrix = new int[vertexCount, vertexCount];
+            var sortedVertices = graph.Vertices.OrderBy(v => v.name).ToList();
+            var vertexMap = new Dictionary<PointLine, int>();
+            for (int i = 0; i < sortedVertices.Count; i++)
+            {
+                vertexMap[sortedVertices[i]] = i;
+            }
 
-            // Проходим по каждому ребру в графе
+            var matrix = new int[graph.VertexCount, graph.VertexCount];
             foreach (var edge in graph.Edges)
             {
-                // Получаем индексы начальной и конечной вершин ребра
                 int sourceIndex = vertexMap[edge.Source];
                 int targetIndex = vertexMap[edge.Target];
 
-                // Так как граф неориентированный, ставим '1' в обеих ячейках
+                // Ставим 1 по направлению ребра
                 matrix[sourceIndex, targetIndex] = 1;
+                // Если нужна симметричная матрица, добавьте:
                 matrix[targetIndex, sourceIndex] = 1;
             }
-
             return matrix;
         }
+
+           
 
 
 
