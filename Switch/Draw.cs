@@ -4,6 +4,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.Numerics;
+
+using System.Text;
+
 
 
 
@@ -297,6 +301,55 @@ namespace ElectroTools
                 tr.AddNewlyCreatedDBObject(dbPoint, true);
                 return dbPoint.ObjectId;
             }
+        }
+
+        public static void drawVoltageResults( (Dictionary<PointLine, Complex> A, Dictionary<PointLine, Complex> B, Dictionary<PointLine, Complex> C) voltages,double phaseVoltage)
+        {
+            Database db = MyOpenDocument.dbCurrent;
+            using (Transaction tr = db.TransactionManager.StartTransaction())
+            {
+                // Удаляем старые результаты, если нужно
+                Layer.deleteObjectsOnLayer("Напряжение_Makarov.D", false);
+
+                BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
+                BlockTableRecord btr = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
+
+                // Проходим по всем узлам, для которых есть результаты
+                foreach (var node in voltages.A.Keys)
+                {
+                    // Пропускаем источник, для него выводить не надо
+                    if (node.name == 1) continue;
+
+                    // Получаем величины напряжений
+                    double Ua = voltages.A[node].Magnitude;
+                    double Ub = voltages.B[node].Magnitude;
+                    double Uc = voltages.C[node].Magnitude;
+
+                    double dropPercentageA = (phaseVoltage - Ua) / phaseVoltage * 100;
+                    double dropPercentageB = (phaseVoltage - Ub) / phaseVoltage * 100;
+                    double dropPercentageC = (phaseVoltage - Uc) / phaseVoltage * 100;
+
+                    // --- Собираем красивый многострочный текст для MText ---
+                    var sb = new StringBuilder();
+                    sb.AppendLine($"Ua={Ua:F2}В (△Ua={dropPercentageA:F2}%)");
+                    sb.AppendLine($"Ub={Ub:F2}В (△Uв={dropPercentageB:F2}%)");
+                    sb.Append($"Uc={Uc:F2}В (△Uс={dropPercentageC:F2}%)");
+
+                    // Определяем цвет в зависимости от максимального падения
+                    short colorIndex = 110; // Стандартный цвет
+                    if (dropPercentageA > 5 || dropPercentageB > 5 || dropPercentageC > 5)
+                    {
+                        colorIndex = 10; // Красный цвет для предупреждения
+                    }
+
+                    // Создаем MText в позиции узла со смещением
+                    Point3d textPosition = new Point3d(node.positionPoint.X, node.positionPoint.Y - 1, 0);
+                    Text.creatText("Напряжение_Makarov.D", node, sb.ToString(), "1", colorIndex, -4);
+                }
+
+                tr.Commit();
+            }
+            MyOpenDocument.ed.WriteMessage("\nРезультаты расчета напряжений отрисованы в модели.");
         }
     }
 }

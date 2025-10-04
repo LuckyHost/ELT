@@ -18,6 +18,8 @@ using QuikGraph;
 using System.Numerics;
 using QuikGraph.Algorithms;
 using QuikGraph.Algorithms.Search;
+using ControlzEx.Standard;
+
 
 
 
@@ -1145,25 +1147,27 @@ namespace ElectroTools
         /*
         //Поиск Падения напряжения. 
        */
-        public void getVoltage()
+        public (Dictionary<PointLine, Complex> A, Dictionary<PointLine, Complex> B, Dictionary<PointLine, Complex> C) getVoltage()
+
         {
 
             // Проверки
             if (ElectricalNetwork == null || ElectricalNetwork.VertexCount == 0)
             {
                 MyOpenDocument.ed.WriteMessage("\nОшибка: Модель сети не построена.");
-                return;
+                return (null, null, null);
+
             }
             var sourceNode = ElectricalNetwork.Vertices.FirstOrDefault(v => v.name == 1);
             if (sourceNode == null)
             {
                 MyOpenDocument.ed.WriteMessage("\nОшибка: В сети не найден узел-источник (name=1).");
-                return;
+                return (null, null, null);
             }
 
             //Фазное напряжение сети
             string tempUgen = Text.creatPromptKeywordOptions("Выберите напряжение точки генерации сети.: ", BDSQL.searchAllDataInBD(dbFilePath, "voltage", "kV"), 1);
-            if (string.IsNullOrEmpty(tempUgen)) { return; }
+            if (string.IsNullOrEmpty(tempUgen)) { return (null, null, null);  }
             ;
             double Ugen = double.Parse(tempUgen);
 
@@ -1248,6 +1252,11 @@ namespace ElectroTools
                 Complex currentB = edgeCurrentsB.ContainsKey(edge) ? edgeCurrentsB[edge] : Complex.Zero;
                 Complex currentC = edgeCurrentsC.ContainsKey(edge) ? edgeCurrentsC[edge] : Complex.Zero;
 
+                // Сохраняем рассчитанные токи обратно в сами объекты Edge для дальнейшего использования
+                edge.Ia = currentA;
+                edge.Ib = currentB;
+                edge.Ic = currentC;
+
                 nodeVoltagesA[edge.Target] = nodeVoltagesA[edge.Source] - currentA * z1;
                 nodeVoltagesB[edge.Target] = nodeVoltagesB[edge.Source] - currentB * z1;
                 nodeVoltagesC[edge.Target] = nodeVoltagesC[edge.Source] - currentC * z1;
@@ -1270,9 +1279,11 @@ namespace ElectroTools
                 double Uc = voltageC.Magnitude;
 
                 double dropPercentageA = (phaseVoltage - Ua) / phaseVoltage * 100;
+                double dropPercentageB = (phaseVoltage - Ub) / phaseVoltage * 100;
+                double dropPercentageC = (phaseVoltage - Uc) / phaseVoltage * 100;
 
                 MyOpenDocument.ed.WriteMessage(
-                    $"Узел: {node.name} | Ua={Ua:F2}В ({dropPercentageA:F2}%), Ub={Ub:F2}В, Uc={Uc:F2}В"
+                    $"Узел: {node.name} | Ua={Ua:F2}В (△Ua={dropPercentageA:F2}%), Ub={Ub:F2}В (△Ub={dropPercentageB:F2%)}, Uc={Uc:F2}В (△Uc={dropPercentageC:F2}%)"
                 );
 
                 // Сохраняем рассчитанные напряжения обратно в объекты PointLine для дальнейшего использования
@@ -1281,42 +1292,19 @@ namespace ElectroTools
                 node.Uc = Uc;
             }
 
-            /*
-            
-
-            double dropVoltage(Edge itemEdge, string phase)
-            {
-                double result = 0;
-                double dU = 0;
-                double qU = 0;
-                switch (phase)
-                {
-                    case "А":
-                        dU = itemEdge.Ia * itemEdge.length * itemEdge.r + itemEdge.length * itemEdge.rN * (itemEdge.Ia - (itemEdge.Ib + itemEdge.Ic) / 2);
-                        //Нигде не использую пока что 
-                        qU = itemEdge.Ia * itemEdge.length * itemEdge.x + itemEdge.length * itemEdge.xN * (itemEdge.Ia - (itemEdge.Ib + itemEdge.Ic) / 2);
-                        result = Math.Round(itemEdge.startPoint.Ua - (dU + 0), 2);
-                        return result;
-                    case "В":
-                        dU = itemEdge.Ib * itemEdge.length * itemEdge.r + itemEdge.length * itemEdge.rN * (itemEdge.Ib - (itemEdge.Ia + itemEdge.Ic) / 2);
-                        //Нигде не использую пока что 
-                        qU = itemEdge.Ib * itemEdge.length * itemEdge.x + itemEdge.length * itemEdge.xN * (itemEdge.Ib - (itemEdge.Ia + itemEdge.Ic) / 2);
-                        result = Math.Round(itemEdge.startPoint.Ub - (dU + 0), 2);
-                        return result;
-                    case "С":
-                        dU = itemEdge.Ic * itemEdge.length * itemEdge.r + itemEdge.length * itemEdge.rN * (itemEdge.Ic - (itemEdge.Ia + itemEdge.Ib) / 2);
-                        //Нигде не использую пока что 
-                        qU = itemEdge.Ic * itemEdge.length * itemEdge.x + itemEdge.length * itemEdge.xN * (itemEdge.Ic - (itemEdge.Ia + itemEdge.Ib) / 2);
-                        result = Math.Round(itemEdge.startPoint.Uc - (dU + 0), 2);
-                        return result;
-                }
-                return result;
-            }
-
-            listPoint = new List<PointLine>(stateList);
             OnPropertyChanged(nameof(listPoint));
             OnPropertyChanged(nameof(listEdge));
-            OnPropertyChanged(nameof(listPowerLine));*/
+            OnPropertyChanged(nameof(listPowerLine));
+
+            string s = "";
+
+            (Dictionary<PointLine, Complex> A, Dictionary<PointLine, Complex> B, Dictionary<PointLine, Complex> C) test = (nodeVoltagesA, nodeVoltagesB, nodeVoltagesC);
+
+
+            Draw.drawVoltageResults(test, phaseVoltage);
+            
+
+            return (nodeVoltagesA, nodeVoltagesB, nodeVoltagesC);
         }
 
 
