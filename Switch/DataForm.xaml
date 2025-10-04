@@ -27,6 +27,7 @@
             <local:PointLineConverter x:Key="PointLineConverter" />
             <local:EdgeConverter x:Key="EdgeConverter" />
             <local:PointLinePhaseСurrent x:Key="PointLinePhaseСurrent" />
+            <local:PointLinePhaseСurrentForEdge x:Key="PointLinePhaseСurrentForEdge" />
             <!-- End.Список конверторов-->
             <ResourceDictionary.MergedDictionaries>
                 <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="DeepPurple" SecondaryColor="Lime" />

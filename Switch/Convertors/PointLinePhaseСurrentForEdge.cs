@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -10,18 +9,18 @@ using System.Windows.Data;
 
 namespace ElectroTools
 {
-    internal class PointLinePhaseСurrent : IValueConverter
+    internal class PointLinePhaseСurrentForEdge : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             
-            if (value is Complex itemComplex)
+            if (value is Edge itemEdge)
             {
 
                 StringBuilder tempText = new StringBuilder();
-                tempText.Append(
-                                $"|{itemComplex.Magnitude:F3}|∠{itemComplex.Phase * (180 / Math.PI):F2}°" + Environment.NewLine  +
-                                $"( {itemComplex.Real:F3}+j{itemComplex.Imaginary:F3} )" 
+                tempText.Append("Фаза А: "+ $"|{itemEdge.Ia.Magnitude:F3}|∠{itemEdge.Ia.Phase * (180 / Math.PI):F2}° ( {itemEdge.Ia.Real:F3}+j{itemEdge.Ia.Imaginary:F3})"+ Environment.NewLine + 
+                                "Фаза В: "+ $"|{itemEdge.Ib.Magnitude:F3}|∠{itemEdge.Ib.Phase * (180 / Math.PI):F2}° ( {itemEdge.Ib.Real:F3}+j{itemEdge.Ib.Imaginary:F3})"+ Environment.NewLine + 
+                                "Фаза С: "+ $"|{itemEdge.Ic.Magnitude:F3}|∠{itemEdge.Ic.Phase * (180 / Math.PI):F2}° ( {itemEdge.Ic.Real:F3}+j{itemEdge.Ic.Imaginary:F3})"+ Environment.NewLine  
                                 );
 
                 return tempText;

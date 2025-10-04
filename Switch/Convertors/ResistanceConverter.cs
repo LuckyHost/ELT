@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,18 +17,16 @@ namespace ElectroTools
             // Предполагается, что value является вашим объектом, который содержит r и length
             if (value is Edge itemEdge)
             {
-                // Предположим, что r и length - это public свойства вашего класса
-                double r = itemEdge.r;
-                double x = itemEdge.x;
-                double r0 = itemEdge.r0;
-                double x0 = itemEdge.x0;
-                double length = itemEdge.length;
-                double resultR = Math.Round(r * length,6);
-                double resultX = Math.Round(x * length,6);
-                double rezultZ=Math.Round( Math.Sqrt(Math.Pow(resultR, 2)+Math.Pow(resultX, 2)),6);
+                Complex resultPositiveImpedance = itemEdge.GetPositiveSequenceImpedance();
+                Complex resultZeroImpedance = itemEdge.GetZeroSequenceImpedance();
 
                 // Выполняем умножение
-                return resultR +"+j"+resultX +" (Z="+ rezultZ + ")";
+                // Используем форматирование чисел (например, F4 для 4 знаков после запятой) для красивого вывода
+                return $"Z₁ : {resultPositiveImpedance.Real:F4} +j{resultPositiveImpedance.Imaginary:F4}" + Environment.NewLine +
+                       $"|Z|∠ ={resultPositiveImpedance.Magnitude:F4}∠{(resultPositiveImpedance.Phase * (180 / Math.PI)):F2}°" + Environment.NewLine +
+                       "~~~~~~~~~~~~~~" + Environment.NewLine +
+                       $"Z₀ : {resultZeroImpedance.Real:F4} +j{resultZeroImpedance.Imaginary:F4}" + Environment.NewLine +
+                       $"|Z|∠ ={resultZeroImpedance.Magnitude:F4}∠{(resultZeroImpedance.Phase * (180 / Math.PI)):F2}°";
             }
 
             // Возвращаем значение по умолчанию или обработку ошибки, если необходимо

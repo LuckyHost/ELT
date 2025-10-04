@@ -8,6 +8,8 @@ using System.Xml.Serialization;
 using System.ComponentModel;
 using MathNet.Numerics.Interpolation;
 using System.Windows.Forms;
+using System.Numerics;
+
 
 
 
@@ -76,14 +78,11 @@ namespace ElectroTools
                 if (value >= 0)
                     _weightA = value;
 
-
                 if (value != null & IDText != null)
                 {
                     if (_typeClient == 3)
                     {
                         Text.updateTextById(IDText, name + "\\P" + value.ToString(), 256);
-
-
                     }
                     else
                     {
@@ -187,13 +186,13 @@ namespace ElectroTools
         public bool tempBoll { get; set; }
 
         [XmlIgnore]
-        public double Ia { get; set; }
+        public Complex Ia { get; set; }
 
         [XmlIgnore]
-        public double Ib { get; set; }
+        public Complex Ib { get; set; }
 
         [XmlIgnore]
-        public double Ic { get; set; }
+        public Complex Ic { get; set; }
 
 
         public double cos { get; set; }
@@ -225,11 +224,11 @@ namespace ElectroTools
 
 
         [XmlIgnore]
-        public double Ua { get; set; }
+        public Complex Ua { get; set; }
         [XmlIgnore]
-        public double Ub { get; set; }
+        public Complex Ub { get; set; }
         [XmlIgnore]
-        public double Uc { get; set; }
+        public Complex Uc { get; set; }
 
 
         public bool isFavorite
@@ -245,31 +244,6 @@ namespace ElectroTools
         public ObjectId IDText { get; set; }
 
 
-
-
-        public PointLine()
-        {
-            name = 0;
-            positionPoint = new Point2d();
-            typeClient = 3;
-            count = 1;
-            Ko = 1;
-            weightA = 0;
-            weightB = 0;
-            weightC = 0;
-            Ia = 0;
-            Ib = 0;
-            Ic = 0;
-            Ua = 0;
-            Ub = 0;
-            Uc = 0;
-            tempBoll = false;
-            isLastPoint = false;
-            isFavorite = false;
-            IDText = ObjectId.Null;
-            cos = 0.96;
-
-        }
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -290,6 +264,139 @@ namespace ElectroTools
         public static bool operator ==(PointLine left, PointLine right) => Equals(left, right);
 
         public static bool operator !=(PointLine left, PointLine right) => !Equals(left, right);
+
+        public void UpdatePhaseCurrents(double nominalLineVoltage)
+        {
+            // Углы для фаз B и C относительно фазы A (в радианах)
+            double angleB_rad = -120 * (Math.PI / 180.0); // -120 градусов
+            double angleC_rad = 120 * (Math.PI / 180.0);  // +120 градусов
+
+            
+
+            // --- СЛУЧАЙ 1: ОДНОФАЗНАЯ НАГРУЗКА ---
+            // Предполагаем, что однофазный потребитель подключен к фазе А.
+            if (this.typeClient == 1)
+            {
+                // Расчет для фазы A
+                if (this.weightA > 0)
+                {
+                    double powerA = this.weightA * 1000; // кВт в Вт
+                                                         // I = P / (Uф * cos(φ))
+                    double currentMagA = powerA / (nominalLineVoltage/Math.Sqrt(3) * this.cos);
+                    double angleA = -Math.Acos(this.cos); // Угол со знаком минус для индуктивной нагрузки
+
+                    this.Ia = Complex.FromPolarCoordinates(currentMagA, angleA);
+                }
+                else
+                {
+                    this.Ia = Complex.Zero;
+                }
+
+
+                // Расчет для фазы B
+                if (this.weightB > 0)
+                {
+                    double powerB = this.weightB * 1000; // кВт в Вт
+                                                         // I = P / (Uф * cos(φ))
+                    double currentMagB = powerB / (nominalLineVoltage / Math.Sqrt(3) * this.cos);
+                    double angleB = -Math.Acos(this.cos); // Угол со знаком минус для индуктивной нагрузки
+
+                    this.Ib = Complex.FromPolarCoordinates(currentMagB, angleB);
+                }
+                else
+                {
+                    this.Ib = Complex.Zero;
+                }
+
+
+                // Расчет для фазы C
+                if (this.weightC > 0)
+                {
+                    double powerC = this.weightC * 1000; // кВт в Вт
+                                                         // I = P / (Uф * cos(φ))
+                    double currentMagC = powerC / (nominalLineVoltage / Math.Sqrt(3) * this.cos);
+                    double angleC = -Math.Acos(this.cos); // Угол со знаком минус для индуктивной нагрузки
+
+                    this.Ic = Complex.FromPolarCoordinates(currentMagC, angleC);
+                }
+                else
+                {
+                    this.Ic = Complex.Zero;
+                }
+
+            }
+
+            // --- СЛУЧАЙ 2: ТРЕХФАЗНАЯ НАГРУЗКА ---
+            else
+            {
+                
+
+                // Расчет для фазы A
+                if (this.weightA > 0)
+                {
+                    double powerA = this.weightA * 1000;
+                    double currentMagA = powerA / (Math.Sqrt(3)*nominalLineVoltage * this.cos);
+                    double angleA = -Math.Acos(this.cos);
+                    this.Ia = Complex.FromPolarCoordinates(currentMagA, angleA);
+                }
+                else
+                {
+                    this.Ia = Complex.Zero;
+                }
+
+                // Расчет для фазы B
+                if (this.weightA > 0)
+                {
+                    double powerB = this.weightA * 1000;
+                    double currentMagB = powerB / (Math.Sqrt(3)*nominalLineVoltage * this.cos);
+                    double angleB = -Math.Acos(this.cos) + angleB_rad; // Сдвигаем угол на -120°
+                    this.Ib = Complex.FromPolarCoordinates(currentMagB, angleB);
+                }
+                else
+                {
+                    this.Ib = Complex.Zero;
+                }
+
+                // Расчет для фазы C
+                if (this.weightA > 0)
+                {
+                    double powerC = this.weightA * 1000;
+                    double currentMagC = powerC / (Math.Sqrt(3)*nominalLineVoltage * this.cos);
+                    double angleC = -Math.Acos(this.cos) + angleC_rad; // Сдвигаем угол на +120°
+                    this.Ic = Complex.FromPolarCoordinates(currentMagC, angleC);
+                }
+                else
+                {
+                    this.Ic = Complex.Zero;
+                }
+            }
+        }
+
+
+        public PointLine()
+        {
+            name = 0;
+            positionPoint = new Point2d();
+            typeClient = 3;
+            count = 1;
+            Ko = 1;
+            weightA = 0;
+            weightB = 0;
+            weightC = 0;
+            Ia = Complex.Zero;
+            Ib = Complex.Zero;
+            Ic = Complex.Zero;
+            Ua = Complex.Zero;
+            Ub = Complex.Zero;
+            Uc = Complex.Zero;
+            tempBoll = false;
+            isLastPoint = false;
+            isFavorite = false;
+            IDText = ObjectId.Null;
+            cos = 0.96;
+
+        }
+        
     }
 
 

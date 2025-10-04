@@ -13,13 +13,15 @@ namespace ElectroTools
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+
+
             // Предполагается, что value является вашим объектом, который содержит r и length
             if (value is PowerLine itemPowerLine)
             {
                 StringBuilder tempText = new StringBuilder();
                 tempText.Append(string.Join(" ", itemPowerLine.Edges.Select(itemPoint => itemPoint.name)));
 
-                return tempText;
+                return  tempText;
             }
 
             // Возвращаем значение по умолчанию или обработку ошибки, если необходимо

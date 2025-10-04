@@ -81,13 +81,13 @@ namespace ElectroTools
         [XmlElement("length")]
         public double length { get; set; }
         [XmlElement("Icrict")]
-        public double Icrict { get; set; }
+        public Complex Icrict { get; set; }
         [XmlElement("Ia")]
-        public double Ia { get; set; }
+        public Complex Ia { get; set; }
         [XmlElement("Ib")]
-        public double Ib { get; set; }
+        public Complex Ib { get; set; }
         [XmlElement("Ic")]
-        public double Ic { get; set; }
+        public Complex Ic { get; set; }
         [XmlIgnore]
         //[XmlElement("IDText")]
         public ObjectId IDText { get; set; }
@@ -156,8 +156,10 @@ namespace ElectroTools
             Ke = 1;
             Ce = 1;
             length = 0;
-            Icrict = 0;
-            Ia = 0;
+            Icrict = Complex.Zero;
+            Ia = Complex.Zero;
+            Ib = Complex.Zero;
+            Ic = Complex.Zero;
             IDText = new ObjectId();
         }
 

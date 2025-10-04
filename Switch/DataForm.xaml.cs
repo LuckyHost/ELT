@@ -102,14 +102,14 @@ namespace ElectroTools
             AddDataGridTextColumn("№ Ребра", "name", true, Visibility.Visible, FontWeights.Bold, new SolidColorBrush(Color.FromRgb(255, 119, 0)), TextAlignment.Center, true);
             //Марка провода
             AddDataGridTextColumn("Марка провода", "cable", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
-            // Сопротивление R
+            // Сопротивление R В конце, это конвектор для визиуального восприятия
             AddDataGridTextColumn("Сопротивление R +jX (Z), Ом", "", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, false, "ResistanceConverter");
             // Длина ребра
             AddDataGridTextColumn("Длина ребра, м", "length", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             //Допустимый ток
             AddDataGridTextColumn("Допустимый ток, А", "Icrict", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             //Продекаемый ток в ребре 
-            AddDataGridTextColumn("Протекаемый ток, А", "", true, Visibility.Visible, FontWeights.UltraLight, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, false, "PointLinePhaseСurrent");
+            AddDataGridTextColumn("Протекаемый ток, А", "", true, Visibility.Visible, FontWeights.UltraLight, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, false, "PointLinePhaseСurrentForEdge");
         }
 
         private void ConfigureColumnsForPowerLine()
@@ -154,17 +154,15 @@ namespace ElectroTools
             //КоэфОдновремености
             AddDataGridTextColumn("Ко, о.е", "Ko", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, true);
 
-
-
             // Добавьте столбец с настройками для нагрузки
             AddDataGridTextColumn("Нагрузка фазы А (или ABC), кВт", "weightA", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             AddDataGridTextColumn("Нагрузка фазы В, кВт", "weightB", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
             AddDataGridTextColumn("Нагрузка фазы С, кВт", "weightC", false, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
 
             // Добавьте столбец с настройками для тока
-            AddDataGridTextColumn("Ток фазы А, А", "Ia", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
-            AddDataGridTextColumn("Ток фазы B, А", "Ib", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
-            AddDataGridTextColumn("Ток фазы С, А", "Ic", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center);
+            AddDataGridTextColumn("Ток фазы А, А", "Ia", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, false, "PointLinePhaseСurrent");
+            AddDataGridTextColumn("Ток фазы B, А", "Ib", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center,false, "PointLinePhaseСurrent");
+            AddDataGridTextColumn("Ток фазы С, А", "Ic", true, Visibility.Visible, FontWeights.Normal, new SolidColorBrush(Color.FromRgb(0, 0, 0)), TextAlignment.Center, false, "PointLinePhaseСurrent");
 
 
             // Добавьте столбец с настройками для Cosφ
@@ -230,7 +228,7 @@ namespace ElectroTools
 
 
         //Функция добавления столбцов
-        private void AddDataGridTextColumn(string header, string bindingPath, bool isReadOnly, Visibility visibility, FontWeight fontWeight, SolidColorBrush foreground, TextAlignment textAlignment, bool addEvent = false, string converter = null, string triggerPropertyName = null, object triggerValue = null, Brush triggerBackgroundColor = null, Brush triggerForegroundColor = null)
+        private void AddDataGridTextColumn(string header, string bindingPath, bool isReadOnly, Visibility visibility, FontWeight fontWeight, SolidColorBrush foreground, TextAlignment textAlignment, bool addEvent = false, string converter = null)
         {
 
             DataGridTextColumn column = new DataGridTextColumn

@@ -399,7 +399,7 @@ namespace ElectroTools
                 impedanceList.Add(impedanceZ1);
 
                 // 3. Отладочное сообщение для проверки
-               // MyOpenDocument.ed.WriteMessage($"Ребро '{itemEdge.name}': Z1 = {impedanceZ1.Real:F5} + j{impedanceZ1.Imaginary:F5} Ом");
+                // MyOpenDocument.ed.WriteMessage($"Ребро '{itemEdge.name}': Z1 = {impedanceZ1.Real:F5} + j{impedanceZ1.Imaginary:F5} Ом");
             }
 
             return impedanceList;
@@ -994,7 +994,7 @@ namespace ElectroTools
                     {
                         TKZ tempTKZ = сreatMyTKZ(itemPointTKZ.name);
                         zLineLoop = tempTKZ.lineImpedance * 2 + tempTKZ.lineZeroImpedance;
-                        
+
                         tempTKZ.resultTKZ = Uline / ((zTransformerLoop / 3 + zLineLoop + zContact) * Math.Sqrt(3));
 
                         if (tempTKZ.resultTKZ.Magnitude / UserData.coefficientMultiplicity >= nomivalAV)
@@ -1019,15 +1019,12 @@ namespace ElectroTools
                 MyOpenDocument.ed.WriteMessage("| Длинна ТКЗ: " + resultTkzDist.length + " м.");
                 MyOpenDocument.ed.WriteMessage("| Линейное напряжение сети: " + Uline + " В.");
                 MyOpenDocument.ed.WriteMessage("| Добавил дополнительно: Z= " + zContact + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
-                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " | " + "R0+jX0: " + tkz.transformerZeroImpedance.Real + " +j " + tkz.transformerZeroImpedance.Imaginary + " (Zпетля= " + zTransformerLoop.Magnitude+ zTransformerLoop + ")" + " Ом.");
-                MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + resultTkzDist.lineImpedance.Real + " +j " + resultTkzDist.lineImpedance.Imaginary + " | " + "R0+jX0: " + resultTkzDist.lineZeroImpedance.Real + " +j " + resultTkzDist.lineZeroImpedance.Imaginary  + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " | " + "R0+jX0: " + tkz.transformerZeroImpedance.Real + " +j " + tkz.transformerZeroImpedance.Imaginary + " (Zпетля= " + zTransformerLoop.Magnitude + zTransformerLoop + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + resultTkzDist.lineImpedance.Real + " +j " + resultTkzDist.lineImpedance.Imaginary + " | " + "R0+jX0: " + resultTkzDist.lineZeroImpedance.Real + " +j " + resultTkzDist.lineZeroImpedance.Imaginary + " Ом.");
                 MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + resultTkzDist.resultTKZ.Magnitude + resultTkzDist.resultTKZ + " А.");
                 MyOpenDocument.ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(resultTkzDist.resultTKZ.Magnitude / UserData.coefficientMultiplicity) + " А.");
                 MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
                 MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.");
-
-
-
             }
 
 
@@ -1175,189 +1172,36 @@ namespace ElectroTools
        */
         public void getVoltage()
         {
+
+            // Проверки
+            if (ElectricalNetwork == null || ElectricalNetwork.VertexCount == 0)
+            {
+                MyOpenDocument.ed.WriteMessage("\nОшибка: Модель сети не построена.");
+                return;
+            }
+            var sourceNode = ElectricalNetwork.Vertices.FirstOrDefault(v => v.name == 1);
+            if (sourceNode == null)
+            {
+                MyOpenDocument.ed.WriteMessage("\nОшибка: В сети не найден узел-источник (name=1).");
+                return;
+            }
+
             //Фазное напряжение сети
             string tempUgen = Text.creatPromptKeywordOptions("Выберите напряжение точки генерации сети.: ", BDSQL.searchAllDataInBD(dbFilePath, "voltage", "kV"), 1);
             if (string.IsNullOrEmpty(tempUgen)) { return; }
             ;
             double Ugen = double.Parse(tempUgen);
 
-            double Ufashze = Math.Round(Ugen / Math.Sqrt(3), 2);
-
-            listPoint[0].Ua = Ufashze;
-            listPoint[0].Ub = Ufashze;
-            listPoint[0].Uc = Ufashze;
-
-            using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
+            // ---2.ШАГ 1: РАСЧЕТ ТОКОВ НАГРУЗОК-- -
+            // Обновляем комплексный ток для каждого узла на основе его мощности
+            foreach (var node in ElectricalNetwork.Vertices)
             {
-                Layer.deleteObjectsOnLayer("Напряжение_Makarov.D", false);
-                trAdding.Commit();
-            }
-
-            foreach (var item in listPoint)
-            {
-                item.Ia = 0;
-                item.Ib = 0;
-                item.Ic = 0;
-                item.tempBoll = false;
+                node.UpdatePhaseCurrents(Ugen);
             }
 
 
-            //Резервный список 
-            List<PointLine> stateList = new List<PointLine>(listPoint);
-            List<PointLine> listWithWeight = new List<PointLine>();
-            List<List<PointLine>> tempAllPath = new List<List<PointLine>>();
-            List<List<PointLine>> resultAllPath = new List<List<PointLine>>();
-            // Создает список вершин с весом
-            listWithWeight = GetWeightedVertices(listPoint);
-
-
-            //Пути до вершин
-            foreach (PointLine itemPoint in listWithWeight)
-            {
-                List<PointLine> path = ListPathIntToPoint(findPath(matrixSmej, itemPoint.name - 1, listPowerLine[0].points[0].name - 1));
-                tempAllPath.Add(path);
-            }
-
-            tempAllPath.Reverse();
-
-
-
-            //Самое важное. Уберает пути которые частично есть 
-            foreach (List<PointLine> itemListPoint in tempAllPath)
-            {
-                if (resultAllPath.Count == 0)
-                {
-                    resultAllPath.Add(itemListPoint);
-                    continue;
-                }
-
-                if (!resultAllPath.Any(x => x.Contains(itemListPoint[0])))
-                {
-
-                    resultAllPath.Add(itemListPoint);
-                }
-            }
-
-            //Алгоритм сложения всех токов
-            foreach (List<PointLine> itemListPoint in resultAllPath)
-            {
-                for (int i = 0; i < itemListPoint.Count() - 1; i++)
-                {
-                    double tempAddIa = 0;
-                    double tempAddIb = 0;
-                    double tempAddIc = 0;
-
-                    if (!itemListPoint[i + 1].tempBoll)
-                    {
-                        itemListPoint[i + 1].tempBoll = true;
-                        itemListPoint[i + 1].Ia = Math.Round(itemListPoint[i + 1].Ia + itemListPoint[i].Ia, 3);
-                        itemListPoint[i + 1].Ib = Math.Round(itemListPoint[i + 1].Ib + itemListPoint[i].Ib, 3);
-                        itemListPoint[i + 1].Ic = Math.Round(itemListPoint[i + 1].Ic + itemListPoint[i].Ic, 3);
-                    }
-                    else
-                    {
-                        tempAddIa = itemListPoint[0].Ia;
-                        itemListPoint[i + 1].Ia += Math.Round(tempAddIa, 2);
-
-                        tempAddIb = itemListPoint[0].Ib;
-                        itemListPoint[i + 1].Ib += Math.Round(tempAddIb, 2);
-
-                        tempAddIc = itemListPoint[0].Ic;
-                        itemListPoint[i + 1].Ic += Math.Round(tempAddIc, 2);
-                    }
-                }
-
-                //Построить куда бежит ток
-                Draw.drawPolyline(itemListPoint, "Напряжение_Makarov.D", 52, 0.6);
-            }
-
-
-            //Ток добавляем в ребра
-            foreach (PointLine itemPoint in listPoint)
-            {
-                if (itemPoint.Ia > 0 | itemPoint.Ib > 0 | itemPoint.Ic > 0)
-                {
-                    foreach (Edge itemEdge in listEdge)
-                    {
-                        if (itemPoint == itemEdge.endPoint)
-                        {
-                            itemEdge.Ia = itemPoint.Ia;
-                            itemEdge.Ib = itemPoint.Ib;
-                            itemEdge.Ic = itemPoint.Ic;
-                        }
-
-                        //Проверка на критический ток
-                        if (itemEdge.Ia > itemEdge.Icrict | itemEdge.Ib > itemEdge.Icrict | itemEdge.Ic > itemEdge.Icrict)
-                        {
-                            Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, "I>Iкрит " + "A: " + itemEdge.Ia + "; " + "B: " + itemEdge.Ib + "; " + "C: " + itemEdge.Ic + " A.", "1", 220, 4);
-                        }
-                    }
-                }
-            }
-
-
-            //Анализирует падения напряжения и отрисовывает Новый алгоритм 
-            foreach (Edge itemEdge in listEdge)
-            {
-
-                //Отрисовка падения напряжения
-                if ((itemEdge.startPoint.Ia > 0 & itemEdge.endPoint.Ia > 0) | (itemEdge.startPoint.Ib > 0 & itemEdge.endPoint.Ib > 0) | (itemEdge.startPoint.Ic > 0 & itemEdge.endPoint.Ic > 0))
-                {
-                    //Фаза А
-                    itemEdge.endPoint.Ua = dropVoltage(itemEdge, "А");
-
-                    Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUa= " + Math.Round((itemEdge.startPoint.Ua - itemEdge.endPoint.Ua), 2) + " В.", "1", 154, -4);
-
-                    //Фаза В
-                    itemEdge.endPoint.Ub = dropVoltage(itemEdge, "В");
-                    Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUb= " + Math.Round((itemEdge.startPoint.Ub - itemEdge.endPoint.Ub), 2) + " В.", "1", 154, -6);
-
-                    //Фаза С
-                    itemEdge.endPoint.Uc = dropVoltage(itemEdge, "С");
-                    Text.creatText("Напряжение_Makarov.D", itemEdge.centerPoint, " ΔUc= " + Math.Round((itemEdge.startPoint.Uc - itemEdge.endPoint.Uc), 2) + " В.", "1", 154, -8);
-                }
-
-                //Отрисовка линейного напряжения
-                if (itemEdge.endPoint.Ua > 0 | itemEdge.endPoint.Ub > 0 | itemEdge.endPoint.Uc > 0)
-                {
-                    //Фаза А
-                    if (((Ufashze - itemEdge.endPoint.Ua) / Ufashze * 100) >= 10.0)
-                    {
-                        double percentA = Math.Round(((Ufashze - itemEdge.endPoint.Ua) / Ufashze * 100), 2);
-                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 26, -4);
-                    }
-                    else
-                    {
-                        double percentA = Math.Round(((Ufashze - itemEdge.endPoint.Ua) / Ufashze * 100), 2);
-                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uа= " + itemEdge.endPoint.Ua.ToString() + " В; " + percentA + " %.", "1", 41, -4);
-                    }
-
-                    //Фаза В
-                    if ((Ufashze - itemEdge.endPoint.Ub) / Ufashze * 100 >= 10.0)
-                    {
-                        double percentB = Math.Round(((Ufashze - itemEdge.endPoint.Ub) / Ufashze * 100), 2);
-                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 26, -6);
-                    }
-                    else
-                    {
-                        double percentB = Math.Round(((Ufashze - itemEdge.endPoint.Ub) / Ufashze * 100), 2);
-                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Ub= " + itemEdge.endPoint.Ub.ToString() + " В; " + percentB + " %.", "1", 74, -6);
-                    }
-
-                    //Фаза С
-                    if (((Ufashze - itemEdge.endPoint.Uc) / Ufashze * 100) >= 10.0)
-                    {
-                        double percentC = Math.Round(((Ufashze - itemEdge.endPoint.Uc) / Ufashze * 100), 2);
-                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 26, -8);
-                    }
-                    else
-                    {
-                        double percentC = Math.Round(((Ufashze - itemEdge.endPoint.Uc) / Ufashze * 100), 2);
-                        Text.creatText("Напряжение_Makarov.D", itemEdge.endPoint, "Uc= " + itemEdge.endPoint.Uc.ToString() + " В; " + percentC + " %.", "1", 22, -8);
-                    }
-
-                }
-            }
+            /*
+            
 
             double dropVoltage(Edge itemEdge, string phase)
             {
@@ -1391,7 +1235,7 @@ namespace ElectroTools
             listPoint = new List<PointLine>(stateList);
             OnPropertyChanged(nameof(listPoint));
             OnPropertyChanged(nameof(listEdge));
-            OnPropertyChanged(nameof(listPowerLine));
+            OnPropertyChanged(nameof(listPowerLine));*/
         }
 
 
@@ -2034,12 +1878,6 @@ namespace ElectroTools
         }
 
 
-
-
-
-
-
-
         //Добавляем вершину родителя
         void addPointPerent(List<PowerLine> masterlist, List<PointLine> listPointXY, Transaction trAdding)
         {
@@ -2198,8 +2036,6 @@ namespace ElectroTools
 
             return null;
         }
-
-
 
 
 
