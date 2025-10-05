@@ -654,12 +654,12 @@ namespace ElectroTools
                 string resultPath = string.Join(" ", pathPoints.Select(pointLine => pointLine.name));
                 MyOpenDocument.ed.WriteMessage($"Вершины : {resultPath}");
                 string resultNameEdge = string.Join(" ", pathEdges.Select(edje => edje.name));
-                MyOpenDocument.ed.WriteMessage($"Ребра : { resultNameEdge}");
-                double resultLengtEdge =  pathEdges.Sum(edje => edje.length);
+                MyOpenDocument.ed.WriteMessage($"Ребра : {resultNameEdge}");
+                double resultLengtEdge = pathEdges.Sum(edje => edje.length);
                 //Фнукция взаме Sum, она мощнее
-                Complex resultZ1 =  pathEdges.Aggregate(Complex.Zero, (acc, edje) => acc + edje.GetPositiveSequenceImpedance());
-                Complex resultZ0 =  pathEdges.Aggregate(Complex.Zero, (acc, edje) => acc + edje.GetZeroSequenceImpedance());
-                MyOpenDocument.ed.WriteMessage($"Z₁ = {resultZ1.Magnitude } ({resultZ1.ToElectricalString()}) Ом.");
+                Complex resultZ1 = pathEdges.Aggregate(Complex.Zero, (acc, edje) => acc + edje.GetPositiveSequenceImpedance());
+                Complex resultZ0 = pathEdges.Aggregate(Complex.Zero, (acc, edje) => acc + edje.GetZeroSequenceImpedance());
+                MyOpenDocument.ed.WriteMessage($"Z₁ = {resultZ1.Magnitude} ({resultZ1.ToElectricalString()}) Ом.");
                 MyOpenDocument.ed.WriteMessage($"Z₀ = {resultZ0.Magnitude} ({resultZ0.ToElectricalString()}) Ом.");
                 MyOpenDocument.ed.WriteMessage($"Длинна {resultLengtEdge.ToString()} м.");
                 MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -1218,24 +1218,12 @@ namespace ElectroTools
         }
 
 
-        private double GetPathLength(PointLine startNode, PointLine endNode)
-        {
-            var pathFinder = ElectricalNetwork.ShortestPathsDijkstra(edge => edge.length, startNode);
-            if (pathFinder(endNode, out var pathEdges))
-            {
-                return pathEdges.Sum(e => e.length);
-            }
-            return double.MaxValue; // Возвращаем большое значение, если пути нет
-        }
 
 
-        /*
+
         //Поиск Падения напряжения. 
-       */
         public (Dictionary<PointLine, Complex> A, Dictionary<PointLine, Complex> B, Dictionary<PointLine, Complex> C) getVoltage()
-
         {
-
             // Проверки
             if (ElectricalNetwork == null || ElectricalNetwork.VertexCount == 0)
             {
@@ -1252,7 +1240,7 @@ namespace ElectroTools
 
             //Фазное напряжение сети
             string tempUgen = Text.creatPromptKeywordOptions("Выберите напряжение точки генерации сети.: ", BDSQL.searchAllDataInBD(dbFilePath, "voltage", "kV"), 1);
-            if (string.IsNullOrEmpty(tempUgen)) { return (null, null, null);  }
+            if (string.IsNullOrEmpty(tempUgen)) { return (null, null, null); }
             ;
             double Ugen = double.Parse(tempUgen);
 
@@ -1396,7 +1384,7 @@ namespace ElectroTools
             (Dictionary<PointLine, Complex> A, Dictionary<PointLine, Complex> B, Dictionary<PointLine, Complex> C) test = (nodeVoltagesA, nodeVoltagesB, nodeVoltagesC);
 
             Draw.drawVoltageResults(test, phaseVoltage);
-            
+
 
             return (nodeVoltagesA, nodeVoltagesB, nodeVoltagesC);
         }
@@ -1556,30 +1544,7 @@ namespace ElectroTools
         }
 
 
-        List<PointLine> GetWeightedVertices(List<PointLine> stateList)
-        {
-            List<PointLine> tempList = new List<PointLine>();
-            foreach (PointLine itemPoint in stateList)
-            {
-                if (itemPoint.weightA > 0 | itemPoint.weightB > 0 | itemPoint.weightC > 0)
-                {
-                    if (itemPoint.typeClient == 1)
-                    {
-                        itemPoint.Ia = Math.Round(itemPoint.weightA * itemPoint.Ko * itemPoint.count / (0.22 * itemPoint.cos), 2);
-                        itemPoint.Ib = Math.Round(itemPoint.weightB * itemPoint.Ko * itemPoint.count / (0.22 * itemPoint.cos), 2);
-                        itemPoint.Ic = Math.Round(itemPoint.weightC * itemPoint.Ko * itemPoint.count / (0.22 * itemPoint.cos), 2);
-                    }
-                    if (itemPoint.typeClient == 3)
-                    {
-                        itemPoint.Ia = Math.Round(itemPoint.weightA * itemPoint.Ko * itemPoint.count / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
-                        itemPoint.Ib = Math.Round(itemPoint.weightA * itemPoint.Ko * itemPoint.count / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
-                        itemPoint.Ic = Math.Round(itemPoint.weightA * itemPoint.Ko * itemPoint.count / (Math.Sqrt(3) * 0.38 * itemPoint.cos), 2);
-                    }
-                    tempList.Add(itemPoint);
-                }
-            }
-            return tempList;
-        }
+
         //Рекурсия для поиска у какой вершине магистрали добавить вес
         PowerLine goToParent(PowerLine line, string searchNamePowerLine)
         {
@@ -1917,103 +1882,16 @@ namespace ElectroTools
             [XmlElement("Name")]
             public string Name { get; set; }
 
-            /*
-		    [XmlElement("ObjectType")]
-		    public string ObjectType { get; set; }
-		
-		    [XmlElement("Number")]
-		    public int Number { get; set; }
-		
-		    [XmlElement("Length_redef")]
-		    public int LengthRedef { get; set; }
-		
-		    [XmlElement("UseRedefLength")]
-		    public bool UseRedefLength { get; set; }
-		
-		    [XmlElement("AdditionalPercent")]
-		    public int AdditionalPercent { get; set; }
-		
-		    [XmlElement("Multiplier")]
-		    public int Multiplier { get; set; }
-		
-		    [XmlElement("AdditionalLength1")]
-		    public int AdditionalLength1 { get; set; }
-		
-		    [XmlElement("AdditionalLength2")]
-		    public int AdditionalLength2 { get; set; }
-		
-		    [XmlElement("Start")]
-		    public string Start { get; set; }
-		
-		    [XmlElement("End")]
-		    public string End { get; set; }
-		
-		    [XmlArray("Parts")]
-		    [XmlArrayItem("Part")]
-		    public List<string> Parts { get; set; }
-		
-		    [XmlArray("Parts_1m")]
-		    [XmlArrayItem("Part_1m")]
-		    public List<string> Parts1m { get; set; } */
-
             public Conductor()
             {
                 Name = "";
             }
         }
 
-        //Нигде пока не применил 
-        [Serializable]
-        [XmlRoot("Matrix")]
-        public class SerializableMatrix
-        {
-            [XmlArray("Rows")]
-            [XmlArrayItem("Row")]
-            public List<int[]> Rows { get; set; }
 
-            public SerializableMatrix()
-            {
-                Rows = new List<int[]>();
-            }
 
-            public SerializableMatrix(int[,] matrix)
-            {
-                Rows = new List<int[]>();
 
-                int rows = matrix.GetLength(0);
-                int cols = matrix.GetLength(1);
 
-                for (int i = 0; i < rows; i++)
-                {
-                    int[] row = new int[cols];
-                    for (int j = 0; j < cols; j++)
-                    {
-                        row[j] = matrix[i, j];
-                    }
-                    Rows.Add(row);
-                }
-            }
-
-            public int[,] ToMatrix()
-            {
-                if (Rows.Count == 0 || Rows[0].Length == 0)
-                    return new int[0, 0];
-
-                int rows = Rows.Count;
-                int cols = Rows[0].Length;
-                int[,] matrix = new int[rows, cols];
-
-                for (int i = 0; i < rows; i++)
-                {
-                    for (int j = 0; j < cols; j++)
-                    {
-                        matrix[i, j] = Rows[i][j];
-                    }
-                }
-
-                return matrix;
-            }
-        }
 
         //Дополнительные функции 
 
@@ -2092,11 +1970,6 @@ namespace ElectroTools
         }
 
 
-
-
-
-
-
         //Создание листа Ребер
         List<Edge> creatListEdegs(List<PowerLine> masterList)
         {
@@ -2163,48 +2036,9 @@ namespace ElectroTools
 
         }
 
-        List<int> findPath(int[,] adjacencyMatrix, int start, int end)
-        {
-            if (start == end)
-            {
-                return new List<int> { start };
-            }
+       
 
-            bool[] visited = new bool[adjacencyMatrix.GetLength(0)];
-            return findPathHelper(adjacencyMatrix, start, end, visited);
-        }
-
-        List<int> findPathHelper(int[,] adjacencyMatrix, int current, int end, bool[] visited)
-        {
-            visited[current] = true;
-            List<int> path = new List<int> { current };
-
-            if (current == end)
-            {
-                return path;
-            }
-
-            for (int i = 0; i < adjacencyMatrix.GetLength(0); i++)
-            {
-                if (adjacencyMatrix[current, i] == 1 && !visited[i])
-                {
-                    List<int> subPath = findPathHelper(adjacencyMatrix, i, end, visited);
-                    if (subPath != null)
-                    {
-                        subPath.Insert(0, current);
-                        return subPath;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-
-
-
-
-        public static int[,] CreateIncidenceMatrix(IVertexAndEdgeListGraph<PointLine, Edge> graph )
+        public static int[,] CreateIncidenceMatrix(IVertexAndEdgeListGraph<PointLine, Edge> graph)
         {
             // Сортируем вершины по имени, чтобы порядок строк был предсказуем
             var sortedVertices = graph.Vertices.OrderBy(v => v.name).ToList();
@@ -2286,7 +2120,7 @@ namespace ElectroTools
             return matrix;
         }
 
-           
+
 
 
 

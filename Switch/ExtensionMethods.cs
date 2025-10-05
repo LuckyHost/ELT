@@ -1,3 +1,4 @@
+using NLog.LayoutRenderers.Wrappers;
 using System.Globalization;
 using System.Numerics;
 
@@ -21,7 +22,7 @@ namespace ElectroTools
             string imagPart = System.Math.Abs(c.Imaginary).ToString($"F{decimals}", CultureInfo.InvariantCulture);
             
             // Собираем итоговую строку
-            return $"{realPart} {sign} j{imagPart}";
+            return   $"{realPart} {sign} j{imagPart}".Replace(".",",");
         }
     }
 }

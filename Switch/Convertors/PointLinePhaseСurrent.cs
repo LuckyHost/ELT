@@ -21,7 +21,7 @@ namespace ElectroTools
                 StringBuilder tempText = new StringBuilder();
                 tempText.Append(
                                 $"|{itemComplex.Magnitude:F3}|∠{itemComplex.Phase * (180 / Math.PI):F2}°" + Environment.NewLine  +
-                                $"( {itemComplex.Real:F3}+j{itemComplex.Imaginary:F3} )" 
+                                $"( {itemComplex.ToElectricalString()} )" 
                                 );
 
                 return tempText;

@@ -22,10 +22,10 @@ namespace ElectroTools
 
                 // Выполняем умножение
                 // Используем форматирование чисел (например, F4 для 4 знаков после запятой) для красивого вывода
-                return $"Z₁ : {resultPositiveImpedance.Real:F4} +j{resultPositiveImpedance.Imaginary:F4}" + Environment.NewLine +
+                return $"Z₁ : {resultPositiveImpedance.ToElectricalString()}" + Environment.NewLine +
                        $"|Z|∠ ={resultPositiveImpedance.Magnitude:F4}∠{(resultPositiveImpedance.Phase * (180 / Math.PI)):F2}°" + Environment.NewLine +
                        "~~~~~~~~~~~~~~" + Environment.NewLine +
-                       $"Z₀ : {resultZeroImpedance.Real:F4} +j{resultZeroImpedance.Imaginary:F4}" + Environment.NewLine +
+                       $"Z₀ : {resultZeroImpedance.ToElectricalString()}" + Environment.NewLine +
                        $"|Z|∠ ={resultZeroImpedance.Magnitude:F4}∠{(resultZeroImpedance.Phase * (180 / Math.PI)):F2}°";
             }
 
