@@ -81,7 +81,7 @@ namespace ElectroTools
         [XmlElement("length")]
         public double length { get; set; }
         [XmlElement("Icrict")]
-        public Complex Icrict { get; set; }
+        public double Icrict { get; set; }
         [XmlElement("Ia")]
         public Complex Ia { get; set; }
         [XmlElement("Ib")]
@@ -156,7 +156,7 @@ namespace ElectroTools
             Ke = 1;
             Ce = 1;
             length = 0;
-            Icrict = Complex.Zero;
+            Icrict = 0;
             Ia = Complex.Zero;
             Ib = Complex.Zero;
             Ic = Complex.Zero;

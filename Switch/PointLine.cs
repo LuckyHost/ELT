@@ -280,7 +280,7 @@ namespace ElectroTools
                 // Расчет для фазы A
                 if (this.weightA > 0)
                 {
-                    double powerA = this.weightA * 1000; // кВт в Вт
+                    double powerA = (this.weightA* count*Ko) * 1000; // кВт в Вт
                                                          // I = P / (Uф * cos(φ))
                     double currentMagA = powerA / (nominalLineVoltage/Math.Sqrt(3) * this.cos);
                     double angleA = -Math.Acos(this.cos); // Угол со знаком минус для индуктивной нагрузки
@@ -296,7 +296,7 @@ namespace ElectroTools
                 // Расчет для фазы B
                 if (this.weightB > 0)
                 {
-                    double powerB = this.weightB * 1000; // кВт в Вт
+                    double powerB = (this.weightB * count * Ko) * 1000; // кВт в Вт
                                                          // I = P / (Uф * cos(φ))
                     double currentMagB = powerB / (nominalLineVoltage / Math.Sqrt(3) * this.cos);
                     double angleB = -Math.Acos(this.cos); // Угол со знаком минус для индуктивной нагрузки
@@ -312,7 +312,7 @@ namespace ElectroTools
                 // Расчет для фазы C
                 if (this.weightC > 0)
                 {
-                    double powerC = this.weightC * 1000; // кВт в Вт
+                    double powerC = (this.weightC * count * Ko) * 1000; // кВт в Вт
                                                          // I = P / (Uф * cos(φ))
                     double currentMagC = powerC / (nominalLineVoltage / Math.Sqrt(3) * this.cos);
                     double angleC = -Math.Acos(this.cos); // Угол со знаком минус для индуктивной нагрузки
@@ -334,7 +334,7 @@ namespace ElectroTools
                 // Расчет для фазы A
                 if (this.weightA > 0)
                 {
-                    double powerA = this.weightA * 1000;
+                    double powerA = (this.weightA * count * Ko) * 1000;
                     double currentMagA = powerA / (Math.Sqrt(3)*nominalLineVoltage * this.cos);
                     double angleA = -Math.Acos(this.cos);
                     this.Ia = Complex.FromPolarCoordinates(currentMagA, angleA);
@@ -347,7 +347,7 @@ namespace ElectroTools
                 // Расчет для фазы B
                 if (this.weightA > 0)
                 {
-                    double powerB = this.weightA * 1000;
+                    double powerB = (this.weightA * count * Ko) * 1000;
                     double currentMagB = powerB / (Math.Sqrt(3)*nominalLineVoltage * this.cos);
                     double angleB = -Math.Acos(this.cos) + angleB_rad; // Сдвигаем угол на -120°
                     this.Ib = Complex.FromPolarCoordinates(currentMagB, angleB);
@@ -360,7 +360,7 @@ namespace ElectroTools
                 // Расчет для фазы C
                 if (this.weightA > 0)
                 {
-                    double powerC = this.weightA * 1000;
+                    double powerC = (this.weightA * count * Ko) * 1000;
                     double currentMagC = powerC / (Math.Sqrt(3)*nominalLineVoltage * this.cos);
                     double angleC = -Math.Acos(this.cos) + angleC_rad; // Сдвигаем угол на +120°
                     this.Ic = Complex.FromPolarCoordinates(currentMagC, angleC);

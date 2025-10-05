@@ -1283,7 +1283,7 @@ namespace ElectroTools
                 double dropPercentageC = (phaseVoltage - Uc) / phaseVoltage * 100;
 
                 MyOpenDocument.ed.WriteMessage(
-                    $"Узел: {node.name} | Ua={Ua:F2}В (△Ua={dropPercentageA:F2}%), Ub={Ub:F2}В (△Ub={dropPercentageB:F2%)}, Uc={Uc:F2}В (△Uc={dropPercentageC:F2}%)"
+                    $"Узел: {node.name} | Ua={Ua:F2} В (△Ua={dropPercentageA:F2}%%), Ub={Ub:F2} В (△Ub={dropPercentageB:F2}%%), Uc={Uc:F2} В (△Uc={dropPercentageC:F2}%%)"
                 );
 
                 // Сохраняем рассчитанные напряжения обратно в объекты PointLine для дальнейшего использования
@@ -1296,10 +1296,7 @@ namespace ElectroTools
             OnPropertyChanged(nameof(listEdge));
             OnPropertyChanged(nameof(listPowerLine));
 
-            string s = "";
-
             (Dictionary<PointLine, Complex> A, Dictionary<PointLine, Complex> B, Dictionary<PointLine, Complex> C) test = (nodeVoltagesA, nodeVoltagesB, nodeVoltagesC);
-
 
             Draw.drawVoltageResults(test, phaseVoltage);
             
