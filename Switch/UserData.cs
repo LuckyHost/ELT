@@ -15,7 +15,6 @@ namespace ElectroTools
     static class UserData
     {
 
-        public static int coefficientMultiplicity = 3;
 
         //Дальность поиска
         public static int searchDistancePL = 1;
@@ -25,6 +24,7 @@ namespace ElectroTools
         public static bool isDrawZoneSearchPL = false;
         public static double searchLengthPL = 1;
         public static bool isSelectSearchPL = true;
+        public static int coefficientMultiplicity = 3;
 
 
 
@@ -38,6 +38,7 @@ namespace ElectroTools
             isDrawZoneSearchPL = Convert.ToBoolean(Convert.ToInt32(BDSQL.searchDataInBD<string>(dbFilePath, "userData", "isDrawZoneSearchPL", "name", "valve")));
             isSelectSearchPL = Convert.ToBoolean(Convert.ToInt32(BDSQL.searchDataInBD<string>(dbFilePath, "userData", "isSelectSearchPL", "name", "valve")));
             searchLengthPL = (Convert.ToDouble( BDSQL.searchDataInBD<string>(dbFilePath, "userData", "searchLengthPL", "name", "valve").Replace(".",",")));
+            coefficientMultiplicity = Convert.ToInt32(BDSQL.searchDataInBD<string>(dbFilePath, "userData", "ratioCircuitBreaker", "name", "valve"));
             OnStaticPropertyChanged(nameof(searchDistancePL));
         }
 

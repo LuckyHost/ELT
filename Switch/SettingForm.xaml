@@ -37,7 +37,7 @@
         <!-- Кол знаков -->
         <TextBox
               VerticalAlignment="Center"
-              materialDesign:HintAssist.Hint="Количество знаков после запятой у расстояние между вершинами: "
+              materialDesign:HintAssist.Hint="Количество знаков после запятой у расстояния между вершинами (для таблицы координат) : "
               Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
                 Text="{Binding Path= roundCoordinateDistFileExcel}"
                 Margin="10,10,10,5"
@@ -47,7 +47,7 @@
         <!-- Кол знаков -->
         <TextBox
       VerticalAlignment="Center"
-      materialDesign:HintAssist.Hint="Количество знаков после запятой у координат: "
+      materialDesign:HintAssist.Hint="Количество знаков после запятой у координат : "
       Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
         Text="{Binding Path= roundCoordinateXYFileExcel}"
         Margin="10,5,10,5"
@@ -58,27 +58,52 @@
         <!-- Имя Блока -->
         <TextBox
       VerticalAlignment="Center"
-      materialDesign:HintAssist.Hint="Имя блока по умолчанию: "
+      materialDesign:HintAssist.Hint="Имя блока по умолчанию (для координат) : "
       Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
         Text="{Binding Path= defaultBlock}"
         Margin="10,5,5,10"
         Name="tbDefautNameBlock"
         />
 
-
+        <!-- Искать поллилинии длинее -->
         <TextBox
          VerticalAlignment="Center"
-         materialDesign:HintAssist.Hint="Искать полиллинии длинее : "
+         materialDesign:HintAssist.Hint="При анализе сети искать полиллинии длинее : "
          Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
            Text="{Binding Path= searchLengthPL}"
            Margin="10,5,5,10"
            Name="tbsearchLengthPL"
            />
-        
+
+        <!-- Искать поллилинии длинее -->
+        <StackPanel Orientation="Horizontal">
+
+            <TextBox
+             materialDesign:HintAssist.Hint="Кратность для автоматического выключателя : "
+             Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
+             Text="{Binding Path= ratioCircuitBreaker}"
+             Margin="10,5,5,10" Width="539"
+             Name="tbratioCircuitBreaker"
+             />
+
+            <Button
+                 HorizontalAlignment="Center"
+                 IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+                 Style="{StaticResource MaterialDesignToolButton}"
+                 ToolTip="Коэффициент  кратности для автоматического выключателя необходим для выбора номинала автоматического выключателя. Значение равное 3, примерно равно времени срабатывания 5 секундам. ПУЭ-7 п. 1.7.79 "
+             >
+                <materialDesign:PackIcon
+                       Width="25"
+                       Height="25"
+                       Kind="CommentQuestionOutline" 
+                    />
+            </Button>
+        </StackPanel>
+
         <!-- Радиус поиска -->
 
         <StackPanel Orientation="Horizontal">
-            
+
             <TextBox
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="Радиус поиска полиллиний: "

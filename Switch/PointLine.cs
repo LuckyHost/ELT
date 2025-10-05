@@ -56,6 +56,7 @@ namespace ElectroTools
         private int _typeClient;
         private int _count;
         private double _Ko;
+        private double _cos;
         private double _weightA;
         //Безвыходность
         [XmlElement("weightB")]
@@ -195,7 +196,21 @@ namespace ElectroTools
         public Complex Ic { get; set; }
 
 
-        public double cos { get; set; }
+        public double cos
+        {
+            get { return _cos; }
+            set
+            {
+                // 2. Проверяем, что входящее значение находится в допустимом диапазоне
+                if (value >= 0.1 && value <= 1.0)
+                {
+                    _cos = value;
+                }
+                else
+                {
+                }
+            }
+        }
 
         public int typeClient
         {

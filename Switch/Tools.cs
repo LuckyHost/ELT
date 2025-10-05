@@ -1,5 +1,4 @@
-﻿
-#region Namespaces
+﻿#region Namespaces
 
 
 using System;
@@ -19,6 +18,8 @@ using System.Numerics;
 using QuikGraph.Algorithms;
 using QuikGraph.Algorithms.Search;
 using ControlzEx.Standard;
+using QuikGraph.Algorithms.ConnectedComponents;
+
 
 
 
@@ -64,6 +65,7 @@ namespace ElectroTools
         private List<PowerLine> _listPowerLine = new List<PowerLine>();
         private PaletteSet _paletteSet;
         public BidirectionalGraph<PointLine, Edge> ElectricalNetwork { get; private set; }
+        public UndirectedBidirectionalGraph<PointLine, Edge> ElectricalNetworkUndirected { get; private set; }
 
 
         public Tools()
@@ -309,6 +311,9 @@ namespace ElectroTools
                     //Что бы прокидыватьхоть куда
                     this.ElectricalNetwork = graph;
 
+                    //Неорентированный граф
+                    this.ElectricalNetworkUndirected = new UndirectedBidirectionalGraph<PointLine, Edge>(graph);
+
 
                     //Создание матрици инцинденций 
                     matrixInc = CreateIncidenceMatrix(graph); //Новый
@@ -388,8 +393,6 @@ namespace ElectroTools
 
 
         // Fun Для получения PointLine 
-        [CommandMethod("фв3", CommandFlags.UsePickSet |
-                       CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad
         public void getPointLine()
         {
             using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
@@ -445,10 +448,6 @@ namespace ElectroTools
         }
 
         // Fun Для получения все поинты и их коорниданты 
-        [CommandMethod("фв4", CommandFlags.UsePickSet |
-                       CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad
-
-
         public void getAllPointLine()
         {
             using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
@@ -474,7 +473,6 @@ namespace ElectroTools
         /*
         // Fun Для получения все наименований 
         [CommandMethod("фв5", CommandFlags.UsePickSet |
-                       CommandFlags.Redraw | CommandFlags.Modal)] // название команды, вызываемой в Autocad
         */
         public void getAllPowerLine()
         {
@@ -600,45 +598,131 @@ namespace ElectroTools
         }
 
 
-        // Fun Для Создания Пути обхода 
+        // Для Создания Пути обхода от любой точки, до любой точки 
         public void creatPathPoint()
         {
-            int startPoint = 0;
-            int endPoint = 0;
 
-            PromptResult result = MyOpenDocument.ed.GetString("С какой вершине начать обходить ?: ");
-            if (result.Status == PromptStatus.OK)
+            // Используем PromptIntegerOptions для запроса именно целого числа
+            PromptIntegerOptions pioStart = new PromptIntegerOptions("\nНачальная точка обхода: ");
+            PromptIntegerResult pirStart = MyOpenDocument.ed.GetInteger(pioStart);
+            if (pirStart.Status != PromptStatus.OK) return;
+
+            PromptIntegerOptions pioEnd = new PromptIntegerOptions("\nКонечная вершина обхода: ");
+            PromptIntegerResult pirEnd = MyOpenDocument.ed.GetInteger(pioEnd);
+            if (pirEnd.Status != PromptStatus.OK) return;
+
+            int startNodeName = pirStart.Value;
+            int endNodeName = pirEnd.Value;
+
+            // Поиск узлов в графе 
+            // Используем LINQ для быстрого поиска объектов по их имени
+            var startNode = ElectricalNetwork.Vertices.FirstOrDefault(v => v.name == startNodeName);
+            var endNode = ElectricalNetwork.Vertices.FirstOrDefault(v => v.name == endNodeName);
+
+
+            // Проверяем, найдены ли узлы
+            if (startNode == null || endNode == null)
             {
-                startPoint = int.Parse(result.StringResult) - 1; //+1 что бы билось с визуализацией 
+                MyOpenDocument.ed.WriteMessage("\nОшибка: Один из указанных узлов не найден в сети.");
+                return;
             }
 
-            //Ввод Конечной вершины
-            PromptResult result2 = MyOpenDocument.ed.GetString("Конечная вершина обхода ?:");
-            if (result2.Status == PromptStatus.OK)
+            // --- Поиск кратчайшего пути с помощью QuikGraph ---
+            // Получаем функцию-поисковик, настроенную на поиск по длине
+            var pathFinder = ElectricalNetworkUndirected.ShortestPathsDijkstra(edge => edge.length, startNode);
+
+            // Пытаемся получить путь до конечной точки
+            if (pathFinder(endNode, out IEnumerable<Edge> pathEdges))
             {
-                endPoint = int.Parse(result2.StringResult) - 1;//+1 что бы билось с визуализацией 
+                // ---  Восстановление пути в виде списка точек ---
+                var pathPoints = new List<PointLine> { startNode };
+                foreach (var edge in pathEdges)
+                {
+                    // GetOtherVertex - удобный метод, который возвращает противоположный конец ребра
+                    pathPoints.Add(edge.GetOtherVertex(pathPoints.Last()));
+                }
+
+                // --- 6. Отрисовка и вывод результатов ---
+                ObjectId idPL = Draw.drawPolyline(pathPoints, "Напряжение_Makarov.D", 52, 0.4);
+                Draw.ZoomToEntity(idPL, 1);
+                MyOpenDocument.ed.SetImpliedSelection(new ObjectId[] { idPL });
+
+                MyOpenDocument.ed.WriteMessage("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                MyOpenDocument.ed.WriteMessage("Путь обхода :");
+
+                // Используем string.Join и LINQ для красивого вывода пути
+                string resultPath = string.Join(" ", pathPoints.Select(pointLine => pointLine.name));
+                MyOpenDocument.ed.WriteMessage($"Вершины : {resultPath}");
+                string resultNameEdge = string.Join(" ", pathEdges.Select(edje => edje.name));
+                MyOpenDocument.ed.WriteMessage($"Ребра : { resultNameEdge}");
+                double resultLengtEdge =  pathEdges.Sum(edje => edje.length);
+                //Фнукция взаме Sum, она мощнее
+                Complex resultZ1 =  pathEdges.Aggregate(Complex.Zero, (acc, edje) => acc + edje.GetPositiveSequenceImpedance());
+                Complex resultZ0 =  pathEdges.Aggregate(Complex.Zero, (acc, edje) => acc + edje.GetZeroSequenceImpedance());
+                MyOpenDocument.ed.WriteMessage($"Z₁ = {resultZ1.Magnitude } {resultZ1} Ом.");
+                MyOpenDocument.ed.WriteMessage($"Z₀ = {resultZ0.Magnitude} {resultZ0} Ом.");
+                MyOpenDocument.ed.WriteMessage($"Длинна {resultLengtEdge.ToString()} м.");
+                MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            }
+            else
+            {
+                MyOpenDocument.ed.WriteMessage("\nНе удалось построить путь между указанными вершинами.");
             }
 
-            //Создает путь из классов !!
-            List<PointLine> path = ListPathIntToPoint(findPath(matrixSmej, startPoint, endPoint));
+            //CheckConnectivity();
 
-            //Нарисовать и приблизить 
-            ObjectId idPL = Draw.drawPolyline(path, "Напряжение_Makarov.D", 52, 0.4);
-            Draw.ZoomToEntity(idPL, 1);
-            MyOpenDocument.ed.SetImpliedSelection(new ObjectId[] { idPL });
+        }
 
 
-            MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            MyOpenDocument.ed.WriteMessage("Путь ОБХОДА :");
-
-            StringBuilder resultPath = new StringBuilder();
-            foreach (PointLine item in path)
+        //Алгоритм проверки связности
+        public void CheckConnectivity()
+        {
+            Editor ed = MyOpenDocument.ed;
+            if (ElectricalNetwork == null || ElectricalNetwork.VertexCount == 0)
             {
-                resultPath.Append(item.name + " ");
+                ed.WriteMessage("\nОшибка: Модель сети не построена.");
+                return;
             }
-            MyOpenDocument.ed.WriteMessage(resultPath.ToString());
-            MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
+            // --- Запрос узлов у пользователя ---
+            PromptIntegerOptions pio1 = new PromptIntegerOptions("\nВведите имя первого узла: ");
+            PromptIntegerResult pir1 = ed.GetInteger(pio1);
+            if (pir1.Status != PromptStatus.OK) return;
+
+            PromptIntegerOptions pio2 = new PromptIntegerOptions("\nВведите имя второго узла: ");
+            PromptIntegerResult pir2 = ed.GetInteger(pio2);
+            if (pir2.Status != PromptStatus.OK) return;
+
+            var node1 = ElectricalNetwork.Vertices.FirstOrDefault(v => v.name == pir1.Value);
+            var node2 = ElectricalNetwork.Vertices.FirstOrDefault(v => v.name == pir2.Value);
+
+            if (node1 == null || node2 == null)
+            {
+                ed.WriteMessage("\nОдин из узлов не найден.");
+                return;
+            }
+
+
+            var componentsAlgo = new WeaklyConnectedComponentsAlgorithm<PointLine, Edge>(ElectricalNetwork);
+            componentsAlgo.Compute();
+
+            // 2. Получаем номера "участков" для каждого узла
+            int componentId1 = componentsAlgo.Components[node1];
+            int componentId2 = componentsAlgo.Components[node2];
+
+            // 3. Сравниваем и выводим результат
+            ed.WriteMessage($"\n--- Результат анализа связности ---");
+            ed.WriteMessage($"\nУзел {node1.name} находится в участке №{componentId1}");
+            ed.WriteMessage($"\nУзел {node2.name} находится в участке №{componentId2}");
+
+            if (componentId1 == componentId2)
+            {
+                ed.WriteMessage("\nВЫВОД: Узлы находятся в ОДНОМ участке сети. Путь между ними должен существовать.");
+            }
+            else
+            {
+                ed.WriteMessage("\nВЫВОД: Узлы находятся в РАЗНЫХ изолированных участках. Путь между ними невозможен.");
+            }
         }
 
 
@@ -735,22 +819,22 @@ namespace ElectroTools
             MyOpenDocument.ed.WriteMessage("| Линейное напряжение сети: " + Uline + " В.");
             if (!isI1Tkz)
             {
-                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " (Z= " + tkz.transformerImpedance.Magnitude + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Сопротивление трансформатора: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " (Z= " + tkz.transformerImpedance.Magnitude + ")" + " Ом.");
                 MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + tkz.lineImpedance.Real + " +j " + tkz.lineImpedance.Imaginary + " (Z= " + tkz.lineImpedance.Magnitude + ")" + " Ом.");
-                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + tkz.resultTKZ.Magnitude + tkz.resultTKZ + " А.");
-                //ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ / 3) + " А.");
+                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце:   {tkz.resultTKZ.Magnitude:F3}  {tkz.resultTKZ} А.");
+                //ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ / UserData.coefficientMultiplicity) + " А.");
                 MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
                 MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно ГОСТ 28249-93");
             }
             else
             {
                 MyOpenDocument.ed.WriteMessage("| Добавил дополнительно: Rдоп.= " + zContact.Real + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
-                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " | " + "R0+jX0: " + tkz.transformerZeroImpedance.Real + " +j " + tkz.transformerZeroImpedance.Imaginary + " (Zпетля= " + zTransformerLoop.Magnitude + zTransformerLoop + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Сопротивление трансформатора: " + "R1+jX1=R2+jX2: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " | " + "R0+jX0: " + tkz.transformerZeroImpedance.Real + " +j " + tkz.transformerZeroImpedance.Imaginary + " (Zпетля= " + zTransformerLoop.Magnitude + zTransformerLoop + ")" + " Ом.");
                 MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + tkz.lineImpedance.Real + " +j " + tkz.lineImpedance.Imaginary + " | " + "R0+jX0: " + tkz.lineZeroImpedance.Real + " +j " + tkz.lineZeroImpedance.Imaginary + " (Zпетля= " + zLineLoop.Magnitude + zLineLoop + ")" + " Ом.");
-                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + tkz.resultTKZ.Magnitude + " А.");
-                MyOpenDocument.ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ.Magnitude / 3) + " А.");
+                MyOpenDocument.ed.WriteMessage($"| Ток КЗ в конце:   {tkz.resultTKZ.Magnitude:F3} {tkz.resultTKZ} А.");
+                MyOpenDocument.ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ.Magnitude / UserData.coefficientMultiplicity) + " А.");
                 MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
-                MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.");
+                MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно \" Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.\"");
             }
 
             MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
@@ -881,27 +965,31 @@ namespace ElectroTools
             MyOpenDocument.ed.WriteMessage("| Линейное напряжение сети: " + Uline + " В.");
             if (!isI1Tkz)
             {
-                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " (Z= " + tkz.transformerImpedance.Magnitude + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Сопротивление трансформатора: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " (Z= " + tkz.transformerImpedance.Magnitude + ")" + " Ом.");
                 MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + tkz.lineImpedance.Real + " +j " + tkz.lineImpedance.Imaginary + " (Z= " + tkz.lineImpedance.Magnitude + ")" + " Ом.");
-                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + tkz.resultTKZ.Magnitude + tkz.resultTKZ + " А.");
-                //ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ / 3) + " А.");
+                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце:   {tkz.resultTKZ.Magnitude:F3}  {tkz.resultTKZ} А.");
+                //ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ / UserData.coefficientMultiplicity) + " А.");
                 MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
                 MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно ГОСТ 28249-93");
             }
             else
             {
                 MyOpenDocument.ed.WriteMessage("| Добавил дополнительно: Rдоп.= " + zContact.Real + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
-                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " | " + "R0+jX0: " + tkz.transformerZeroImpedance.Real + " +j " + tkz.transformerZeroImpedance.Imaginary + " (Zпетля= " + zTransformerLoop.Magnitude + zTransformerLoop + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Сопротивление трансформатора: " + "R1+jX1=R2+jX2: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " | " + "R0+jX0: " + tkz.transformerZeroImpedance.Real + " +j " + tkz.transformerZeroImpedance.Imaginary + " (Zпетля= " + zTransformerLoop.Magnitude + zTransformerLoop + ")" + " Ом.");
                 MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + tkz.lineImpedance.Real + " +j " + tkz.lineImpedance.Imaginary + " | " + "R0+jX0: " + tkz.lineZeroImpedance.Real + " +j " + tkz.lineZeroImpedance.Imaginary + " (Zпетля= " + zLineLoop.Magnitude + zLineLoop + ")" + " Ом.");
-                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + tkz.resultTKZ.Magnitude + " А.");
-                MyOpenDocument.ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ.Magnitude / 3) + " А.");
+                MyOpenDocument.ed.WriteMessage($"| Ток КЗ в конце:   {tkz.resultTKZ.Magnitude:F3} {tkz.resultTKZ} А.");
+                MyOpenDocument.ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ.Magnitude / UserData.coefficientMultiplicity) + " А.");
                 MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
-                MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.");
+                MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно \" Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.\"");
             }
 
             MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
 
+
+
+
         }
+
 
 
         /*
@@ -955,7 +1043,7 @@ namespace ElectroTools
 
             // /3-это почти эквивалент 5сек UserData.coefficientMultiplicity
 
-            if (nomivalAV <= (tkz.resultTKZ.Magnitude / 3))
+            if (nomivalAV <= (tkz.resultTKZ.Magnitude / UserData.coefficientMultiplicity))
             {
                 MyOpenDocument.ed.WriteMessage("Ваш автоматический выключатель на " + nomivalAV + " А, защищает всю линую до точки максимальной нечувствительности.");
             }
@@ -996,7 +1084,7 @@ namespace ElectroTools
                 MyOpenDocument.ed.WriteMessage("| Длинна ТКЗ: " + resultTkzDist.length + " м.");
                 MyOpenDocument.ed.WriteMessage("| Линейное напряжение сети: " + Uline + " В.");
                 MyOpenDocument.ed.WriteMessage("| Добавил дополнительно: Z= " + zContact + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
-                MyOpenDocument.ed.WriteMessage("| Сопротивление тр-р: " + "R1+jX1=R2+jX2: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " | " + "R0+jX0: " + tkz.transformerZeroImpedance.Real + " +j " + tkz.transformerZeroImpedance.Imaginary + " (Zпетля= " + zTransformerLoop.Magnitude + zTransformerLoop + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Сопротивление трансформатора: " + "R1+jX1=R2+jX2: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " | " + "R0+jX0: " + tkz.transformerZeroImpedance.Real + " +j " + tkz.transformerZeroImpedance.Imaginary + " (Zпетля= " + zTransformerLoop.Magnitude + zTransformerLoop + ")" + " Ом.");
                 MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + resultTkzDist.lineImpedance.Real + " +j " + resultTkzDist.lineImpedance.Imaginary + " | " + "R0+jX0: " + resultTkzDist.lineZeroImpedance.Real + " +j " + resultTkzDist.lineZeroImpedance.Imaginary + " Ом.");
                 MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + resultTkzDist.resultTKZ.Magnitude + resultTkzDist.resultTKZ + " А.");
                 MyOpenDocument.ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(resultTkzDist.resultTKZ.Magnitude / UserData.coefficientMultiplicity) + " А.");
@@ -1012,7 +1100,7 @@ namespace ElectroTools
         //Поиск места установки рекоузера в магистрали. 
         */
         public void getLocalREC()
-        {
+        {/*
             List<PointLine> masterPointLine = listPowerLine[0].points;
             List<PointLine> saveListMagistral = new List<PointLine>(listPowerLine[0].points);
             List<PointLine> listWhithWeight = new List<PointLine>();
@@ -1141,7 +1229,7 @@ namespace ElectroTools
                 item.isFavorite = false;
             }
 
-
+            */
         }
 
         /*
@@ -2117,23 +2205,6 @@ namespace ElectroTools
 
 
 
-        List<PointLine> ListPathIntToPoint(List<int> masterList)
-        {
-
-            List<PointLine> tempList = new List<PointLine>();
-            foreach (int itemInt in masterList)
-            {
-                foreach (PointLine itemName in listPoint)
-                {
-                    if (itemName.name == (itemInt + 1))
-                    {
-
-                        tempList.Add(itemName);
-                    }
-                }
-            }
-            return tempList;
-        }
 
 
         public static int[,] CreateIncidenceMatrix(IVertexAndEdgeListGraph<PointLine, Edge> graph )
@@ -2761,20 +2832,12 @@ namespace ElectroTools
                 //MessageBox.Show(activatedDocument.Name);
                 _myData.isLock = !true;
                 _myData.isLoadProcessAnim = true;
-
-
-
-
-
             }
             else
             {
                 _myData.isLock = true;
                 _myData.isLoadProcessAnim = false;
             }
-
-
-
         }
 
 
@@ -2919,6 +2982,8 @@ namespace ElectroTools
 
 
         }
+
+
     }
 
 

@@ -1,5 +1,4 @@
 ﻿using HostMgd.Windows.ToolPalette;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -39,19 +38,23 @@ namespace ElectroTools
         private void sendDataInDB(object sender, RoutedEventArgs e)
         {
 
+            //При добавлении новых параметров не забыть их добавить в UserData и MyData
 
-            if (   //Обновить данные блока по умолчанию
-                        BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "defaultBlock", "valve", this.tbDefautNameBlock.Text) &&
+            if (
+                    //Обновить данные блока по умолчанию
+                    BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "defaultBlock", "valve", this.tbDefautNameBlock.Text) &&
                     //Обновить данные округ координат
                     BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "roundCoordinateXYFileExcel", "valve", this.tbCoord.Text) &&
                     //Обновить данные окргу расстояние
                     BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "roundCoordinateDistFileExcel", "valve", this.tbDistCoord.Text) &&
                     //Обновить данные радиус поиска
                     BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "searchDistancePL", "valve", this.tbRadiusSearchPL.Text) &&
-                     //Обновить данные границы поиска
-                     BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "isDrawZoneSearchPL", "valve", (bool)this.isActZone.IsChecked ? 1.ToString() : 0.ToString()) &&
-                     //Обновить данные выборки
-                     BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "isSelectSearchPL", "valve", (bool)this.isSelectSearchPL.IsChecked ? 1.ToString() : 0.ToString())
+                    //Обновить данные границы поиска
+                    BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "isDrawZoneSearchPL", "valve", (bool)this.isActZone.IsChecked ? 1.ToString() : 0.ToString()) &&
+                    //Обновить данные выборки
+                    BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "isSelectSearchPL", "valve", (bool)this.isSelectSearchPL.IsChecked ? 1.ToString() : 0.ToString()) &&
+                    //Коэф кратности
+                     BDSQL.updateDataInDB(_data._tools.dbFilePath, "userData", "name", "ratioCircuitBreaker", "valve", this.tbratioCircuitBreaker.Text)
                 )
             {
                 MessageBox.Show("Запись успешно обновлена");
@@ -66,8 +69,6 @@ namespace ElectroTools
 
         }
 
-
-
-
+        
     }
 }

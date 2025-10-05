@@ -37,6 +37,7 @@ namespace ElectroTools
         private bool _isDrawZoneSearchPL = UserData.isDrawZoneSearchPL;
         private double _searchLengthPL = UserData.searchLengthPL;
         private bool _isSelectSearchPL = UserData.isSelectSearchPL;
+        private int _ratioCircuitBreaker = UserData.coefficientMultiplicity;
 
 
 
@@ -107,6 +108,15 @@ namespace ElectroTools
             set
             {
                 _searchLengthPL = value; OnPropertyChanged(nameof(searchLengthPL));
+            }
+        }
+
+        public int ratioCircuitBreaker
+        {
+            get { return _ratioCircuitBreaker; }
+            set
+            {
+                _ratioCircuitBreaker = value; OnPropertyChanged(nameof(ratioCircuitBreaker));
             }
         }
 
@@ -262,6 +272,7 @@ namespace ElectroTools
                 searchLengthPL = UserData.searchLengthPL;
                 isDrawZoneSearchPL = UserData.isDrawZoneSearchPL;
                 isSelectSearchPL = UserData.isSelectSearchPL;
+                ratioCircuitBreaker = UserData.coefficientMultiplicity;
             }
         }
 
