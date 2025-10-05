@@ -103,13 +103,13 @@ namespace ElectroTools
             Version version = assembly.GetName().Version;
             try
             {
-
+                 
                 //Проверка на доступ к Ya.ru
                 if (IsInternetAvailable())
                 {
                    
                     string accessToken = Const.API;
-                    //MessageBox.Show(accessToken.ToString());
+                    //MessageBox.Show(accessToken.ToString())/;
               
 
                     using (var httpClient = new HttpClient())
