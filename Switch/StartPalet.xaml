@@ -315,7 +315,7 @@
                 Margin="0,0,10,0"
                 >
                     </materialDesign:PackIcon>
-                    <TextBlock VerticalAlignment="Center">ТКЗ. Однофазное КЗ. Зона чувствительности выбранного автоматического выключателя</TextBlock>
+                    <TextBlock VerticalAlignment="Center">ТКЗ. Однофазное КЗ. Зона действия автоматического выключателя</TextBlock>
                 </StackPanel>
             </Button>
 
@@ -379,7 +379,7 @@
                  Margin="0,0,10,0"
                  >
                     </materialDesign:PackIcon>
-                    <TextBlock VerticalAlignment="Center">Точка середины отключаемых и оставшехся потребителей. Saidi Saifi</TextBlock>
+                    <TextBlock VerticalAlignment="Center">Точка баланса потребителей</TextBlock>
                 </StackPanel>
             </Button>
 

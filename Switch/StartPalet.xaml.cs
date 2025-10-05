@@ -76,7 +76,7 @@ namespace ElectroTools
         //SS
         private void bt_SS(object sender, RoutedEventArgs e)
         {
-            _data._tools.getLocalREC();
+            _data._tools.FindOptimalRecloserLocation();
         }
         //Падение напряжения
         private void bt_voltage(object sender, RoutedEventArgs e)

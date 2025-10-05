@@ -659,8 +659,8 @@ namespace ElectroTools
                 //Фнукция взаме Sum, она мощнее
                 Complex resultZ1 =  pathEdges.Aggregate(Complex.Zero, (acc, edje) => acc + edje.GetPositiveSequenceImpedance());
                 Complex resultZ0 =  pathEdges.Aggregate(Complex.Zero, (acc, edje) => acc + edje.GetZeroSequenceImpedance());
-                MyOpenDocument.ed.WriteMessage($"Z₁ = {resultZ1.Magnitude } {resultZ1} Ом.");
-                MyOpenDocument.ed.WriteMessage($"Z₀ = {resultZ0.Magnitude} {resultZ0} Ом.");
+                MyOpenDocument.ed.WriteMessage($"Z₁ = {resultZ1.Magnitude } ({resultZ1.ToElectricalString()}) Ом.");
+                MyOpenDocument.ed.WriteMessage($"Z₀ = {resultZ0.Magnitude} ({resultZ0.ToElectricalString()}) Ом.");
                 MyOpenDocument.ed.WriteMessage($"Длинна {resultLengtEdge.ToString()} м.");
                 MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             }
@@ -819,9 +819,9 @@ namespace ElectroTools
             MyOpenDocument.ed.WriteMessage("| Линейное напряжение сети: " + Uline + " В.");
             if (!isI1Tkz)
             {
-                MyOpenDocument.ed.WriteMessage("| Сопротивление трансформатора: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " (Z= " + tkz.transformerImpedance.Magnitude + ")" + " Ом.");
-                MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + tkz.lineImpedance.Real + " +j " + tkz.lineImpedance.Imaginary + " (Z= " + tkz.lineImpedance.Magnitude + ")" + " Ом.");
-                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце:   {tkz.resultTKZ.Magnitude:F3}  {tkz.resultTKZ} А.");
+                MyOpenDocument.ed.WriteMessage("| Сопротивление трансформатора: " + tkz.transformerImpedance.ToElectricalString() + " (Z= " + tkz.transformerImpedance.Magnitude + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + tkz.lineImpedance.ToElectricalString() + " (Z= " + tkz.lineImpedance.Magnitude + ")" + " Ом.");
+                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце: " + $"{tkz.resultTKZ.Magnitude:F3}  {tkz.resultTKZ} А.");
                 //ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ / UserData.coefficientMultiplicity) + " А.");
                 MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
                 MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно ГОСТ 28249-93");
@@ -829,9 +829,9 @@ namespace ElectroTools
             else
             {
                 MyOpenDocument.ed.WriteMessage("| Добавил дополнительно: Rдоп.= " + zContact.Real + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
-                MyOpenDocument.ed.WriteMessage("| Сопротивление трансформатора: " + "R1+jX1=R2+jX2: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " | " + "R0+jX0: " + tkz.transformerZeroImpedance.Real + " +j " + tkz.transformerZeroImpedance.Imaginary + " (Zпетля= " + zTransformerLoop.Magnitude + zTransformerLoop + ")" + " Ом.");
-                MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + tkz.lineImpedance.Real + " +j " + tkz.lineImpedance.Imaginary + " | " + "R0+jX0: " + tkz.lineZeroImpedance.Real + " +j " + tkz.lineZeroImpedance.Imaginary + " (Zпетля= " + zLineLoop.Magnitude + zLineLoop + ")" + " Ом.");
-                MyOpenDocument.ed.WriteMessage($"| Ток КЗ в конце:   {tkz.resultTKZ.Magnitude:F3} {tkz.resultTKZ} А.");
+                MyOpenDocument.ed.WriteMessage($"| Сопротивление трансформатора: R1+jX1=R2+jX2: {tkz.transformerImpedance.ToElectricalString()}  | R0+jX0: {tkz.transformerZeroImpedance.ToElectricalString()}  (Zпетля=  {zTransformerLoop.Magnitude} ({zTransformerLoop.ToElectricalString()}) Ом.");
+                MyOpenDocument.ed.WriteMessage($"| Итоговое сопротивление линии: R1+jX1=R2+jX2: {tkz.lineImpedance.ToElectricalString()} | R0+jX0: {tkz.lineZeroImpedance.ToElectricalString()} (Zпетля=  {zLineLoop.Magnitude} ({zLineLoop.ToElectricalString()}) Ом.");
+                MyOpenDocument.ed.WriteMessage($"| Ток КЗ в конце:   {tkz.resultTKZ.Magnitude:F3} ({tkz.resultTKZ.ToElectricalString()}) А.");
                 MyOpenDocument.ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ.Magnitude / UserData.coefficientMultiplicity) + " А.");
                 MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
                 MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно \" Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.\"");
@@ -967,7 +967,7 @@ namespace ElectroTools
             {
                 MyOpenDocument.ed.WriteMessage("| Сопротивление трансформатора: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " (Z= " + tkz.transformerImpedance.Magnitude + ")" + " Ом.");
                 MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + tkz.lineImpedance.Real + " +j " + tkz.lineImpedance.Imaginary + " (Z= " + tkz.lineImpedance.Magnitude + ")" + " Ом.");
-                MyOpenDocument.ed.WriteMessage("| Ток КЗ в конце:   {tkz.resultTKZ.Magnitude:F3}  {tkz.resultTKZ} А.");
+                MyOpenDocument.ed.WriteMessage($"| Ток КЗ в конце:   {tkz.resultTKZ.Magnitude:F3}  ({tkz.resultTKZ.ToElectricalString()}) А.");
                 //ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ / UserData.coefficientMultiplicity) + " А.");
                 MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
                 MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно ГОСТ 28249-93");
@@ -977,7 +977,7 @@ namespace ElectroTools
                 MyOpenDocument.ed.WriteMessage("| Добавил дополнительно: Rдоп.= " + zContact.Real + " Ом. " + "Суммарное переходное сопротивление рубильников, автоматов, болтовых соединений и электрической дуги.");
                 MyOpenDocument.ed.WriteMessage("| Сопротивление трансформатора: " + "R1+jX1=R2+jX2: " + tkz.transformerImpedance.Real + " +j " + tkz.transformerImpedance.Imaginary + " | " + "R0+jX0: " + tkz.transformerZeroImpedance.Real + " +j " + tkz.transformerZeroImpedance.Imaginary + " (Zпетля= " + zTransformerLoop.Magnitude + zTransformerLoop + ")" + " Ом.");
                 MyOpenDocument.ed.WriteMessage("| Итоговое сопротивление линии: " + "R1+jX1=R2+jX2: " + tkz.lineImpedance.Real + " +j " + tkz.lineImpedance.Imaginary + " | " + "R0+jX0: " + tkz.lineZeroImpedance.Real + " +j " + tkz.lineZeroImpedance.Imaginary + " (Zпетля= " + zLineLoop.Magnitude + zLineLoop + ")" + " Ом.");
-                MyOpenDocument.ed.WriteMessage($"| Ток КЗ в конце:   {tkz.resultTKZ.Magnitude:F3} {tkz.resultTKZ} А.");
+                MyOpenDocument.ed.WriteMessage($"| Ток КЗ в конце:   {tkz.resultTKZ.Magnitude:F3} ({tkz.resultTKZ.ToElectricalString()}) А.");
                 MyOpenDocument.ed.WriteMessage("| Рекомендуемый автоматический выключатель не более : " + Math.Round(tkz.resultTKZ.Magnitude / UserData.coefficientMultiplicity) + " А.");
                 MyOpenDocument.ed.WriteMessage("| ------------------------------------------------------------------------------------------------");
                 MyOpenDocument.ed.WriteMessage("Расчет выполнен согласно \" Рекомендации по расчету сопротивления петли \"фаза-нуль\". - М.: Центральное бюро научно-технической информации, 1986.\"");
@@ -1099,138 +1099,135 @@ namespace ElectroTools
         /*
         //Поиск места установки рекоузера в магистрали. 
         */
-        public void getLocalREC()
-        {/*
-            List<PointLine> masterPointLine = listPowerLine[0].points;
-            List<PointLine> saveListMagistral = new List<PointLine>(listPowerLine[0].points);
-            List<PointLine> listWhithWeight = new List<PointLine>();
-
-            //Создает список вершин с весом
-            foreach (PointLine itemPoint in listPoint)
+        public void FindOptimalRecloserLocation()
+        {
+            // --- 1. ПОДГОТОВКА И ПРОВЕРКИ ---
+            if (ElectricalNetwork == null || ElectricalNetwork.VertexCount < 2)
             {
-                if (itemPoint.count > 0)
-                {
-
-                    listWhithWeight.Add(itemPoint);
-                }
+                MyOpenDocument.ed.WriteMessage("\nОшибка: Модель сети не построена или слишком мала.");
+                return;
+            }
+            var sourceNode = ElectricalNetwork.Vertices.FirstOrDefault(v => v.name == 1);
+            if (sourceNode == null)
+            {
+                MyOpenDocument.ed.WriteMessage("\nОшибка: В сети не найден узел-источник (name=1).");
+                return;
             }
 
-            foreach (PointLine itemPoint in listWhithWeight)
+            // Предполагаем, что listPowerLine[0].points содержит узлы магистрали по порядку
+            var mainFeederNodes = listPowerLine[0].points;
+            if (mainFeederNodes.Count < 2)
             {
-                foreach (PowerLine itemPowerLine in listPowerLine)
+                MyOpenDocument.ed.WriteMessage("\nОшибка: Магистральная линия слишком короткая для анализа.");
+                return;
+            }
+
+            // --- 2. АГРЕГАЦИЯ НАГРУЗОК (ИСПРАВЛЕННАЯ ЛОГИКА) ---
+
+            // Инициализируем веса узлов магистрали их собственными нагрузками
+            var feederNodeWeights = mainFeederNodes.ToDictionary(node => node, node => (double)node.count);
+
+            // Находим все узлы с нагрузкой, которые НЕ лежат на магистрали
+            var branchNodes = ElectricalNetwork.Vertices
+                .Where(v => v.count > 0 && !mainFeederNodes.Contains(v))
+                .ToList();
+
+            // Готовим поисковик путей от источника
+            var pathFinder = ElectricalNetwork.ShortestPathsDijkstra(edge => edge.length, sourceNode);
+
+            foreach (var branchNode in branchNodes)
+            {
+                // Находим путь от источника до узла на ответвлении
+                if (pathFinder(branchNode, out var pathToBranch))
                 {
-                    for (int i = 1; i < itemPowerLine.points.Count(); i++)
+                    // Восстанавливаем путь в виде списка узлов
+                    var nodePath = new List<PointLine> { sourceNode };
+                    foreach (var edge in pathToBranch)
                     {
-                        if (itemPoint == itemPowerLine.points[i])
-                        {
-                            PointLine perentPointMagistral = goToParent(itemPowerLine, listPowerLine[0].name).parentPoint;
-                            perentPointMagistral.count = perentPointMagistral.count + itemPoint.count;
-                            if (itemPoint.isFavorite)
-                            {
-                                perentPointMagistral.isFavorite = true;
-                            }
-                        }
+                        nodePath.Add(edge.GetOtherVertex(nodePath.Last()));
+                    }
+
+                    // Находим "точку подключения" - последний узел на этом пути,
+                    // который также является частью магистрали.
+                    var junctionNode = nodePath.LastOrDefault(node => mainFeederNodes.Contains(node));
+
+                    if (junctionNode != null && junctionNode != branchNode)
+                    {
+                        // "Переносим" вес (количество потребителей) с ответвления на правильный узел магистрали
+                        feederNodeWeights[junctionNode] += branchNode.count;
                     }
                 }
             }
 
-            SaidiSaifi REC = new SaidiSaifi();
+            // --- 3. ПОИСК ОПТИМАЛЬНОГО МЕСТА РАЗРЕЗА ---
+            Edge bestCutEdge = null;
+            double minDifference = double.MaxValue;
+            double bestLeftWeight = 0, bestRightWeight = 0;
 
+            double totalWeight = feederNodeWeights.Values.Sum();
 
-            foreach (PointLine itemPoint in masterPointLine)
+            // Проходим по магистрали, суммируя вес "слева"
+            double currentLeftWeight = 0;
+            for (int i = 0; i < mainFeederNodes.Count - 1; i++)
             {
-                List<PointLine> tempLeftPath = new List<PointLine>();
-                List<PointLine> tempRightPath = new List<PointLine>();
-                double tempLeftDifference = 0;
-                double tempRighDifference = 0;
-                tempLeftPath = ListPathIntToPoint(findPath(matrixSmej, itemPoint.name - 1, masterPointLine[0].name - 1));
-                tempRightPath = ListPathIntToPoint(findPath(matrixSmej, itemPoint.name - 1, masterPointLine.Last().name - 1));
+                var startNode = mainFeederNodes[i];
+                var endNode = mainFeederNodes[i + 1];
 
-                StringBuilder tempLeftPathText = new StringBuilder();
-                foreach (PointLine itemPointLine in tempLeftPath)
+                // Накапливаем вес левой части
+                currentLeftWeight += feederNodeWeights[startNode];
+
+                // Вес правой части = Общий вес - Вес левой части
+                double currentRightWeight = totalWeight - currentLeftWeight;
+                double currentDifference = Math.Abs(currentLeftWeight - currentRightWeight);
+
+                // Находим ребро, соответствующее этому разрезу
+                var cutEdge = ElectricalNetwork.Edges.FirstOrDefault(e =>
+                    (e.Source == startNode && e.Target == endNode) ||
+                    (e.Source == endNode && e.Target == startNode));
+
+                if (cutEdge == null) continue;
+
+                // Если текущая разница меньше минимальной, запоминаем этот разрез как лучший
+                if (currentDifference < minDifference)
                 {
-                    tempLeftDifference = tempLeftDifference + itemPointLine.count;
+                    minDifference = currentDifference;
+                    bestCutEdge = cutEdge;
+                    bestLeftWeight = currentLeftWeight;
+                    bestRightWeight = currentRightWeight;
                 }
-
-                StringBuilder tempRightPathText = new StringBuilder();
-
-                foreach (PointLine itemPointLine in tempRightPath)
-                {
-                    //Для удаления в правом пути точки из левого пути ( ниже совместный код)
-                    if (tempRightPath.IndexOf(itemPointLine) == 0)
-                    {
-                        continue;
-                    }
-                    tempRighDifference = tempRighDifference + itemPointLine.count;
-                }
-
-                //Проверяет вес и важность поинтов; itemPoint.isFavorite - проверяет в вершине магистрали есть ли важнный потербитель
-                if ((tempLeftDifference <= tempRighDifference) || itemPoint.isFavorite)
-                {
-                    REC.difference = Math.Abs(tempLeftDifference - tempRighDifference);
-                    REC.leftPath = tempLeftPath;
-                    REC.rightPath = tempRightPath;
-                    REC.point = itemPoint;
-                    REC.LeftWeight = tempLeftDifference;
-                    REC.RighWeight = tempRighDifference;
-
-                    //Для Визуала, для удаления перового поинта 
-                    REC.rightPath.RemoveAt(0);
-
-                    foreach (PointLine itemPointLine in REC.leftPath)
-                    {
-                        tempLeftPathText.Append(itemPointLine.name + " (" + itemPointLine.count + ")" + " ");
-                    }
-
-
-                    foreach (PointLine itemPointLine in REC.rightPath)
-                    {
-
-                        tempRightPathText.Append(itemPointLine.name + " (" + itemPointLine.count + ")" + " ");
-                    }
-
-                    REC.leftPathText = tempLeftPathText.ToString();
-                    REC.righPathText = tempRightPathText.ToString();
-                }
-                tempLeftDifference = 0;
-                tempRighDifference = 0;
-
             }
 
-            Edge edgeREC = new Edge();
-            foreach (Edge element in listEdge)
+            // --- 4. ВЫВОД РЕЗУЛЬТАТОВ ---
+            if (bestCutEdge != null)
             {
-                if ((REC.leftPath[0] == element.startPoint || REC.leftPath[0] == element.endPoint)
-                   && (REC.rightPath[0] == element.startPoint || REC.rightPath[0] == element.endPoint))
-                {
-                    edgeREC = element;
-
-                }
+                Draw.ZoomToEntity(Draw.drawCircle(bestCutEdge.centerPoint, "Граф_Saidi_Saifi_Makarov.D"), 4);
+                MyOpenDocument.ed.WriteMessage("----------");
+                MyOpenDocument.ed.WriteMessage("Рекомендуемое место установки REC в ребре №: " + bestCutEdge.name);
+                MyOpenDocument.ed.WriteMessage("Между вершинами № " + bestCutEdge.startPoint.name + " и " + bestCutEdge.endPoint.name);
+                MyOpenDocument.ed.WriteMessage($"Вес левой части: {bestLeftWeight}");
+                MyOpenDocument.ed.WriteMessage($"Вес правой части: {bestRightWeight}");
+                MyOpenDocument.ed.WriteMessage($"Разница: {minDifference}");
+                MyOpenDocument.ed.WriteMessage("----------");
             }
-            //Построить окружность
-            Draw.ZoomToEntity(Draw.drawCircle(edgeREC.centerPoint, "Граф_Saidi_Saifi_Makarov.D"), 4);
-
-            MyOpenDocument.ed.WriteMessage("----------");
-            MyOpenDocument.ed.WriteMessage("Рекомендуемое место установки REC в ребро №: " + edgeREC.name);
-            MyOpenDocument.ed.WriteMessage("Рекомендуемое место установки REC между вершинами № " + edgeREC.startPoint.name + " И " + edgeREC.endPoint.name);
-            MyOpenDocument.ed.WriteMessage("Вес левой части: " + REC.LeftWeight + " | " + REC.leftPathText);
-            MyOpenDocument.ed.WriteMessage("Вес правой части: " + REC.RighWeight + " | " + REC.righPathText);
-            MyOpenDocument.ed.WriteMessage("----------");
-
-
-
-
-            //  masterPointLine = new List<PointLine>(saveListMagistral);
-
-            //Скинуть веса вершин у магистрали
-            foreach (var item in masterPointLine)
+            else
             {
-                item.weightA = 0;
-                item.isFavorite = false;
+                MyOpenDocument.ed.WriteMessage("\nНе удалось найти оптимальное место для установки.");
             }
 
-            */
+            // Очистку весов (isFavorite и т.д.) можно провести здесь, если необходимо
         }
+
+
+        private double GetPathLength(PointLine startNode, PointLine endNode)
+        {
+            var pathFinder = ElectricalNetwork.ShortestPathsDijkstra(edge => edge.length, startNode);
+            if (pathFinder(endNode, out var pathEdges))
+            {
+                return pathEdges.Sum(e => e.length);
+            }
+            return double.MaxValue; // Возвращаем большое значение, если пути нет
+        }
+
 
         /*
         //Поиск Падения напряжения. 
