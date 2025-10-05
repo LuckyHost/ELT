@@ -1242,25 +1242,37 @@ namespace ElectroTools
             // Подписываемся на событие при переходе по ребру от известного узла к новому
             bfs.ExamineEdge += (edge) =>
             {
-                // Напряжение в конце ветви = Напряжение в начале - Падение на ветви
-                // U_end = U_start - I_edge * Z_edge
-                Complex z1 = edge.GetPositiveSequenceImpedance(); // Импеданс ветви
+                // Получаем все необходимые импедансы из объекта Edge
+                Complex z1 = edge.GetPositiveSequenceImpedance();
+                Complex zn = edge.GetPositiveSequenceImpedanceNeutral(); // Используем вашу функцию!
 
-                // Рассчитываем напряжение для каждой фазы в конечном узле
-                // Убеждаемся, что ток для ребра был рассчитан
+                // Получаем пофазные токи для этого ребра
                 Complex currentA = edgeCurrentsA.ContainsKey(edge) ? edgeCurrentsA[edge] : Complex.Zero;
                 Complex currentB = edgeCurrentsB.ContainsKey(edge) ? edgeCurrentsB[edge] : Complex.Zero;
                 Complex currentC = edgeCurrentsC.ContainsKey(edge) ? edgeCurrentsC[edge] : Complex.Zero;
 
-                // Сохраняем рассчитанные токи обратно в сами объекты Edge для дальнейшего использования
+                // Сохраняем токи обратно в объект Edge (без изменений)
                 edge.Ia = currentA;
                 edge.Ib = currentB;
                 edge.Ic = currentC;
 
-                nodeVoltagesA[edge.Target] = nodeVoltagesA[edge.Source] - currentA * z1;
-                nodeVoltagesB[edge.Target] = nodeVoltagesB[edge.Source] - currentB * z1;
-                nodeVoltagesC[edge.Target] = nodeVoltagesC[edge.Source] - currentC * z1;
+                // --- НОВАЯ, КОРРЕКТНАЯ ЛОГИКА РАСЧЕТА ПАДЕНИЯ НАПРЯЖЕНИЯ ---
+
+                // Рассчитываем суммарный ток для использования в формуле (Ia + Ib + Ic)
+                Complex currentSum = currentA + currentB + currentC;
+
+                // Рассчитываем полное падение напряжения для каждой фазы по формуле:
+                // ΔU = I_фазы * Z1 + (I_A + I_B + I_C) * Zn
+                Complex voltageDropA = currentA * z1 + currentSum * zn;
+                Complex voltageDropB = currentB * z1 + currentSum * zn;
+                Complex voltageDropC = currentC * z1 + currentSum * zn;
+
+                // U_end = U_start - ΔU
+                nodeVoltagesA[edge.Target] = nodeVoltagesA[edge.Source] - voltageDropA;
+                nodeVoltagesB[edge.Target] = nodeVoltagesB[edge.Source] - voltageDropB;
+                nodeVoltagesC[edge.Target] = nodeVoltagesC[edge.Source] - voltageDropC;
             };
+
 
             bfs.Compute(sourceNode); // Запускаем обход от источника для расчета напряжений
 
