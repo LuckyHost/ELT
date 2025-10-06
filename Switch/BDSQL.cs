@@ -166,5 +166,94 @@ namespace ElectroTools
                 return false; // Обновление не удалось
             }
         }
+
+
+        /// <summary>
+        /// Эффективно извлекает все свойства кабелей из базы данных за один запрос.
+        /// </summary>
+        /// <param name="dbFilePath">Путь к файлу базы данных SQLite.</param>
+        /// <returns>Словарь, где ключ - это имя кабеля, а значение - его свойства.</returns>
+        public static Dictionary<string, CableProperties> GetAllCableProperties(string dbFilePath)
+        {
+            var results = new Dictionary<string, CableProperties>();
+            string connectionString = $"Data Source={dbFilePath};Version=3;";
+
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                // SQL-команда теперь намного проще: просто выбрать все из таблицы.
+                var command = connection.CreateCommand();
+                command.CommandText = "SELECT name, r, x, r0, x0, rN, xN, Ke, Ce, Icrit, mydefault FROM cable";
+
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var props = new CableProperties
+                        {
+                            Name = reader["name"].ToString(),
+                            R = Convert.ToDouble(reader["r"]),
+                            X = Convert.ToDouble(reader["x"]),
+                            R0 = Convert.ToDouble(reader["r0"]),
+                            X0 = Convert.ToDouble(reader["x0"]),
+                            RN = Convert.ToDouble(reader["rN"]),
+                            XN = Convert.ToDouble(reader["xN"]),
+                            Ke = Convert.ToDouble(reader["Ke"]),
+                            Ce = Convert.ToDouble(reader["Ce"]),
+                            IsDefault = reader["mydefault"].ToString().Equals("true", StringComparison.OrdinalIgnoreCase),
+                            Icrict = Convert.ToDouble(reader["Icrit"])
+                        };
+
+                        // Добавляем свойства в словарь, используя имя кабеля в качестве ключа
+                        if (!results.ContainsKey(props.Name))
+                        {
+                            results.Add(props.Name, props);
+                        }
+                    }
+                }
+            }
+            return results;
+        }
+         
+        public static Dictionary<string, TransformerProperties> GetAllTransformerProperties(string dbFilePath)
+        {
+            var results = new Dictionary<string, TransformerProperties>();
+            string connectionString = $"Data Source={dbFilePath};Version=3;";
+
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                // SQL-команда теперь намного проще: просто выбрать все из таблицы.
+                var command = connection.CreateCommand();
+                command.CommandText = "SELECT name, r, x, r0, x0 FROM transformer";
+
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var props = new TransformerProperties
+                        {
+                            Name = reader["name"].ToString(),
+                            R = Convert.ToDouble(reader["r"]),
+                            X = Convert.ToDouble(reader["x"]),
+                            R0 = Convert.ToDouble(reader["r0"]),
+                            X0 = Convert.ToDouble(reader["x0"]),
+                        };
+
+                        // Добавляем свойства в словарь, используя имя кабеля в качестве ключа
+                        if (!results.ContainsKey(props.Name))
+                        {
+                            results.Add(props.Name, props);
+                        }
+                    }
+                }
+            }
+            return results;
+        }
+
+
+
     }
 }

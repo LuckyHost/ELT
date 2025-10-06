@@ -79,11 +79,11 @@
       <HintPath>..\packages\ControlzEx.5.0.2\lib\net462\ControlzEx.dll</HintPath>
     </Reference>
     <Reference Include="hostdbmgd">
-      <HintPath>..\..\..\..\..\Documents\NC_SDK_22.0.5944.3726.6053\include-x64\hostdbmgd.dll</HintPath>
+      <HintPath>..\..\..\..\..\Documents\NC_SDK_22.0.5944.3726.6053\NC_SDK_22.0.5944.3726.6053\include-Win32\hostdbmgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="hostmgd">
-      <HintPath>..\..\..\..\..\Documents\NC_SDK_22.0.5944.3726.6053\include-x64\hostmgd.dll</HintPath>
+      <HintPath>..\..\..\..\..\Documents\NC_SDK_22.0.5944.3726.6053\NC_SDK_22.0.5944.3726.6053\include-Win32\hostmgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MahApps.Metro, Version=2.0.0.0, Culture=neutral, PublicKeyToken=51482d6f650b2b3f, processorArchitecture=MSIL">
@@ -165,6 +165,8 @@
   <ItemGroup>
     <Compile Include="BD.cs" />
     <Compile Include="BDSQL.cs" />
+    <Compile Include="TransformerProperties.cs" />
+    <Compile Include="CableProperties.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="SequenceType.cs" />
     <Compile Include="Const.cs" />

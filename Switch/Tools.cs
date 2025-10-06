@@ -19,6 +19,8 @@ using QuikGraph.Algorithms;
 using QuikGraph.Algorithms.Search;
 using ControlzEx.Standard;
 using QuikGraph.Algorithms.ConnectedComponents;
+using System.Windows.Forms.VisualStyles;
+
 
 
 
@@ -66,6 +68,8 @@ namespace ElectroTools
         private PaletteSet _paletteSet;
         public BidirectionalGraph<PointLine, Edge> ElectricalNetwork { get; private set; }
         public UndirectedBidirectionalGraph<PointLine, Edge> ElectricalNetworkUndirected { get; private set; }
+        public Dictionary<string, CableProperties> cabelCache;
+        public Dictionary<string, TransformerProperties> transformercache;
 
 
         public Tools()
@@ -208,6 +212,10 @@ namespace ElectroTools
             //Обновить пользовательские данные
             UserData.updateUserData(dbFilePath);
 
+            //Получение Кеша БД
+            cabelCache = BDSQL.GetAllCableProperties(dbFilePath);
+            transformercache = BDSQL.GetAllTransformerProperties(dbFilePath);
+
             //Нужное
             listPoint.Clear();
             listPowerLine.Clear();
@@ -313,7 +321,6 @@ namespace ElectroTools
 
                     //Неорентированный граф
                     this.ElectricalNetworkUndirected = new UndirectedBidirectionalGraph<PointLine, Edge>(graph);
-
 
                     //Создание матрици инцинденций 
                     matrixInc = CreateIncidenceMatrix(graph); //Новый
@@ -839,9 +846,6 @@ namespace ElectroTools
 
             MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
 
-
-
-
         }
 
 
@@ -984,10 +988,6 @@ namespace ElectroTools
             }
 
             MyOpenDocument.ed.WriteMessage("~~~~~~~~~~~~~~~~~~~~~~");
-
-
-
-
         }
 
 
@@ -1570,16 +1570,20 @@ namespace ElectroTools
             ed.SetImpliedSelection(new ObjectId[] { perMagistral.ObjectId });
 
             PowerLine considerPowerLine = new PowerLine();
-            int defult = BDSQL.searchAllDataInBD(dbFilePath, "cable", "default").IndexOf("true") + 1;
 
+            var allCableNames = cabelCache.Keys.ToList();
+            var defaultCable = cabelCache.Values.FirstOrDefault(props => props.IsDefault);
+            int defaultIndex = defaultCable != null ? allCableNames.IndexOf(defaultCable.Name) : 0;
+            if (defaultIndex < 0) defaultIndex = 0; // На случай, если кабель не найден
 
             considerPowerLine.cable = BDShowExtensionDictionaryContents<Conductor>(perMagistral.ObjectId, "ESMT_LEP_v1.0")?.Name
-                ?? Text.creatPromptKeywordOptions("\n\nВыберите марку провода магистрали: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
-            considerPowerLine.Icrict = BDSQL.searchDataInBD<double>(dbFilePath, "cable", considerPowerLine.cable, "name", "Icrit");
+                ?? Text.creatPromptKeywordOptions("\n\nВыберите марку провода магистрали: ", allCableNames, defaultIndex+1); //+1 надо
+
+            considerPowerLine.Icrict = cabelCache.Values.FirstOrDefault(props => props.Name== considerPowerLine.cable).Icrict;
             considerPowerLine.name = "Магистраль";
             considerPowerLine.IDLine = Plyline.ObjectId;
             considerPowerLine.parent = considerPowerLine;
-            considerPowerLine.lengthLine = Math.Round(Plyline.Length, 3);
+            considerPowerLine.lengthLine = Math.Round(Plyline.Length, 4);
 
             listPowerLine.Add(considerPowerLine);
 
@@ -1740,7 +1744,7 @@ namespace ElectroTools
                                 //ed.CurrentUserCoordinateSystem = Matrix3d.Identity; // Сброс координатной системы, если необходимо
 
 
-                                int defult = BDSQL.searchAllDataInBD(dbFilePath, "cable", "default").IndexOf("true") + 1;
+                                int defult = BDSQL.searchAllDataInBD(dbFilePath, "cable", "mydefault").IndexOf("true") + 1;
                                 PowerLine ChilderLine = new PowerLine();
 
                                 ChilderLine.cable = BDShowExtensionDictionaryContents<Conductor>(acSObj.ObjectId, "ESMT_LEP_v1.0")?.Name
@@ -1979,40 +1983,22 @@ namespace ElectroTools
             {
                 for (int i = 0; i < itemLine.points.Count - 1; i++)
                 {
-                    Edge newEdge = new Edge
+                    var startNode = itemLine.points[i];
+                    var endNode = itemLine.points[i + 1];
+
+                    if (!tempListEdge.Any(e => (e.Source == startNode && e.Target == endNode) || (e.Source == endNode && e.Target == startNode)))
                     {
-                        name = tempListEdge.Count() + 1,
-                        startPoint = itemLine.points[i],
-                        endPoint = itemLine.points[i + 1],
-                        length = Math.Round(itemLine.points[i].positionPoint.GetDistanceTo(itemLine.points[i + 1].positionPoint), 4),
-                        cable = itemLine.cable,
-                        r = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "r"),
-                        x = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "x"),
-                        r0 = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "r0"),
-                        x0 = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "x0"),
-                        rN = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "rN"),
-                        xN = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "xN"),
-                        Ke = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "Ke"),
-                        Ce = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "Ce"),
+                        // Получаем свойства кабеля из нашего быстрого "кэша" в памяти
+                        cabelCache.TryGetValue(itemLine.cable, out CableProperties props);
 
-                        Icrict = BDSQL.searchDataInBD<double>(dbFilePath, "cable", itemLine.cable, "name", "Icrit"),
-                        centerPoint = new PointLine
-                        {
-                            name = int.Parse((itemLine.points[i].name.ToString() + "0" + itemLine.points[i + 1].name.ToString())),
-                            positionPoint = new Point2d((itemLine.points[i].positionPoint.X + itemLine.points[i + 1].positionPoint.X) / 2, (itemLine.points[i].positionPoint.Y + itemLine.points[i + 1].positionPoint.Y) / 2)
-                        }
+                        // Создаем ребро с помощью нового, чистого конструктора
+                        var newEdge = new Edge(startNode, endNode, tempListEdge.Count + 1, itemLine, props);
 
-                    };
-
-                    tempListEdge.Add(newEdge);
-
-
+                        tempListEdge.Add(newEdge);
+                    }
                 }
-
             }
-
             return tempListEdge;
-
         }
 
         //Описать линию ребрами
@@ -2036,7 +2022,7 @@ namespace ElectroTools
 
         }
 
-       
+
 
         public static int[,] CreateIncidenceMatrix(IVertexAndEdgeListGraph<PointLine, Edge> graph)
         {
