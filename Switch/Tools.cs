@@ -251,6 +251,7 @@ namespace ElectroTools
             Layer.deleteObjectsOnLayer("Напряжение_Makarov.D", false);
 
 
+
             using (DocumentLock docloc = MyOpenDocument.doc.LockDocument())
             {
                 using (Transaction trAdding = MyOpenDocument.dbCurrent.TransactionManager.StartTransaction())
@@ -281,7 +282,7 @@ namespace ElectroTools
                     foreach (PowerLine item in listPowerLine)
                     {
                         //Проверка на наличие в БД
-                        if (!BDSQL.searchAllDataInBD(dbFilePath, "cable", "name").Contains(item.cable))
+                        if (!cabelCache.Keys.ToList().Contains(item.cable))
                         {
                             _myData.isLock = false;
                             _myData.isLoadProcessAnim = true;
@@ -1597,7 +1598,7 @@ namespace ElectroTools
 
 
         PowerLine searchPlyline(Editor ed, PowerLine masterLine, Transaction trAdding, List<PointLine> listPoint, List<Point2d> listPointXY, int j)
-        {
+        { 
 
 
             if (MyOpenDocument.cts.Token.IsCancellationRequested) { return null; }
@@ -1735,8 +1736,6 @@ namespace ElectroTools
                                 }
 
 
-
-
                                 //Добавляем в лист для выбора
                                 selectPL.Add(acSObj.ObjectId);
                                 //Подсветка что выделилось
@@ -1744,22 +1743,23 @@ namespace ElectroTools
                                 //ed.CurrentUserCoordinateSystem = Matrix3d.Identity; // Сброс координатной системы, если необходимо
 
 
-                                int defult = BDSQL.searchAllDataInBD(dbFilePath, "cable", "mydefault").IndexOf("true") + 1;
                                 PowerLine ChilderLine = new PowerLine();
 
-                                ChilderLine.cable = BDShowExtensionDictionaryContents<Conductor>(acSObj.ObjectId, "ESMT_LEP_v1.0")?.Name
-                                 ?? Text.creatPromptKeywordOptions("\n\nВыберите мару провода: ", BDSQL.searchAllDataInBD(dbFilePath, "cable", "name"), defult);
+                                var allCableNames = cabelCache.Keys.ToList();
+                                var defaultCable = cabelCache.Values.FirstOrDefault(props => props.IsDefault);
+                                int defaultIndex = defaultCable != null ? allCableNames.IndexOf(defaultCable.Name) : 0;
+                                if (defaultIndex < 0) defaultIndex = 0; // На случай, если кабель не найден
 
+                                ChilderLine.cable = BDShowExtensionDictionaryContents<Conductor>(acSObj.ObjectId, "ESMT_LEP_v1.0")?.Name
+                                    ?? Text.creatPromptKeywordOptions("\n\nВыберите марку провода магистрали: ", allCableNames, defaultIndex + 1); //+1 надо
 
                                 //Проверяте токен на отмену
-                                if (MyOpenDocument.cts.Token.IsCancellationRequested) { return null; }
-                                ;
-
+                                if (MyOpenDocument.cts.Token.IsCancellationRequested) { return null; };
 
                                 ChilderLine.IDLine = acSObj.ObjectId;
                                 ChilderLine.parent = masterLine;
-                                ChilderLine.lengthLine = Math.Round(lengthPolyline.Length, 3);
-                                ChilderLine.Icrict = BDSQL.searchDataInBD<double>(dbFilePath, "cable", ChilderLine.cable, "name", "Icrit");
+                                ChilderLine.lengthLine = Math.Round(lengthPolyline.Length, 4);
+                                ChilderLine.Icrict = cabelCache.Values.FirstOrDefault(props => props.Name == ChilderLine.cable).Icrict; ;
 
                                 if (masterLine.name != "Магистраль")
                                 {
@@ -1893,15 +1893,7 @@ namespace ElectroTools
         }
 
 
-
-
-
-
         //Дополнительные функции 
-
-
-
-
 
 
         //Создание списка всех Powerline
@@ -1978,7 +1970,7 @@ namespace ElectroTools
         List<Edge> creatListEdegs(List<PowerLine> masterList)
         {
             List<Edge> tempListEdge = new List<Edge>();
-
+            int k = 1;
             foreach (PowerLine itemLine in masterList)
             {
                 for (int i = 0; i < itemLine.points.Count - 1; i++)
@@ -1992,7 +1984,9 @@ namespace ElectroTools
                         cabelCache.TryGetValue(itemLine.cable, out CableProperties props);
 
                         // Создаем ребро с помощью нового, чистого конструктора
-                        var newEdge = new Edge(startNode, endNode, tempListEdge.Count + 1, itemLine, props);
+                        var newEdge = new Edge(startNode, endNode, tempListEdge.Count + 1, itemLine.cable, props);
+                        newEdge.name = k;
+                        k =k+1;
 
                         tempListEdge.Add(newEdge);
                     }
@@ -2799,6 +2793,9 @@ namespace ElectroTools
 
 
         }
+
+
+      
 
 
     }

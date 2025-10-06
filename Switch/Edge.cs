@@ -140,12 +140,12 @@ namespace ElectroTools
             return new Complex(this.rN * this.length, this.xN * this.length);
         }
 
-        public Edge(PointLine start, PointLine end, int edgeName, PowerLine sourceLine, CableProperties cableProps)
+        public Edge(PointLine start, PointLine end, int edgeName, string sourceLine, CableProperties cableProps)
         {
             name = 0;
             startPoint = start;
             endPoint = end;
-            cable = sourceLine.cable;
+            cable = sourceLine;
             Ia = Complex.Zero;
             Ib = Complex.Zero;
             Ic = Complex.Zero;
@@ -158,7 +158,6 @@ namespace ElectroTools
                 // Создаем центральную точку
                 centerPoint = new PointLine
                 {
-                    name = int.Parse($"{start.name}0{end.name}"), // Используем интерполяцию для чистоты
                     positionPoint = new Point2d((start.positionPoint.X + end.positionPoint.X) / 2, (start.positionPoint.Y + end.positionPoint.Y) / 2)
                 };
             }
