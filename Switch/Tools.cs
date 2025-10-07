@@ -1593,8 +1593,6 @@ namespace ElectroTools
 
         PowerLine searchPlyline(Editor ed, PowerLine masterLine, Transaction trAdding, List<PointLine> listPoint, List<Point2d> listPointXY, int j)
         { 
-
-
             if (MyOpenDocument.cts.Token.IsCancellationRequested) { return null; }
 
             Polyline polyline = trAdding.GetObject(masterLine.IDLine, OpenMode.ForRead) as Polyline;
@@ -1611,8 +1609,6 @@ namespace ElectroTools
 
                 for (int i = j; i < polyline.NumberOfVertices; i++)
                 {
-
-
                     // Поиск других полилиний вблизи текущей вершины
                     Point3d searchPoint = new Point3d(polyline.GetPoint2dAt(i).X, polyline.GetPoint2dAt(i).Y, 0);
 
@@ -1745,7 +1741,7 @@ namespace ElectroTools
                                 if (defaultIndex < 0) defaultIndex = 0; // На случай, если кабель не найден
 
                                 ChilderLine.cable = BDShowExtensionDictionaryContents<Conductor>(acSObj.ObjectId, "ESMT_LEP_v1.0")?.Name
-                                    ?? Text.creatPromptKeywordOptions("\n\nВыберите марку провода магистрали: ", allCableNames, defaultIndex + 1); //+1 надо
+                                    ?? Text.creatPromptKeywordOptions("\n\nВыберите марку провода магистрали: ", allCableNames, defaultIndex); 
 
                                 //Проверяте токен на отмену
                                 if (MyOpenDocument.cts.Token.IsCancellationRequested) { return null; };
@@ -1763,10 +1759,6 @@ namespace ElectroTools
                                 {
                                     ChilderLine.name = "Отпайка № " + k.ToString();//Можно i, а не К.Будет показывать с какого именно узлаа
                                 }
-                                /*
-                                //Оставь Пригодится
-                                ed.WriteMessage("\n Cilder:  " + ChilderLine.name + " | " + " ID: " + ChilderLine.IDLine + " | " + " Родитель: " + ChilderLine.parent.name + " | " + " Длина: " + Math.Round(ChilderLine.lengthLine, 2));
-                                */
 
                                 //Добавить в список детей
                                 childrenList.Add(ChilderLine);
@@ -1776,27 +1768,11 @@ namespace ElectroTools
                         }
                     }
                 }
-
-
-
                 //Нужно только для 1ого раза,что б не циклило, когда много отпаек из одной точки				
                 j = 1;
 
-                // В сумме три текста, они все связанны
-                /*
-                if (childrenList.Count != 0)
-                {
-
-                    ed.WriteMessage("\n children Кол. : " + childrenList.Count);
-                    ed.WriteMessage("\n ~~~~~~~~~~");
-                    ed.WriteMessage("\n ");
-                    ed.WriteMessage("\n ");
-                }*/
-
-
                 //Прокидывает детей в родителя
                 masterLine.children = childrenList;
-
 
                 //Рекурсия
                 foreach (PowerLine line in childrenList)

@@ -175,6 +175,7 @@
       <DependentUpon>DataForm.xaml</DependentUpon>
     </Compile>
     <Compile Include="Excel.cs" />
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="SettingForm.xaml.cs">
       <DependentUpon>SettingForm.xaml</DependentUpon>
     </Compile>
