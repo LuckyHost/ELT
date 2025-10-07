@@ -119,7 +119,7 @@ namespace ElectroTools
         }
 
         /// Возвращает полное комплексное сопротивление НУЛЕВОЙ последовательности (Z0).
-        
+
         public Complex GetZeroSequenceImpedance()
         {
             // Умножаем удельное сопротивление на длину
@@ -140,27 +140,43 @@ namespace ElectroTools
             return new Complex(this.rN * this.length, this.xN * this.length);
         }
 
-        public Edge()
+        public Edge(PointLine start, PointLine end, int edgeName, string sourceLine, CableProperties cableProps)
         {
             name = 0;
-            startPoint = new PointLine();
-            centerPoint = new PointLine();
-            endPoint = new PointLine();
-            cable = "";
-            r = 0;
-            x = 0;
-            r0 = 0;
-            x0 = 0;
-            rN = 0;
-            xN = 0;
-            Ke = 1;
-            Ce = 1;
-            length = 0;
-            Icrict = 0;
+            startPoint = start;
+            endPoint = end;
+            cable = sourceLine;
             Ia = Complex.Zero;
             Ib = Complex.Zero;
             Ic = Complex.Zero;
             IDText = new ObjectId();
+
+            if (start != null && end != null)
+            {
+                length = Math.Round(start.positionPoint.GetDistanceTo(end.positionPoint), 4);
+
+                // Создаем центральную точку
+                centerPoint = new PointLine
+                {
+                    positionPoint = new Point2d((start.positionPoint.X + end.positionPoint.X) / 2, (start.positionPoint.Y + end.positionPoint.Y) / 2)
+                };
+            }
+
+            // Заполняем свойства из "кэша", а не из БД
+            if (cableProps != null)
+            {
+                this.r = cableProps.R;
+                this.x = cableProps.X;
+                this.r0 = cableProps.R0;
+                this.x0 = cableProps.X0;
+                this.rN = cableProps.RN;
+                this.xN = cableProps.XN;
+                this.Ke = cableProps.Ke;
+                this.Ce = cableProps.Ce;
+                this.Icrict = cableProps.Icrict;
+            }
+
+           
         }
 
     }

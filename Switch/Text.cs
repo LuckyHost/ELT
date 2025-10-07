@@ -57,9 +57,6 @@ namespace ElectroTools
                     sizeText.Replace(".", ",");
                     size = double.Parse(sizeText);
 
-
-
-
                     // Ищу на какой слой закинуть
                     LayerTable acLyrTbl = trAdding.GetObject(MyOpenDocument.dbCurrent.LayerTableId, OpenMode.ForRead) as LayerTable;
 
