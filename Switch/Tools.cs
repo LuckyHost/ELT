@@ -69,7 +69,7 @@ namespace ElectroTools
         public BidirectionalGraph<PointLine, Edge> ElectricalNetwork { get; private set; }
         public UndirectedBidirectionalGraph<PointLine, Edge> ElectricalNetworkUndirected { get; private set; }
         public Dictionary<string, CableProperties> cabelCache;
-        public Dictionary<string, TransformerProperties> transformercache;
+        public Dictionary<string, TransformerProperties> transformerCache;
 
 
         public Tools()
@@ -214,7 +214,7 @@ namespace ElectroTools
 
             //Получение Кеша БД
             cabelCache = BDSQL.GetAllCableProperties(dbFilePath);
-            transformercache = BDSQL.GetAllTransformerProperties(dbFilePath);
+            transformerCache = BDSQL.GetAllTransformerProperties(dbFilePath);
 
             //Нужное
             listPoint.Clear();
@@ -741,24 +741,18 @@ namespace ElectroTools
             TKZ tkz = сreatTKZ();
 
             //Добавляю свой ввод
+            var allTransformersNames = transformerCache.Keys.ToList();
 
-            string strResistancetTransformers = Text.creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 2);
+            string strResistancetTransformers = Text.creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", allTransformersNames, 2);
             if (string.IsNullOrEmpty(strResistancetTransformers)) { return; }
 
             //берем сопротивление в BD по тексту
             //Z1 Сопротивление трансфомратора
-            tkz.transformerImpedance = new Complex
-                (BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r"),
-                            BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x")
-                );
+            TransformerProperties transformers = transformerCache.Values.SingleOrDefault(cabelCache => cabelCache.Name == strResistancetTransformers);
+            tkz.transformerImpedance = new Complex(transformers.R, transformers.X);
 
-            //Z0 Сопротивление линии
-            tkz.transformerZeroImpedance = new Complex
-                (BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r0"),
-                            BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x0")
-                );
-
-
+            //Z0 Сопротивление трансфомратора
+            tkz.transformerZeroImpedance = new Complex(transformers.R0, transformers.X0);
 
             //Фазное напряжение сети
             double Uline;
@@ -888,19 +882,18 @@ namespace ElectroTools
 
             //Получает данные TKZ
             TKZ tkz = сreatMyTKZ(int.Parse(pointKZ));
-            string strResistancetTransformers = Text.creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 1);
+
+
+            var allTransformersNames = transformerCache.Keys.ToList();
+
+            string strResistancetTransformers = Text.creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", allTransformersNames, 2);
             //берем сопротивление в BD по тексту
             //Z1 Сопротивление трансфомратора
-            tkz.transformerImpedance = new Complex
-                (BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r"),
-                            BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x")
-                );
+            TransformerProperties transformers = transformerCache.Values.SingleOrDefault(cabelCache => cabelCache.Name == strResistancetTransformers);
+            tkz.transformerImpedance = new Complex(transformers.R, transformers.X);
 
             //Z0 Сопротивление трансфомратора
-            tkz.transformerZeroImpedance = new Complex
-                (BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r0"),
-                            BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x0")
-                );
+            tkz.transformerZeroImpedance = new Complex(transformers.R0, transformers.X0);
 
             //Фазное напряжение сети
             double Uline;
@@ -1012,20 +1005,21 @@ namespace ElectroTools
 
             //Получает данные TKZ
             TKZ tkz = сreatTKZ();
-            string strResistancetTransformers = Text.creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", BDSQL.searchAllDataInBD(dbFilePath, "transformer", "name"), 1);
 
+
+
+            var allTransformersNames = transformerCache.Keys.ToList();
+
+            string strResistancetTransformers = Text.creatPromptKeywordOptions("Выберите мощность тр-р с группой соед.: ", allTransformersNames, 2);
             //берем сопротивление в BD по тексту
             //Z1 Сопротивление трансфомратора
-            tkz.transformerImpedance = new Complex
-                (BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r"),
-                 BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x")
-                );
+            //берем сопротивление в BD по тексту
+            //Z1 Сопротивление трансфомратора
+            TransformerProperties transformers = transformerCache.Values.SingleOrDefault(cabelCache => cabelCache.Name == strResistancetTransformers);
+            tkz.transformerImpedance = new Complex(transformers.R, transformers.X);
 
-            //Z0 Сопротивление линии
-            tkz.transformerZeroImpedance = new Complex
-                (BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "r0"),
-                 BDSQL.searchDataInBD<double>(dbFilePath, "transformer", strResistancetTransformers, "name", "x0")
-                );
+            //Z0 Сопротивление трансфомратора
+            tkz.transformerZeroImpedance = new Complex(transformers.R0, transformers.X0);
 
             //Фазное напряжение сети
             // double Uf = double.Parse(creatPromptKeywordOptions("Выберите Фазное напряжение сети.: ", searchAllDataInBD(dbFilePath, "voltage", "kV"), 1));
@@ -1578,7 +1572,7 @@ namespace ElectroTools
             if (defaultIndex < 0) defaultIndex = 0; // На случай, если кабель не найден
 
             considerPowerLine.cable = BDShowExtensionDictionaryContents<Conductor>(perMagistral.ObjectId, "ESMT_LEP_v1.0")?.Name
-                ?? Text.creatPromptKeywordOptions("\n\nВыберите марку провода магистрали: ", allCableNames, defaultIndex+1); //+1 надо
+                ?? Text.creatPromptKeywordOptions("\n\nВыберите марку провода магистрали: ", allCableNames, defaultIndex); //+1 надо
 
             considerPowerLine.Icrict = cabelCache.Values.FirstOrDefault(props => props.Name== considerPowerLine.cable).Icrict;
             considerPowerLine.name = "Магистраль";

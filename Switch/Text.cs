@@ -367,7 +367,7 @@ namespace ElectroTools
             {
                 options.Keywords.Add(itemString);
             }
-            options.Keywords.Default = modifiedListOptions[defaultOptions - 1]; // если сам, то -1
+            options.Keywords.Default = modifiedListOptions[defaultOptions ]; 
 
             PromptResult result = MyOpenDocument.ed.GetKeywords(options);
             if (result.Status == PromptStatus.OK)

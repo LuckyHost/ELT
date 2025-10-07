@@ -201,10 +201,9 @@ namespace ElectroTools
                             XN = Convert.ToDouble(reader["xN"]),
                             Ke = Convert.ToDouble(reader["Ke"]),
                             Ce = Convert.ToDouble(reader["Ce"]),
-                            IsDefault = reader["mydefault"].ToString().Equals("true", StringComparison.OrdinalIgnoreCase),
+                            IsDefault = reader["mydefault"].ToString() == "1" ? true : false,
                             Icrict = Convert.ToDouble(reader["Icrit"])
                         };
-
                         // Добавляем свойства в словарь, используя имя кабеля в качестве ключа
                         if (!results.ContainsKey(props.Name))
                         {
