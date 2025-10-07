@@ -165,14 +165,11 @@
   <ItemGroup>
     <Compile Include="BD.cs" />
     <Compile Include="BDSQL.cs" />
-    <Compile Include="TransformerProperties.cs" />
     <Compile Include="CableProperties.cs" />
-    <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="SequenceType.cs" />
+    <Compile Include="Class1.cs" />
     <Compile Include="Const.cs" />
     <Compile Include="Convertors\EdgeConverter.cs" />
     <Compile Include="Convertors\PointLineConverter.cs" />
-    <Compile Include="Convertors\PointLinePhaseСurrentForEdge.cs" />
     <Compile Include="Convertors\PointLinePhaseСurrent.cs" />
     <Compile Include="DataForm.xaml.cs">
       <DependentUpon>DataForm.xaml</DependentUpon>
@@ -200,6 +197,7 @@
     </Compile>
     <Compile Include="Text.cs" />
     <Compile Include="Tools.cs" />
+    <Compile Include="TransformerProperties.cs" />
     <Compile Include="UserData.cs" />
   </ItemGroup>
   <ItemGroup>
